@@ -287,7 +287,7 @@ def main():
 
     print()
     print("Done! To use these positions:")
-    print(f"1. Place {output_file} in the same directory as chess-openings.html")
+    print(f"1. Place {output_file} in the same directory as index.html")
     print(f"2. Load {args.input} in the browser")
     print("3. The browser will automatically use the pre-computed positions")
     print()

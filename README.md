@@ -30,7 +30,7 @@ A static web application for practicing chess openings. The tool captures board 
 
 ### Exploring Openings
 
-1. Open `chess-openings.html` in your web browser
+1. Open `index.html` in your web browser (or visit https://hrakaroo.github.io/chess-openings/ once GitHub Pages is enabled)
 2. Move pieces on the board to explore opening lines
 3. The turn indicator shows whose move it is (White or Black)
 4. Watch the tree graph build as you make moves
@@ -94,7 +94,7 @@ For complex opening trees with many variations, you can use the Python script to
    - `sfdp` - scalable force-directed (for large graphs)
 
 4. **Load in browser**:
-   - Open `chess-openings.html`
+   - Open `index.html` in your browser (or visit the GitHub Pages site)
    - Click "Load Routes" and select your `.txt` file
    - Click "Load Positions" and select the generated `.json` file
    - The graph will use the pre-computed optimal positions
