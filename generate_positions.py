@@ -29,6 +29,74 @@ except ImportError:
     sys.exit(1)
 
 
+def binary_to_state(binary_state):
+    """Convert binary base64 state back to text format (matches browser's binaryToState)."""
+    import base64
+
+    if binary_state == 'start[w]':
+        return 'start[w]'
+
+    # Extract turn indicator
+    if binary_state.endswith('[w]'):
+        turn = 'w'
+        base64_part = binary_state[:-3]
+    elif binary_state.endswith('[b]'):
+        turn = 'b'
+        base64_part = binary_state[:-3]
+    else:
+        return binary_state  # Malformed, return as-is
+
+    # Decode base64 to bytes
+    try:
+        binary_data = base64.b64decode(base64_part)
+    except:
+        return binary_state  # Decode failed, return as-is
+
+    # Unpack bytes to squares (2 squares per byte)
+    squares = []
+    for byte in binary_data:
+        high = (byte >> 4) & 0x0F
+        low = byte & 0x0F
+        squares.append(high)
+        squares.append(low)
+
+    # Convert squares to piece letters
+    num_to_piece = {
+        1: 'A', 2: 'B', 3: 'C', 4: 'D', 5: 'E', 6: 'F',
+        7: 'G', 8: 'H', 9: 'I', 10: 'J', 11: 'K', 12: 'L'
+    }
+
+    # Build output with run-length encoding for empty squares
+    output = ''
+    empty_count = 0
+
+    for square in squares:
+        if square == 0:
+            empty_count += 1
+        else:
+            # Flush empty count
+            while empty_count > 0:
+                if empty_count >= 9:
+                    output += '9'
+                    empty_count -= 9
+                else:
+                    output += str(empty_count)
+                    empty_count = 0
+            # Add piece
+            output += num_to_piece.get(square, '?')
+
+    # Flush remaining empty count
+    while empty_count > 0:
+        if empty_count >= 9:
+            output += '9'
+            empty_count -= 9
+        else:
+            output += str(empty_count)
+            empty_count = 0
+
+    return output + '[' + turn + ']'
+
+
 def parse_v2_file(filename):
     """Parse a v2.0 format chess openings file and extract transitions."""
     with open(filename, 'r', encoding='utf-8') as f:
@@ -72,9 +140,13 @@ def parse_v2_file(filename):
             to_state = right_side.strip()
             annotation = ''
 
-        states.add(from_state)
-        states.add(to_state)
-        edges.append((from_state, to_state, annotation))
+        # Convert binary states to text format (matches what browser uses)
+        from_state_text = binary_to_state(from_state)
+        to_state_text = binary_to_state(to_state)
+
+        states.add(from_state_text)
+        states.add(to_state_text)
+        edges.append((from_state_text, to_state_text, annotation))
 
     print(f"Parsed {len(states)} unique states and {len(edges)} transitions")
     return list(states), edges
