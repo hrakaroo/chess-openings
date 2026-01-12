@@ -18,7 +18,7 @@ from collections import defaultdict
 
 try:
     import networkx as nx
-    from networkx.drawing.nx_agraph import graphviz_layout
+    import pygraphviz as pgv
 except ImportError:
     print("Error: Required libraries not found.")
     print("Please install with: pip install networkx pygraphviz")
@@ -108,8 +108,33 @@ def compute_layout(G, algorithm='dot'):
     - circo: circular layout
     """
     try:
-        pos = graphviz_layout(G, prog=algorithm)
-        print(f"Layout computed successfully using '{algorithm}' algorithm")
+        # Convert NetworkX graph to pygraphviz for better control
+        A = pgv.AGraph(directed=True)
+
+        # Set graph attributes for top-to-bottom layout
+        A.graph_attr['rankdir'] = 'TB'  # Top to Bottom
+        A.graph_attr['ranksep'] = '2.0'  # Vertical spacing between ranks (increased)
+        A.graph_attr['nodesep'] = '0.3'  # Horizontal spacing between nodes (decreased)
+        A.graph_attr['ordering'] = 'out'  # Order nodes by outgoing edges
+        A.node_attr['shape'] = 'point'  # Small point nodes
+        A.node_attr['width'] = '0.1'  # Minimal node width
+
+        # Add nodes and edges
+        for node in G.nodes():
+            A.add_node(node)
+        for edge in G.edges():
+            A.add_edge(edge[0], edge[1])
+
+        # Compute layout
+        A.layout(prog=algorithm)
+
+        # Extract positions
+        pos = {}
+        for node in A.nodes():
+            x, y = node.attr['pos'].split(',')
+            pos[str(node)] = (float(x), float(y))
+
+        print(f"Layout computed successfully using '{algorithm}' algorithm (TB orientation)")
         return pos
     except Exception as e:
         print(f"Error computing layout with {algorithm}: {e}")
