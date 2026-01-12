@@ -1558,8 +1558,10 @@
                 var pos = nodePositions[i];
                 var state = graphNodes[i];
 
-                // Determine color - green for current state, otherwise grey based on turn
-                if (state === currentBoardState) {
+                // Determine color - blue for start, green for current, otherwise grey based on turn
+                if (state === 'start[w]') {
+                    ctx.fillStyle = '#4A90E2';  // Blue for starting position
+                } else if (state === currentBoardState) {
                     ctx.fillStyle = NODE_COLORS.CURRENT;
                 } else {
                     var isWhiteTurn = state.indexOf('[w]') !== -1;
