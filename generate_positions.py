@@ -113,15 +113,16 @@ def compute_layout(G, algorithm='dot'):
 
         # Set graph attributes for top-to-bottom layout
         A.graph_attr['rankdir'] = 'TB'  # Top to Bottom
-        A.graph_attr['ranksep'] = '2.0'  # Vertical spacing between ranks (increased)
-        A.graph_attr['nodesep'] = '0.3'  # Horizontal spacing between nodes (decreased)
-        A.graph_attr['ordering'] = 'out'  # Order nodes by outgoing edges
-        A.node_attr['shape'] = 'point'  # Small point nodes
-        A.node_attr['width'] = '0.1'  # Minimal node width
+        A.graph_attr['ranksep'] = '1.5'  # Vertical spacing between ranks
+        A.graph_attr['nodesep'] = '0.8'  # Horizontal spacing between nodes at same rank
+        A.node_attr['shape'] = 'circle'  # Circle nodes (matches browser visualization)
+        A.node_attr['width'] = '0.3'  # Node width in inches
+        A.node_attr['height'] = '0.3'  # Node height in inches
+        A.node_attr['fixedsize'] = 'true'  # Keep nodes same size
 
         # Add nodes and edges
         for node in G.nodes():
-            A.add_node(node)
+            A.add_node(node, label='')  # Empty label to avoid size warnings
         for edge in G.edges():
             A.add_edge(edge[0], edge[1])
 
