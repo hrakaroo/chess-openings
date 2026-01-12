@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chess Opening Practice - Practice Mode</title>
+
+    <!-- Chessboard.js CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 14px;
+            cursor: pointer;
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin: 5px;
+        }
+
+        button:hover {
+            background-color: #e0e0e0;
+        }
+
+        .graph-container {
+            border: 1px solid #ccc;
+            display: inline-block;
+            background-color: #fafafa;
+        }
+
+        #modePanel {
+            background-color: #fff9c4;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 0 auto 20px;
+            width: 1200px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .mode-label {
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .mode-btn-view {
+            background-color: #2196F3 !important;
+            color: white !important;
+            border-color: #1976D2 !important;
+        }
+
+        .mode-btn-view:hover {
+            background-color: #1976D2 !important;
+        }
+
+        .mode-btn-edit {
+            background-color: #4CAF50 !important;
+            color: white !important;
+            border-color: #388E3C !important;
+        }
+
+        .mode-btn-edit:hover {
+            background-color: #388E3C !important;
+        }
+
+        .mode-btn-practice {
+            background-color: #FFC107 !important;
+            color: #333 !important;
+            border-color: #FFA000 !important;
+        }
+
+        .mode-btn-practice:hover {
+            background-color: #FFA000 !important;
+        }
+
+        .placeholder {
+            margin: 40px auto;
+            padding: 40px;
+            background-color: #fffde7;
+            border: 2px dashed #fbc02d;
+            border-radius: 8px;
+            max-width: 600px;
+        }
+
+        .placeholder h2 {
+            color: #f57f17;
+            margin-top: 0;
+        }
+
+        .placeholder p {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <h1>Chess Opening Practice - Practice Mode</h1>
+
+    <!-- Mode indicator -->
+    <div id="modePanel">
+        <div class="mode-label">
+            Current Mode: <span>Practice</span>
+        </div>
+        <div>
+            <button class="mode-btn-view" onclick="window.location.href='view.html'">Switch to View Mode</button>
+            <button class="mode-btn-edit" onclick="window.location.href='edit.html'" style="margin-left: 10px;">Switch to Edit Mode</button>
+        </div>
+    </div>
+
+    <div class="placeholder">
+        <h2>🚧 Practice Mode - Coming Soon!</h2>
+        <p>
+            This mode will allow you to practice your opening repertoire interactively.
+            Features will include:
+        </p>
+        <ul style="text-align: left; max-width: 400px; margin: 20px auto;">
+            <li>Load your opening routes</li>
+            <li>Practice making moves against the repertoire</li>
+            <li>Immediate feedback on correct/incorrect moves</li>
+            <li>Track your progress and accuracy</li>
+            <li>Spaced repetition for difficult lines</li>
+        </ul>
+        <p style="margin-top: 30px;">
+            For now, use <strong>View Mode</strong> to explore routes or <strong>Edit Mode</strong> to build your repertoire.
+        </p>
+    </div>
+
+    <!-- jQuery (required by chessboard.js) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- Chessboard.js -->
+    <script src="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
+
+    <!-- Chess.js for game logic -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+
+    <!-- Dagre for graph layout -->
+    <script src="https://cdn.jsdelivr.net/npm/dagre@0.8.5/dist/dagre.min.js"></script>
+
+    <!-- Common chess logic -->
+    <script src="chess-common.js"></script>
+
+    <script>
+        // Practice mode will be implemented here
+        console.log('Practice mode - placeholder page');
+    </script>
+
+</body>
+</html>

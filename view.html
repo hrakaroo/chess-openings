@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chess Opening Practice - View Mode</title>
+
+    <!-- Chessboard.js CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 14px;
+            cursor: pointer;
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin: 5px;
+        }
+
+        button:hover {
+            background-color: #e0e0e0;
+        }
+
+        button:disabled {
+            background-color: #f5f5f5;
+            color: #999;
+            cursor: not-allowed;
+        }
+
+        .graph-container {
+            border: 1px solid #ccc;
+            display: inline-block;
+            background-color: #fafafa;
+        }
+
+        #loadedFileLabel {
+            margin-top: 10px;
+            font-size: 12px;
+            color: #666;
+            font-style: italic;
+        }
+
+        #modePanel {
+            background-color: #e3f2fd;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 0 auto 20px;
+            width: 1200px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .mode-label {
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .board-readonly {
+            opacity: 0.9;
+        }
+
+        .mode-btn-view {
+            background-color: #2196F3 !important;
+            color: white !important;
+            border-color: #1976D2 !important;
+        }
+
+        .mode-btn-view:hover {
+            background-color: #1976D2 !important;
+        }
+
+        .mode-btn-edit {
+            background-color: #4CAF50 !important;
+            color: white !important;
+            border-color: #388E3C !important;
+        }
+
+        .mode-btn-edit:hover {
+            background-color: #388E3C !important;
+        }
+
+        .mode-btn-practice {
+            background-color: #FFC107 !important;
+            color: #333 !important;
+            border-color: #FFA000 !important;
+        }
+
+        .mode-btn-practice:hover {
+            background-color: #FFA000 !important;
+        }
+    </style>
+</head>
+<body>
+    <h1>Chess Opening Practice - View Mode</h1>
+
+    <!-- Mode indicator -->
+    <div id="modePanel">
+        <div class="mode-label">
+            Current Mode: <span>View</span>
+        </div>
+        <div>
+            <button class="mode-btn-edit" onclick="window.location.href='edit.html'">Switch to Edit Mode</button>
+            <button class="mode-btn-practice" onclick="window.location.href='practice.html'" style="margin-left: 10px;">Switch to Practice Mode</button>
+        </div>
+    </div>
+
+    <table style="margin: 0 auto; border-spacing: 20px;">
+        <tbody><tr>
+            <td style="vertical-align: top;">
+                <div id="board" class="board-readonly" style="width: 600px;"></div>
+            </td>
+            <td style="vertical-align: top;">
+                <div style="margin-bottom: 10px; display: flex; justify-content: space-between; align-items: flex-start;">
+                    <div>
+                        <button id="loadBtn">Load Routes</button>
+                        <input type="file" id="fileInput" accept=".txt" style="display: none;">
+                        <div id="loadedFileLabel"></div>
+                    </div>
+                    <div>
+                        <button id="exportPgnBtn" style="margin-right: 10px;">Export PGN</button>
+                        <button id="fitViewBtn">Fit View</button>
+                    </div>
+                </div>
+                <div class="graph-container">
+                    <canvas id="graphCanvas" width="567" height="600" style="cursor: default;"></canvas>
+                </div>
+            </td>
+        </tr>
+    </tbody></table>
+
+    <!-- jQuery (required by chessboard.js) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- Chessboard.js -->
+    <script src="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
+
+    <!-- Chess.js for game logic -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+
+    <!-- Dagre for graph layout -->
+    <script src="https://cdn.jsdelivr.net/npm/dagre@0.8.5/dist/dagre.min.js"></script>
+
+    <!-- Common chess logic -->
+    <script src="chess-common.js"></script>
+
+    <script>
+        // Initialize the chessboard (read-only in view mode)
+        var config = {
+            draggable: false,  // Read-only board
+            position: 'start',
+            pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png'
+        };
+
+        board = Chessboard('board', config);
+
+        // Button handlers
+        document.getElementById('exportPgnBtn').addEventListener('click', exportToPGN);
+        document.getElementById('fitViewBtn').addEventListener('click', fitView);
+
+        // Load button triggers file input
+        document.getElementById('loadBtn').addEventListener('click', function() {
+            document.getElementById('fileInput').click();
+        });
+
+        // Handle file selection
+        document.getElementById('fileInput').addEventListener('change', function(event) {
+            var file = event.target.files[0];
+            if (file) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    loadRoutesFromFile(e.target.result, file.name);
+                };
+                reader.readAsText(file);
+            }
+            event.target.value = '';
+        });
+
+        // Initialize canvas
+        initCanvas();
+    </script>
+
+</body>
+</html>

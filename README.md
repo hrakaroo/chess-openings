@@ -18,25 +18,78 @@ A static web application for practicing chess openings. The tool captures board 
   - Click any node to jump to that board position
   - Hover over nodes to see the move that was played (e.g., "e4", "Nf3") and annotation
   - Zoom and pan support for large opening trees
+  - **Keyboard navigation** - use arrow keys to navigate through the opening tree (Down=next move, Up=previous, Right/Left=alternate variations)
 - **Undo/Redo** - navigate backward and forward through your move history with keyboard shortcuts
 - **Export/Import** - save and load your opening repertoire:
-  - Export to custom format v2.0 (.txt) with binary base64 encoding for compact file sizes
+  - Export to custom format v2.0 (.txt) with text encoding and run-length compression
   - Export to standard PGN format for use in other chess software
   - Import from saved v2.0 files with annotation support
-- **Keyboard shortcuts** - Ctrl+Z/Cmd+Z for undo, Ctrl+Y/Cmd+Shift+Z for redo, arrow keys for navigation
+- **Keyboard shortcuts** - Ctrl+Z/Cmd+Z for undo, Ctrl+Y/Cmd+Shift+Z for redo, arrow keys for navigation (Edit Mode only)
 - **Turn indicator** - shows whose move it is at all times
 
 ## How to Use
 
-### Exploring Openings
+The application now has three separate pages, each optimized for a specific workflow:
 
-1. Open `index.html` in your web browser (or visit https://hrakaroo.github.io/chess-openings/ once GitHub Pages is enabled)
-2. Move pieces on the board to explore opening lines
+### 📁 File Structure
+
+```
+/practice/
+  ├── index.html          - Redirects to view.html (default)
+  ├── view.html           - View Mode: Browse and explore routes
+  ├── edit.html           - Edit Mode: Build and modify repertoires
+  ├── practice.html       - Practice Mode: Coming soon
+  └── chess-common.js     - Shared functions across all pages
+```
+
+### Modes
+
+#### View Mode (`view.html`) - Default
+- **Purpose**: Load and view opening routes without making changes
+- **Features**:
+  - Load route files (with embedded positions)
+  - Click nodes in the graph to navigate through positions
+  - Export to PGN format
+  - Read-only board (pieces cannot be moved)
+- **Available buttons**: Load Routes, Export PGN, Fit View
+- **Visual indicator**: Light blue background on mode panel
+- **URL**: `view.html`
+
+#### Edit Mode (`edit.html`)
+- **Purpose**: Build and modify opening repertoires
+- **Features**:
+  - Make new moves and create variations
+  - Undo/Redo navigation (keyboard shortcuts and buttons)
+  - Add annotations to moves
+  - Export routes to file
+  - Full board interaction (drag and drop pieces)
+- **Available buttons**: All editing buttons (Reset, Undo/Redo, annotations, Export Routes, etc.)
+- **Visual indicator**: Light green background on mode panel
+- **URL**: `edit.html`
+
+#### Practice Mode (`practice.html`)
+- **Purpose**: Coming soon...
+- **Visual indicator**: Light yellow background on mode panel
+- **URL**: `practice.html`
+
+**Switching Modes**: Each page has buttons at the top to switch to other modes. Clicking a mode button navigates to that page.
+
+### Getting Started
+
+1. Open `index.html` in your web browser (or visit https://hrakaroo.github.io/chess-openings/)
+   - This will redirect you to **View Mode** by default
+2. To view existing routes: Stay in View Mode, click **Load Routes**, and select a `.txt` file
+3. To build a new repertoire: Click **Switch to Edit Mode** at the top
+
+### Exploring Openings (Edit Mode)
+
+1. Navigate to `edit.html` or click **Switch to Edit Mode** from View Mode
+2. Move pieces on the board to explore opening lines (drag and drop)
 3. The turn indicator shows whose move it is (White or Black)
 4. Watch the tree graph build as you make moves
 5. Click any node in the graph to jump to that position
 
-### Adding Annotations
+### Adding Annotations (Edit Mode)
 
 1. After making a move, the annotation text box will show any existing annotation for that move
 2. Type your note or comment in the text box (e.g., "Main line", "Tricky trap!", "Best for White")
@@ -52,9 +105,9 @@ A static web application for practicing chess openings. The tool captures board 
 - **Reset Board and Graph** - return to the starting position and completely clear all graph data (removes all explored positions and variations)
 - **Undo** - go back to the previous position in your move history (Ctrl+Z, Cmd+Z, or Left Arrow)
 - **Redo** - move forward in your history after undoing (Ctrl+Y, Ctrl+Shift+Z, Cmd+Shift+Z, or Right Arrow)
-- **Export Routes** - prompts for a filename, then saves all recorded transitions to a `.txt` file (v2.0 format with binary base64 encoding)
+- **Export Routes** - prompts for a filename, then saves all recorded transitions to a `.txt` file (v2.0 format with text encoding)
 - **Load Routes** - import a previously saved v2.0 .txt file to restore your opening tree (displays the loaded filename and version below the buttons)
-- **Load Positions** - optionally load a pre-computed positions JSON file generated by `generate_positions.py` for optimal graph layout with minimal edge crossings
+- **Load Positions** - optionally load a pre-computed positions JSON file generated by `evaluate.py` for optimal graph layout with minimal edge crossings
 - **Export PGN** - exports your opening tree to standard PGN (Portable Game Notation) format with variations, compatible with chess software like Lichess, Chess.com, and ChessBase
 - **Fit View** - automatically scales and centers the graph to show all nodes within the canvas (useful after exploring large opening trees)
 
@@ -75,17 +128,36 @@ For complex opening trees with many variations, you can use the Python script to
    - Ubuntu/Debian: `sudo apt-get install graphviz graphviz-dev`
    - Windows: Download from https://graphviz.org/download/
 
-2. **Generate positions**:
+2. **Optional: Install evaluation support** (for position scoring):
    ```bash
-   python generate_positions.py your-openings.txt
+   pip install chess
    ```
-   This creates `your-openings-positions.json` with optimal node positions.
+   For Stockfish engine:
+   - macOS: `brew install stockfish`
+   - Ubuntu/Debian: `sudo apt-get install stockfish`
+   - Windows: Download from https://stockfishchess.org/download/
 
-3. **Try different algorithms** if you see edge crossings:
+3. **Generate positions and evaluations**:
    ```bash
-   python generate_positions.py your-openings.txt --algorithm dot
-   python generate_positions.py your-openings.txt --algorithm neato
-   python generate_positions.py your-openings.txt --algorithm fdp
+   python evaluate.py your-openings.txt
+   ```
+   This modifies your file in place, adding optimal position coordinates and Stockfish evaluations for leaf nodes (terminal positions).
+
+   To skip evaluation:
+   ```bash
+   python evaluate.py your-openings.txt --no-eval
+   ```
+
+   To specify Stockfish location:
+   ```bash
+   python evaluate.py your-openings.txt --stockfish-path /path/to/stockfish
+   ```
+
+4. **Try different algorithms** if you see edge crossings:
+   ```bash
+   python evaluate.py your-openings.txt --algorithm dot
+   python evaluate.py your-openings.txt --algorithm neato
+   python evaluate.py your-openings.txt --algorithm fdp
    ```
    Available algorithms:
    - `dot` - hierarchical/layered (best for DAGs, minimizes crossings) - **default**
@@ -93,17 +165,23 @@ For complex opening trees with many variations, you can use the Python script to
    - `fdp` - force-directed with smart edge handling
    - `sfdp` - scalable force-directed (for large graphs)
 
-4. **Load in browser**:
-   - Open `index.html` in your browser (or visit the GitHub Pages site)
-   - Click "Load Routes" and select your `.txt` file
-   - Click "Load Positions" and select the generated `.json` file
-   - The graph will use the pre-computed optimal positions
+5. **Save to a different file** (optional):
+   ```bash
+   python evaluate.py your-openings.txt --output optimized-openings.txt
+   ```
 
-**Benefits of pre-computed positions**:
+6. **Load in browser**:
+   - Open View or Edit mode
+   - Click "Load Routes" and select your `.txt` file
+   - The graph will automatically use the embedded positions and evaluations
+
+**Benefits of pre-computed positions and evaluations**:
 - Eliminates or minimizes edge crossings
 - More powerful layout algorithms than browser-based Dagre
+- Stockfish evaluations for leaf positions (terminal nodes)
+- Positions and evaluations embedded in the same file (no separate files to manage)
 - Can be regenerated with different algorithms to find the best one
-- Optional - tool works fine without positions files
+- Optional - tool works fine without positions (uses Dagre layout)
 
 ### Navigation
 
@@ -122,11 +200,22 @@ For complex opening trees with many variations, you can use the Python script to
 
 ### Keyboard Shortcuts
 
+#### Edit Mode
 - **Ctrl+Z** (Windows/Linux) or **Cmd+Z** (Mac) - Undo
 - **Ctrl+Y** (Windows/Linux) or **Cmd+Shift+Z** (Mac) - Redo
 - **Ctrl+Shift+Z** (Windows/Linux) - Redo (alternative)
 - **Left Arrow** - Undo
 - **Right Arrow** - Redo
+- **Up Arrow** - Navigate to parent node
+- **Down Arrow** - Navigate to child node
+
+#### View Mode / Practice Mode
+- **Down Arrow** - Navigate to next child node (move forward in the opening)
+- **Up Arrow** - Navigate to parent node (move backward)
+- **Right Arrow** - Cycle to next sibling variation (alternate move from same position)
+- **Left Arrow** - Cycle to previous sibling variation
+
+**Note**: In View/Practice modes, arrow keys provide full graph navigation. In Edit mode, Left/Right arrows are reserved for Undo/Redo, while Up/Down navigate the graph.
 
 ## Board State Encoding
 
@@ -173,7 +262,7 @@ The board is encoded from top to bottom (rank 8 to rank 1), left to right (a-fil
 
 ## File Format
 
-All exported files use version 2.0 format with binary base64 encoding for compact state representation.
+All exported files use version 2.0 format with text-based state encoding using run-length encoding for efficient representation.
 
 ### Format Specification
 
@@ -182,34 +271,58 @@ The first line must contain the version number:
 v2.0
 ```
 
-Each board state is encoded as:
-1. Converted to 64 nibbles (4 bits each): 0 for empty, 1-6 for white pieces (A-F), 7-12 for black pieces (G-L)
-2. Packed into 32 bytes (2 squares per byte)
-3. Base64 encoded
-4. Turn indicator `[w]` or `[b]` appended in readable text
+Each board state uses the text encoding described in the "Board State Encoding" section above:
+- Pieces are represented by letters A-L
+- Empty squares use run-length encoding (digits 1-9)
+- Turn indicator `[w]` or `[b]` is appended
 
-Each line is still a transition with optional annotation:
+The file contains two types of lines:
+
+**1. Position Definitions (Optional)**:
 ```
-binary_state_before -> binary_state_after
-binary_state_before -> binary_state_after: annotation text
+state : x, y
+state : x, y, evaluation
+```
+Where:
+- `x` and `y` are the canvas coordinates for optimal graph layout
+- `evaluation` (optional) is the Stockfish evaluation for leaf positions showing which color is favored:
+  - Examples: `white +0.50`, `black +1.25`, `white M5` (white has mate in 5)
+  - Always shows the absolute advantage (positive numbers only)
+- Position definitions are typically generated by the Python script
+
+**2. Transition Lines**:
+```
+text_state_before -> text_state_after
+text_state_before -> text_state_after: annotation text
 ```
 
-Example file with binary encoding:
+Example file with positions, evaluations, and transitions:
 ```
 v2.0
-start[w] -> SnpLdIp6enh4enh4AAAAAEAAAAABAAAADECEPEBD[b]: Main line, most popular
-SnpLdIp6enh4enh4AAAAAEAAAAABAAAADECEPEBD[b] -> SnpLdIp6enh4enh4AAAAIgAAAAEAAAADECEPEBD[w]: Sicilian Defense
+start[w] : 283.8, 0.0
+JIHKLIHJGGGGGGGG884A38AAAA1AAADBCEFCBD[b] : 283.8, 129.6
+JIHKLIHJGGG1GGGG8G3A38AAAA1AAADBCEFCBD[w] : 283.8, 259.2, white +0.25
+JIHKLIHJGGG1GGGG1G2A3GA6A3AAA2AAAD2EFCBD[b] : 450.2, 388.8, black +0.35
+start[w] -> JIHKLIHJGGGGGGGG884A38AAAA1AAADBCEFCBD[b]: Main line, e4
+JIHKLIHJGGGGGGGG884A38AAAA1AAADBCEFCBD[b] -> JIHKLIHJGGG1GGGG8G3A38AAAA1AAADBCEFCBD[w]: Sicilian Defense, c5
+JIHKLIHJGGG1GGGG8G3A38AAAA1AAADBCEFCBD[w] -> JIHKLIHJGGG1GGGG1G2A3GA6A3AAA2AAAD2EFCBD[b]: Nf3
 ```
 
-**Format Benefits**:
-- **Consistent length**: Every position is exactly 44 characters (base64) + 3 characters ([w] or [b]) = 47 characters
-- **Compact**: Binary encoding provides efficient storage for large opening repertoires
-- **Version header**: Required version header ensures forward compatibility with future formats
+Note: In this example, the last two positions are leaf nodes (no further moves), so they have Stockfish evaluations. Hover over the red nodes in the graph to see which color is favored.
 
-**Annotation Format**:
+**Format Benefits**:
+- **Unified file**: Positions, evaluations, and routes in a single file (no separate files needed)
+- **Optional positions**: Position definitions are optional - files work without them (uses Dagre layout)
+- **Optional evaluations**: Stockfish evaluations are optional and only computed for leaf nodes
+- **Variable length**: Positions with many empty squares are shorter (typical positions: 30-45 characters)
+- **Human-readable**: Text encoding can be manually inspected and understood
+- **Efficient**: Run-length encoding provides compact storage for sparse positions
+
+**Notes**:
+- Position lines come before transition lines
+- Positions are optional - if not present, browser uses Dagre layout
+- Evaluations are optional - only generated for leaf positions (terminal nodes)
 - Annotations are added after a colon (`:`) following the transition
-- Spaces before the colon are ignored during parsing
-- Spaces after the colon are preserved as part of the annotation
 - Returns and quotes are stripped when saving annotations
 
 ## Graph Visualization

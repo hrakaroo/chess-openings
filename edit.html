@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chess Opening Practice - Edit Mode</title>
+
+    <!-- Chessboard.js CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 14px;
+            cursor: pointer;
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin: 5px;
+        }
+
+        button:hover {
+            background-color: #e0e0e0;
+        }
+
+        button:disabled {
+            background-color: #f5f5f5;
+            color: #999;
+            cursor: not-allowed;
+        }
+
+        input[type="text"] {
+            padding: 8px;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .graph-container {
+            border: 1px solid #ccc;
+            display: inline-block;
+            background-color: #fafafa;
+        }
+
+        #loadedFileLabel {
+            margin-top: 10px;
+            font-size: 12px;
+            color: #666;
+            font-style: italic;
+        }
+
+        #modePanel {
+            background-color: #e8f5e9;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 0 auto 20px;
+            width: 1200px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .mode-label {
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .mode-btn-view {
+            background-color: #2196F3 !important;
+            color: white !important;
+            border-color: #1976D2 !important;
+        }
+
+        .mode-btn-view:hover {
+            background-color: #1976D2 !important;
+        }
+
+        .mode-btn-edit {
+            background-color: #4CAF50 !important;
+            color: white !important;
+            border-color: #388E3C !important;
+        }
+
+        .mode-btn-edit:hover {
+            background-color: #388E3C !important;
+        }
+
+        .mode-btn-practice {
+            background-color: #FFC107 !important;
+            color: #333 !important;
+            border-color: #FFA000 !important;
+        }
+
+        .mode-btn-practice:hover {
+            background-color: #FFA000 !important;
+        }
+    </style>
+</head>
+<body>
+    <h1>Chess Opening Practice - Edit Mode</h1>
+
+    <!-- Mode indicator -->
+    <div id="modePanel">
+        <div class="mode-label">
+            Current Mode: <span>Edit</span>
+        </div>
+        <div>
+            <button class="mode-btn-view" onclick="window.location.href='view.html'">Switch to View Mode</button>
+            <button class="mode-btn-practice" onclick="window.location.href='practice.html'" style="margin-left: 10px;">Switch to Practice Mode</button>
+        </div>
+    </div>
+
+    <table style="margin: 0 auto; border-spacing: 20px;">
+        <tbody><tr>
+            <td style="vertical-align: top;">
+                <div style="margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; width: 600px;">
+                    <div>
+                        <button id="newRouteBtn">Reset Board</button>
+                        <button id="resetAllBtn" style="margin-left: 10px;">Reset Board and Graph</button>
+                        <span id="turnLabel" style="margin-left: 20px;">White</span>
+                    </div>
+                    <div>
+                        <button id="undoBtn">Undo</button>
+                        <button id="redoBtn" style="margin-left: 10px;">Redo</button>
+                    </div>
+                </div>
+                <div style="margin-bottom: 10px; display: flex; align-items: center; width: 600px;">
+                    <input type="text" id="annotationInput" placeholder="Add annotation for last move..." style="flex: 1;">
+                    <button id="saveAnnotationBtn" style="margin-left: 10px;">Save</button>
+                </div>
+                <div id="board" style="width: 600px;"></div>
+            </td>
+            <td style="vertical-align: top;">
+                <div style="margin-bottom: 10px; display: flex; justify-content: space-between; align-items: flex-start;">
+                    <div>
+                        <button id="exportBtn" style="margin-right: 10px;">Export Routes</button>
+                        <button id="loadBtn">Load Routes</button>
+                        <input type="file" id="fileInput" accept=".txt" style="display: none;">
+                        <div id="loadedFileLabel"></div>
+                    </div>
+                    <div>
+                        <button id="exportPgnBtn" style="margin-right: 10px;">Export PGN</button>
+                        <button id="fitViewBtn">Fit View</button>
+                    </div>
+                </div>
+                <div class="graph-container">
+                    <canvas id="graphCanvas" width="567" height="600" style="cursor: default;"></canvas>
+                </div>
+            </td>
+        </tr>
+    </tbody></table>
+
+    <!-- jQuery (required by chessboard.js) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- Chessboard.js -->
+    <script src="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
+
+    <!-- Chess.js for game logic -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+
+    <!-- Dagre for graph layout -->
+    <script src="https://cdn.jsdelivr.net/npm/dagre@0.8.5/dist/dagre.min.js"></script>
+
+    <!-- Common chess logic -->
+    <script src="chess-common.js"></script>
+
+    <script>
+        // Edit mode specific functions
+
+        // Prevent picking up pieces if the game is over or if it's not that player's turn
+        function onDragStart(source, piece, position, orientation) {
+            if (game.game_over()) return false;
+
+            // Only allow moving pieces that match the current turn
+            if ((game.turn() === 'w' && piece.search(/^b/) !== -1) ||
+                (game.turn() === 'b' && piece.search(/^w/) !== -1)) {
+                return false;
+            }
+        }
+
+        // On piece drop
+        function onDrop(source, target) {
+            // Get state before move
+            var stateBefore = currentBoardState;
+
+            // Try to make the move
+            var move = game.move({
+                from: source,
+                to: target,
+                promotion: 'q'
+            });
+
+            if (move === null) return 'snapback';
+
+            // Get state after move
+            var stateAfter = boardToString();
+            console.log('Move made - From:', stateBefore, 'To:', stateAfter);
+
+            // Add edge to graph
+            addEdgeToGraph(stateBefore, stateAfter);
+            currentBoardState = stateAfter;
+
+            // Add to history
+            if (!isNavigatingHistory) {
+                moveHistory = moveHistory.slice(0, historyIndex + 1);
+                moveHistory.push(stateAfter);
+                historyIndex = moveHistory.length - 1;
+                updateHistoryButtons();
+            }
+
+            // Update annotation input with any existing annotation
+            if (lastEdgeIndex !== -1 && lastEdgeIndex < graphEdges.length) {
+                document.getElementById('annotationInput').value = graphEdges[lastEdgeIndex].annotation || '';
+            }
+
+            updateTurnLabel();
+            drawGraph();
+        }
+
+        // Update position after piece animation
+        function onSnapEnd() {
+            board.position(game.fen());
+            updateTurnLabel();
+        }
+
+        // Update turn label
+        function updateTurnLabel() {
+            var turnLabel = document.getElementById('turnLabel');
+            if (turnLabel) {
+                turnLabel.innerText = game.turn() === 'w' ? 'White' : 'Black';
+            }
+        }
+
+        // Update undo/redo button states
+        function updateHistoryButtons() {
+            var undoBtn = document.getElementById('undoBtn');
+            var redoBtn = document.getElementById('redoBtn');
+
+            if (undoBtn) undoBtn.disabled = historyIndex <= 0;
+            if (redoBtn) redoBtn.disabled = historyIndex >= moveHistory.length - 1;
+        }
+
+        // Undo - go back in history
+        function undo() {
+            if (historyIndex <= 0) return;
+
+            isNavigatingHistory = true;
+            historyIndex--;
+
+            // Remove the future branch from the graph
+            var currentStateIndex = stateToIndex.get(moveHistory[historyIndex]);
+            removeFutureFromGraph(currentStateIndex);
+
+            var state = moveHistory[historyIndex];
+            loadState(state, false);
+            updateHistoryButtons();
+            isNavigatingHistory = false;
+        }
+
+        // Redo - go forward in history
+        function redo() {
+            if (historyIndex >= moveHistory.length - 1) return;
+
+            isNavigatingHistory = true;
+            historyIndex++;
+
+            // Re-add the edge that we're redoing
+            if (historyIndex > 0) {
+                var fromState = moveHistory[historyIndex - 1];
+                var toState = moveHistory[historyIndex];
+                addEdgeToGraph(fromState, toState);
+            }
+
+            var state = moveHistory[historyIndex];
+            loadState(state, false);
+            updateHistoryButtons();
+            isNavigatingHistory = false;
+        }
+
+        // Reset the board to starting position
+        function createNewRoute() {
+            game.reset();
+            board.position('start');
+            currentBoardState = 'start[w]';
+
+            // Reset history
+            moveHistory = ['start[w]'];
+            historyIndex = 0;
+            updateHistoryButtons();
+
+            // Clear annotation input
+            document.getElementById('annotationInput').value = '';
+            lastEdgeIndex = -1;
+
+            updateTurnLabel();
+            drawGraph();
+        }
+
+        // Reset board and clear entire graph
+        function resetBoardAndGraph() {
+            if (graphEdges.length > 0) {
+                if (!confirm('This will delete all explored routes. Continue?')) {
+                    return;
+                }
+            }
+
+            game.reset();
+            board.position('start');
+            currentBoardState = 'start[w]';
+
+            // Clear graph
+            graphNodes = [];
+            graphEdges = [];
+            stateToIndex = new Map();
+            precomputedPositions = null;
+            nodeEvaluations = {};
+
+            // Reset history
+            moveHistory = ['start[w]'];
+            historyIndex = 0;
+            updateHistoryButtons();
+
+            // Re-add starting node
+            addNodeToGraph('start[w]');
+
+            // Clear loaded file label
+            document.getElementById('loadedFileLabel').innerText = '';
+            document.getElementById('annotationInput').value = '';
+            lastEdgeIndex = -1;
+
+            updateTurnLabel();
+            drawGraph();
+        }
+
+        // Save annotation for last edge
+        function saveAnnotation() {
+            var text = document.getElementById('annotationInput').value.trim();
+            if (!text) {
+                alert('Please enter an annotation first.');
+                return;
+            }
+
+            if (lastEdgeIndex === -1 || lastEdgeIndex >= graphEdges.length) {
+                alert('No move to annotate. Make a move first.');
+                return;
+            }
+
+            // Strip out returns and quotes
+            text = text.replace(/[\r\n]/g, ' ');
+            text = text.replace(/["']/g, '');
+
+            // Save annotation to the last edge
+            graphEdges[lastEdgeIndex].annotation = text;
+
+            drawGraph();
+        }
+
+        // Initialize the chessboard (draggable in edit mode)
+        var config = {
+            draggable: true,
+            position: 'start',
+            pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png',
+            onDragStart: onDragStart,
+            onDrop: onDrop,
+            onSnapEnd: onSnapEnd
+        };
+
+        board = Chessboard('board', config);
+
+        // Button handlers
+        document.getElementById('exportBtn').addEventListener('click', exportAllStates);
+        document.getElementById('exportPgnBtn').addEventListener('click', exportToPGN);
+        document.getElementById('fitViewBtn').addEventListener('click', fitView);
+        document.getElementById('newRouteBtn').addEventListener('click', createNewRoute);
+        document.getElementById('resetAllBtn').addEventListener('click', resetBoardAndGraph);
+        document.getElementById('undoBtn').addEventListener('click', undo);
+        document.getElementById('redoBtn').addEventListener('click', redo);
+        document.getElementById('saveAnnotationBtn').addEventListener('click', saveAnnotation);
+
+        // Load button triggers file input
+        document.getElementById('loadBtn').addEventListener('click', function() {
+            document.getElementById('fileInput').click();
+        });
+
+        // Handle file selection
+        document.getElementById('fileInput').addEventListener('change', function(event) {
+            var file = event.target.files[0];
+            if (file) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    loadRoutesFromFile(e.target.result, file.name);
+                };
+                reader.readAsText(file);
+            }
+            event.target.value = '';
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(event) {
+            // Check if user is typing in an input field
+            var target = event.target;
+            if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
+                return;
+            }
+
+            // Ctrl+Z or Cmd+Z: Undo
+            if ((event.ctrlKey || event.metaKey) && event.key === 'z' && !event.shiftKey) {
+                event.preventDefault();
+                undo();
+            }
+            // Ctrl+Y or Ctrl+Shift+Z or Cmd+Shift+Z: Redo
+            else if ((event.ctrlKey || event.metaKey) && (event.key === 'y' || (event.key === 'z' && event.shiftKey))) {
+                event.preventDefault();
+                redo();
+            }
+            // Left Arrow: Undo
+            else if (event.key === 'ArrowLeft') {
+                event.preventDefault();
+                undo();
+            }
+            // Right Arrow: Redo
+            else if (event.key === 'ArrowRight') {
+                event.preventDefault();
+                redo();
+            }
+        });
+
+        // Initialize canvas and button states
+        initCanvas();
+        updateHistoryButtons();
+        updateTurnLabel();
+    </script>
+
+</body>
+</html>
