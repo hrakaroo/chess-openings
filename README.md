@@ -13,7 +13,7 @@ A static web application for practicing chess openings. The tool captures board 
 - **Tree graph visualization** showing all explored positions as an opening tree with:
   - Optimal graph layout using Dagre algorithm (automatically minimizes edge crossings)
   - Curved edges connecting parent and child positions
-  - Color-coded nodes: light grey (white to move), dark grey (black to move), green (current position)
+  - Color-coded nodes: light grey (black to move), dark grey (white to move), green (current position)
   - Transposition detection (positions reachable via multiple move orders show multiple edges converging)
   - Click any node to jump to that board position
   - Hover over nodes to see the move that was played (e.g., "e4", "Nf3") and annotation
@@ -224,8 +224,8 @@ The tree graph on the right side of the screen visualizes your opening repertoir
 - **Edges** are curved lines showing legal moves between positions
 - **Root node** is the starting position at the top
 - **Node colors**:
-  - Light grey - positions where it's white's turn
-  - Dark grey - positions where it's black's turn
+  - Light grey - positions where it's black's turn
+  - Dark grey - positions where it's white's turn
   - Green - the current board position
 - **Transpositions**:
   - Multiple edges converging into the same node indicate transpositions (positions reachable via different move orders)
