@@ -400,8 +400,9 @@
 
         // Handle piece drop
         function onDrop(source, target) {
-            // Capture state before move
-            var stateBefore = boardToString();
+            // Use currentBoardState instead of boardToString() for stateBefore
+            // This ensures we're connecting to the correct node in the graph
+            var stateBefore = currentBoardState;
 
             var move = game.move({
                 from: source,
@@ -414,6 +415,8 @@
 
             // Capture state after move
             var stateAfter = boardToString();
+
+            console.log('Move made - From:', stateBefore, 'To:', stateAfter);
 
             // Add nodes and edge to graph
             addEdgeToGraph(stateBefore, stateAfter);
