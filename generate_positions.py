@@ -221,16 +221,22 @@ def compute_layout(G, algorithm='dot'):
 
 def export_positions(positions, output_file):
     """Export node positions to JSON file."""
-    # Convert positions to serializable format
+    # Find max Y to flip the coordinate system
+    # Graphviz: Y increases upward (math coordinates)
+    # Browser canvas: Y increases downward (screen coordinates)
+    y_values = [y for x, y in positions.values()]
+    max_y = max(y_values)
+
+    # Convert positions to serializable format with flipped Y
     json_positions = {
-        node: {"x": float(x), "y": float(y)}
+        node: {"x": float(x), "y": float(max_y - y)}
         for node, (x, y) in positions.items()
     }
 
     with open(output_file, 'w', encoding='utf-8') as f:
         json.dump(json_positions, f, indent=2)
 
-    print(f"Positions exported to {output_file}")
+    print(f"Positions exported to {output_file} (Y-axis flipped for canvas)")
 
 
 def main():
