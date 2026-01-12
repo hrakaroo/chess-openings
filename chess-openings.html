@@ -177,7 +177,6 @@
                     </div>
                     <div>
                         <button id="exportPgnBtn" style="margin-right: 10px;">Export PGN</button>
-                        <button id="cycleLayoutBtn" style="margin-right: 10px;">Cycle Layout</button>
                         <button id="fitViewBtn">Fit View</button>
                     </div>
                 </div>
@@ -1128,14 +1127,6 @@
             drawGraph();
         }
 
-        // Cycle through different layout configurations
-        function cycleLayout() {
-            currentLayoutIndex = (currentLayoutIndex + 1) % layoutConfigs.length;
-            var config = layoutConfigs[currentLayoutIndex];
-            console.log('Switched to layout:', config.name);
-            drawGraph();
-        }
-
         // Fit graph to view (scale and center to show all nodes)
         function fitView() {
             if (nodePositions.length === 0) {
@@ -1231,7 +1222,6 @@
         // Attach button handlers
         document.getElementById('exportBtn').addEventListener('click', exportAllStates);
         document.getElementById('exportPgnBtn').addEventListener('click', exportToPGN);
-        document.getElementById('cycleLayoutBtn').addEventListener('click', cycleLayout);
         document.getElementById('fitViewBtn').addEventListener('click', fitView);
         document.getElementById('newRouteBtn').addEventListener('click', createNewRoute);
         document.getElementById('resetAllBtn').addEventListener('click', resetBoardAndGraph);
@@ -1313,23 +1303,6 @@
             offsetY: 0
         };
 
-        // Layout configurations to cycle through
-        var layoutConfigs = [
-            { name: 'Network Simplex + DL', ranker: 'network-simplex', align: 'DL' },
-            { name: 'Network Simplex + UL', ranker: 'network-simplex', align: 'UL' },
-            { name: 'Network Simplex + UR', ranker: 'network-simplex', align: 'UR' },
-            { name: 'Network Simplex + DR', ranker: 'network-simplex', align: 'DR' },
-            { name: 'Tight Tree + DL', ranker: 'tight-tree', align: 'DL' },
-            { name: 'Tight Tree + UL', ranker: 'tight-tree', align: 'UL' },
-            { name: 'Tight Tree + UR', ranker: 'tight-tree', align: 'UR' },
-            { name: 'Tight Tree + DR', ranker: 'tight-tree', align: 'DR' },
-            { name: 'Longest Path + DL', ranker: 'longest-path', align: 'DL' },
-            { name: 'Longest Path + UL', ranker: 'longest-path', align: 'UL' },
-            { name: 'Longest Path + UR', ranker: 'longest-path', align: 'UR' },
-            { name: 'Longest Path + DR', ranker: 'longest-path', align: 'DR' }
-        ];
-        var currentLayoutIndex = 0;
-
         // Set canvas size to match display size
         function resizeCanvas() {
             var rect = canvas.getBoundingClientRect();
@@ -1371,19 +1344,16 @@
             // Create a new directed graph
             var g = new dagre.graphlib.Graph();
 
-            // Get current layout configuration
-            var config = layoutConfigs[currentLayoutIndex];
-
-            // Set graph properties for layout with current configuration
+            // Set graph properties for layout
             g.setGraph({
                 rankdir: 'TB',      // Top to bottom
-                align: config.align,
-                nodesep: 60,        // Horizontal spacing between nodes (increased)
+                align: 'DL',        // Down-left alignment
+                nodesep: 60,        // Horizontal spacing between nodes
                 edgesep: 10,        // Spacing between edges
-                ranksep: 100,       // Vertical spacing between ranks (increased)
+                ranksep: 100,       // Vertical spacing between ranks
                 marginx: 50,        // Horizontal margin
                 marginy: 50,        // Vertical margin
-                ranker: config.ranker
+                ranker: 'network-simplex'  // Network simplex algorithm
             });
 
             // Set default edge label
@@ -1405,7 +1375,7 @@
             // Compute the layout
             try {
                 dagre.layout(g);
-                console.log('Dagre layout computed successfully for', graphNodes.length, 'nodes using:', config.name);
+                console.log('Dagre layout computed successfully for', graphNodes.length, 'nodes');
             } catch (e) {
                 console.error('Dagre layout failed:', e);
                 return fallbackLayout();
@@ -1540,16 +1510,21 @@
 
             nodePositions = calculateNodePositions();
 
-            // Draw edges first with straight lines
+            // Draw edges first with curved lines
             ctx.strokeStyle = '#666';
             ctx.lineWidth = 2;
             graphEdges.forEach(function(edge) {
                 var fromPos = nodePositions[edge.from];
                 var toPos = nodePositions[edge.to];
 
+                // Calculate control point for quadratic curve
+                // Use midpoint horizontally, but parent's Y coordinate for smoother downward curves
+                var controlX = (fromPos.x + toPos.x) / 2;
+                var controlY = fromPos.y + (toPos.y - fromPos.y) * 0.3;
+
                 ctx.beginPath();
                 ctx.moveTo(fromPos.x, fromPos.y);
-                ctx.lineTo(toPos.x, toPos.y);
+                ctx.quadraticCurveTo(controlX, controlY, toPos.x, toPos.y);
                 ctx.stroke();
             });
 
