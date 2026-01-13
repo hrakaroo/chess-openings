@@ -752,6 +752,12 @@ function loadRoutesFromFile(fileContent, filename) {
     if (!isEditMode) {
         fitView();
     }
+
+    // Enable Start button in practice mode after loading routes
+    var startBtn = document.getElementById('startBtn');
+    if (startBtn) {
+        startBtn.disabled = false;
+    }
 }
 
 // Load pre-computed positions from JSON

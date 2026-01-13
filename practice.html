@@ -118,6 +118,15 @@
             background-color: #388E3C;
         }
 
+        #startBtn.stop-mode {
+            background-color: #F44336;
+            border-color: #D32F2F;
+        }
+
+        #startBtn.stop-mode:hover {
+            background-color: #D32F2F;
+        }
+
         #playAsSelect {
             padding: 8px 12px;
             font-size: 14px;
@@ -191,7 +200,7 @@
                             <option value="black">Black</option>
                         </select>
                     </div>
-                    <button id="startBtn">Start</button>
+                    <button id="startBtn" disabled>Start</button>
                     <div style="display: flex; align-items: center; gap: 5px;">
                         <label for="correctField" style="font-weight: bold;">Correct:</label>
                         <input type="text" id="correctField" value="0" readonly style="width: 50px; text-align: center; padding: 5px; border: 1px solid #ccc; border-radius: 4px; background-color: #f9f9f9;">
@@ -209,7 +218,6 @@
                     <div>
                         <button id="loadBtn">Load Routes</button>
                         <input type="file" id="fileInput" accept=".txt" style="display: none;">
-                        <div id="loadedFileLabel"></div>
                     </div>
                     <div>
                         <button id="fitViewBtn">Fit View</button>
@@ -218,6 +226,7 @@
                 <div class="graph-container">
                     <canvas id="graphCanvas" width="567" height="600" style="cursor: default;"></canvas>
                 </div>
+                <div id="loadedFileLabel"></div>
             </td>
         </tr>
     </tbody></table>
@@ -238,12 +247,202 @@
     <script src="chess-common.js"></script>
 
     <script>
-        // Initialize the chessboard (read-only in practice mode)
+        // Practice mode state
+        var practiceActive = false;
+        var userColor = 'white';  // 'white' or 'black'
+        var correctCount = 0;
+        var bestCount = 0;
+        var currentStreak = 0;
+        var mistakeInCurrentRun = false;
+        var childQueues = {};  // Map from state to shuffled queue of children
+
+        // Shuffle an array using Fisher-Yates algorithm
+        function shuffleArray(array) {
+            var shuffled = array.slice(); // Create a copy
+            for (var i = shuffled.length - 1; i > 0; i--) {
+                var j = Math.floor(Math.random() * (i + 1));
+                var temp = shuffled[i];
+                shuffled[i] = shuffled[j];
+                shuffled[j] = temp;
+            }
+            return shuffled;
+        }
+
+        // Get all valid child states from current state
+        function getValidChildren(state) {
+            var children = [];
+            var stateIndex = stateToIndex.get(state);
+            if (stateIndex === undefined) return children;
+
+            for (var i = 0; i < graphEdges.length; i++) {
+                if (graphEdges[i].from === stateIndex) {
+                    children.push(graphNodes[graphEdges[i].to]);
+                }
+            }
+            return children;
+        }
+
+        // Get next child from shuffled queue (refills when empty)
+        function getNextChild(state) {
+            // Check if we have a queue for this state
+            if (!childQueues[state] || childQueues[state].length === 0) {
+                // Get all children and shuffle them
+                var children = getValidChildren(state);
+                if (children.length === 0) return null;
+                childQueues[state] = shuffleArray(children);
+            }
+
+            // Pop and return the next child from the queue
+            return childQueues[state].shift();
+        }
+
+        // Check if a state is terminal (no outgoing edges)
+        function isTerminalState(state) {
+            return getValidChildren(state).length === 0;
+        }
+
+        // Make computer move
+        function makeComputerMove() {
+            var targetState = getNextChild(currentBoardState);
+
+            if (targetState === null) {
+                // Terminal state - only increment if no mistakes in this run
+                if (!mistakeInCurrentRun) {
+                    correctCount++;
+                    currentStreak++;
+                    if (currentStreak > bestCount) {
+                        bestCount = currentStreak;
+                        document.getElementById('bestField').value = bestCount;
+                    }
+                    document.getElementById('correctField').value = correctCount;
+                }
+
+                // Show evaluation for terminal state
+                updateEvaluationLabel();
+
+                // Reset for next practice round
+                setTimeout(function() {
+                    game.reset();
+                    board.position('start');
+                    currentBoardState = 'start[w]';
+                    mistakeInCurrentRun = false;  // Reset mistake flag for new run
+                    updateEvaluationLabel();
+                    drawGraph();
+
+                    // If user is black, computer makes first move
+                    if (userColor === 'black') {
+                        setTimeout(makeComputerMove, 500);
+                    }
+                }, 2000);
+                return;
+            }
+
+            // Load the target state (already selected from shuffled queue)
+            loadState(targetState, false);
+            updateEvaluationLabel();
+        }
+
+        // Prevent picking up pieces if not user's turn or wrong color
+        function onDragStart(source, piece, position, orientation) {
+            if (!practiceActive) return false;
+            if (game.game_over()) return false;
+
+            // Only allow moving user's color
+            if ((userColor === 'white' && piece.search(/^b/) !== -1) ||
+                (userColor === 'black' && piece.search(/^w/) !== -1)) {
+                return false;
+            }
+
+            // Check if it's user's turn
+            if ((userColor === 'white' && game.turn() === 'b') ||
+                (userColor === 'black' && game.turn() === 'w')) {
+                return false;
+            }
+        }
+
+        // On piece drop - validate against graph
+        function onDrop(source, target) {
+            if (!practiceActive) return 'snapback';
+
+            var stateBefore = currentBoardState;
+
+            // Try to make the move
+            var move = game.move({
+                from: source,
+                to: target,
+                promotion: 'q'
+            });
+
+            if (move === null) return 'snapback';
+
+            // Get state after move
+            var stateAfter = boardToString();
+
+            // Check if this state is a valid child in the graph
+            var validChildren = getValidChildren(stateBefore);
+            var isValid = validChildren.indexOf(stateAfter) !== -1;
+
+            if (!isValid) {
+                // Invalid move - mark mistake and reset counters
+                game.undo();
+                mistakeInCurrentRun = true;  // Mark that mistake was made in this run
+                currentStreak = 0;  // Reset streak on mistake
+                correctCount = 0;  // Reset correct count on mistake
+                document.getElementById('correctField').value = correctCount;
+                return 'snapback';
+            }
+
+            // Valid move - update state
+            currentBoardState = stateAfter;
+            updateEvaluationLabel();
+            drawGraph();
+
+            // Check if user reached terminal state
+            if (isTerminalState(stateAfter)) {
+                // Only increment if no mistakes in this run
+                if (!mistakeInCurrentRun) {
+                    correctCount++;
+                    currentStreak++;
+                    if (currentStreak > bestCount) {
+                        bestCount = currentStreak;
+                        document.getElementById('bestField').value = bestCount;
+                    }
+                    document.getElementById('correctField').value = correctCount;
+                }
+
+                // Reset for next round
+                setTimeout(function() {
+                    game.reset();
+                    board.position('start');
+                    currentBoardState = 'start[w]';
+                    mistakeInCurrentRun = false;  // Reset mistake flag for new run
+                    updateEvaluationLabel();
+                    drawGraph();
+
+                    if (userColor === 'black') {
+                        setTimeout(makeComputerMove, 500);
+                    }
+                }, 2000);
+            } else {
+                // Computer makes next move
+                setTimeout(makeComputerMove, 500);
+            }
+        }
+
+        // Update position after piece animation
+        function onSnapEnd() {
+            board.position(game.fen());
+        }
+
+        // Initialize the chessboard
         var config = {
-            draggable: false,  // Read-only board
+            draggable: false,
             position: 'start',
             orientation: 'white',
-            pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png'
+            pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png',
+            onDragStart: onDragStart,
+            onDrop: onDrop,
+            onSnapEnd: onSnapEnd
         };
 
         board = Chessboard('board', config);
@@ -269,9 +468,71 @@
             event.target.value = '';
         });
 
-        // Start button handler (to be implemented)
+        // Start/Stop button handler
         document.getElementById('startBtn').addEventListener('click', function() {
-            console.log('Start button clicked - functionality to be implemented');
+            var startBtn = document.getElementById('startBtn');
+
+            if (practiceActive) {
+                // Stop practice mode
+                practiceActive = false;
+
+                // Recreate board as non-draggable
+                board.destroy();
+                board = Chessboard('board', {
+                    draggable: false,
+                    position: 'start',
+                    orientation: 'white',
+                    pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png'
+                });
+
+                startBtn.innerText = 'Start';
+                startBtn.classList.remove('stop-mode');
+
+                // Reset game
+                game.reset();
+                board.position('start');
+                currentBoardState = 'start[w]';
+                currentStreak = 0;
+                drawGraph();
+            } else {
+                // Start practice mode
+                userColor = document.getElementById('playAsSelect').value;
+
+                // Reset game
+                game.reset();
+                currentBoardState = 'start[w]';
+                currentStreak = 0;
+                mistakeInCurrentRun = false;
+                childQueues = {};  // Clear shuffled queues for fresh start
+
+                // Recreate board as draggable
+                board.destroy();
+                board = Chessboard('board', {
+                    draggable: true,
+                    position: 'start',
+                    orientation: userColor,
+                    pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png',
+                    onDragStart: onDragStart,
+                    onDrop: onDrop,
+                    onSnapEnd: onSnapEnd
+                });
+
+                // Enable practice mode
+                practiceActive = true;
+
+                // Change button to Stop with red background
+                startBtn.innerText = 'Stop';
+                startBtn.classList.add('stop-mode');
+
+                // Hide evaluation label at start
+                updateEvaluationLabel();
+                drawGraph();
+
+                // If playing as black, computer makes first move
+                if (userColor === 'black') {
+                    setTimeout(makeComputerMove, 500);
+                }
+            }
         });
 
         // Initialize canvas
