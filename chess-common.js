@@ -746,6 +746,12 @@ function loadRoutesFromFile(fileContent, filename) {
     }
 
     drawGraph();
+
+    // Auto-fit view in practice and view modes (not edit mode)
+    var isEditMode = typeof updateHistoryButtons === 'function';
+    if (!isEditMode) {
+        fitView();
+    }
 }
 
 // Load pre-computed positions from JSON
@@ -1009,6 +1015,12 @@ function setupCanvasEventListeners() {
 
     // Click handler - navigate to node
     canvas.addEventListener('click', function(event) {
+        // Disable node clicking in practice mode
+        var isPracticeMode = document.getElementById('correctField') !== null;
+        if (isPracticeMode) {
+            return;
+        }
+
         var rect = canvas.getBoundingClientRect();
         var mouseX = event.clientX - rect.left;
         var mouseY = event.clientY - rect.top;

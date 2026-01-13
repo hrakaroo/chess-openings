@@ -105,6 +105,81 @@
             background-color: #FFA000 !important;
         }
 
+        #newRouteBtn {
+            background-color: #FF5722;
+            color: white;
+            border-color: #E64A19;
+        }
+
+        #newRouteBtn:hover {
+            background-color: #E64A19;
+        }
+
+        #resetGraphBtn {
+            background-color: #F44336;
+            color: white;
+            border-color: #D32F2F;
+        }
+
+        #resetGraphBtn:hover {
+            background-color: #D32F2F;
+        }
+
+        #undoBtn, #redoBtn {
+            background-color: #607D8B;
+            color: white;
+            border-color: #455A64;
+        }
+
+        #undoBtn:hover, #redoBtn:hover {
+            background-color: #455A64;
+        }
+
+        #undoBtn:disabled, #redoBtn:disabled {
+            background-color: #f5f5f5;
+            color: #999;
+        }
+
+        #saveAnnotationBtn {
+            background-color: #4CAF50;
+            color: white;
+            border-color: #388E3C;
+        }
+
+        #saveAnnotationBtn:hover {
+            background-color: #388E3C;
+        }
+
+        #exportBtn {
+            background-color: #2196F3;
+            color: white;
+            border-color: #1976D2;
+        }
+
+        #exportBtn:hover {
+            background-color: #1976D2;
+        }
+
+        #loadBtn {
+            background-color: #2196F3;
+            color: white;
+            border-color: #1976D2;
+        }
+
+        #loadBtn:hover {
+            background-color: #1976D2;
+        }
+
+        #fitViewBtn {
+            background-color: #9E9E9E;
+            color: white;
+            border-color: #757575;
+        }
+
+        #fitViewBtn:hover {
+            background-color: #757575;
+        }
+
         #evaluationLabel {
             display: none;
             padding: 12px 20px;
@@ -139,7 +214,6 @@
                 <div style="margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; width: 600px;">
                     <div>
                         <button id="newRouteBtn">Reset Board</button>
-                        <button id="resetAllBtn" style="margin-left: 10px;">Reset Board and Graph</button>
                         <span id="turnLabel" style="margin-left: 20px;">White</span>
                     </div>
                     <div>
@@ -163,7 +237,7 @@
                         <div id="loadedFileLabel"></div>
                     </div>
                     <div>
-                        <button id="exportPgnBtn" style="margin-right: 10px;">Export PGN</button>
+                        <button id="resetGraphBtn" style="margin-right: 10px;">Reset Graph</button>
                         <button id="fitViewBtn">Fit View</button>
                     </div>
                 </div>
@@ -400,10 +474,9 @@
 
         // Button handlers
         document.getElementById('exportBtn').addEventListener('click', exportAllStates);
-        document.getElementById('exportPgnBtn').addEventListener('click', exportToPGN);
         document.getElementById('fitViewBtn').addEventListener('click', fitView);
         document.getElementById('newRouteBtn').addEventListener('click', createNewRoute);
-        document.getElementById('resetAllBtn').addEventListener('click', resetBoardAndGraph);
+        document.getElementById('resetGraphBtn').addEventListener('click', resetBoardAndGraph);
         document.getElementById('undoBtn').addEventListener('click', undo);
         document.getElementById('redoBtn').addEventListener('click', redo);
         document.getElementById('saveAnnotationBtn').addEventListener('click', saveAnnotation);

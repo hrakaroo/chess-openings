@@ -1,6 +1,25 @@
 # Chess Opening Practice Tool
 
-A static web application for practicing chess openings. The tool captures board state transitions as you explore different opening lines.
+A static web application for practicing chess openings.
+
+## Motivation
+
+I was using chessreps.com to try to learn the variations of the London
+and started to notice that several of the variations seemed to share
+some common board setups.  Like a pawn move by black to e6, followed
+by a move by white to b3, followed by a move by black to f6 VS f6, b3
+and then e6.  The ordering is different, but they both end up with the
+same end result.
+
+This was causing some confusions and I was having a hard time
+visualizing what I was learning. So my first step was just to see if I
+could render each of these in a graph to *see* the overlaps. From
+there it wasn't hard to expand it to a system that supported practice.
+
+Also, of note, the practice for this is different than the drills on
+chessreps.com The ones on chessreps.com are testing for specific
+variations, this one tests for specific results. It doesn't care so
+much how to get there.
 
 ## Features
 

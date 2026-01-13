@@ -85,24 +85,84 @@
             background-color: #FFA000 !important;
         }
 
-        .placeholder {
-            margin: 40px auto;
-            padding: 40px;
-            background-color: #fffde7;
-            border: 2px dashed #fbc02d;
-            border-radius: 8px;
-            max-width: 600px;
+        button:disabled {
+            background-color: #f5f5f5;
+            color: #999;
+            cursor: not-allowed;
         }
 
-        .placeholder h2 {
-            color: #f57f17;
-            margin-top: 0;
+        .graph-container {
+            border: 1px solid #ccc;
+            display: inline-block;
+            background-color: #fafafa;
         }
 
-        .placeholder p {
+        #loadedFileLabel {
+            margin-top: 10px;
+            font-size: 12px;
             color: #666;
+            font-style: italic;
+        }
+
+        .board-readonly {
+            opacity: 0.9;
+        }
+
+        #startBtn {
+            background-color: #4CAF50;
+            color: white;
+            border-color: #388E3C;
+        }
+
+        #startBtn:hover {
+            background-color: #388E3C;
+        }
+
+        #playAsSelect {
+            padding: 8px 12px;
             font-size: 14px;
-            line-height: 1.6;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: white;
+            cursor: pointer;
+        }
+
+        #playAsSelect:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+
+        #loadBtn {
+            background-color: #2196F3;
+            color: white;
+            border-color: #1976D2;
+        }
+
+        #loadBtn:hover {
+            background-color: #1976D2;
+        }
+
+        #fitViewBtn {
+            background-color: #9E9E9E;
+            color: white;
+            border-color: #757575;
+        }
+
+        #fitViewBtn:hover {
+            background-color: #757575;
+        }
+
+        #evaluationLabel {
+            display: none;
+            padding: 12px 20px;
+            background-color: #E53935;
+            color: white;
+            border-radius: 4px;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
     </style>
 </head>
@@ -120,23 +180,47 @@
         </div>
     </div>
 
-    <div class="placeholder">
-        <h2>🚧 Practice Mode - Coming Soon!</h2>
-        <p>
-            This mode will allow you to practice your opening repertoire interactively.
-            Features will include:
-        </p>
-        <ul style="text-align: left; max-width: 400px; margin: 20px auto;">
-            <li>Load your opening routes</li>
-            <li>Practice making moves against the repertoire</li>
-            <li>Immediate feedback on correct/incorrect moves</li>
-            <li>Track your progress and accuracy</li>
-            <li>Spaced repetition for difficult lines</li>
-        </ul>
-        <p style="margin-top: 30px;">
-            For now, use <strong>View Mode</strong> to explore routes or <strong>Edit Mode</strong> to build your repertoire.
-        </p>
-    </div>
+    <table style="margin: 0 auto; border-spacing: 20px;">
+        <tbody><tr>
+            <td style="vertical-align: top;">
+                <div style="margin-bottom: 10px; width: 600px; display: flex; align-items: center; gap: 20px;">
+                    <div style="display: flex; align-items: center; gap: 5px;">
+                        <label for="playAsSelect" style="font-weight: bold;">Play as:</label>
+                        <select id="playAsSelect">
+                            <option value="white" selected>White</option>
+                            <option value="black">Black</option>
+                        </select>
+                    </div>
+                    <button id="startBtn">Start</button>
+                    <div style="display: flex; align-items: center; gap: 5px;">
+                        <label for="correctField" style="font-weight: bold;">Correct:</label>
+                        <input type="text" id="correctField" value="0" readonly style="width: 50px; text-align: center; padding: 5px; border: 1px solid #ccc; border-radius: 4px; background-color: #f9f9f9;">
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 5px;">
+                        <label for="bestField" style="font-weight: bold;">Best:</label>
+                        <input type="text" id="bestField" value="0" readonly style="width: 50px; text-align: center; padding: 5px; border: 1px solid #ccc; border-radius: 4px; background-color: #f9f9f9;">
+                    </div>
+                </div>
+                <div id="board" class="board-readonly" style="width: 600px;"></div>
+                <div id="evaluationLabel"></div>
+            </td>
+            <td style="vertical-align: top;">
+                <div style="margin-bottom: 10px; display: flex; justify-content: space-between; align-items: flex-start;">
+                    <div>
+                        <button id="loadBtn">Load Routes</button>
+                        <input type="file" id="fileInput" accept=".txt" style="display: none;">
+                        <div id="loadedFileLabel"></div>
+                    </div>
+                    <div>
+                        <button id="fitViewBtn">Fit View</button>
+                    </div>
+                </div>
+                <div class="graph-container">
+                    <canvas id="graphCanvas" width="567" height="600" style="cursor: default;"></canvas>
+                </div>
+            </td>
+        </tr>
+    </tbody></table>
 
     <!-- jQuery (required by chessboard.js) -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -154,8 +238,44 @@
     <script src="chess-common.js"></script>
 
     <script>
-        // Practice mode will be implemented here
-        console.log('Practice mode - placeholder page');
+        // Initialize the chessboard (read-only in practice mode)
+        var config = {
+            draggable: false,  // Read-only board
+            position: 'start',
+            orientation: 'white',
+            pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png'
+        };
+
+        board = Chessboard('board', config);
+
+        // Button handlers
+        document.getElementById('fitViewBtn').addEventListener('click', fitView);
+
+        // Load button triggers file input
+        document.getElementById('loadBtn').addEventListener('click', function() {
+            document.getElementById('fileInput').click();
+        });
+
+        // Handle file selection
+        document.getElementById('fileInput').addEventListener('change', function(event) {
+            var file = event.target.files[0];
+            if (file) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    loadRoutesFromFile(e.target.result, file.name);
+                };
+                reader.readAsText(file);
+            }
+            event.target.value = '';
+        });
+
+        // Start button handler (to be implemented)
+        document.getElementById('startBtn').addEventListener('click', function() {
+            console.log('Start button clicked - functionality to be implemented');
+        });
+
+        // Initialize canvas
+        initCanvas();
     </script>
 
 </body>
