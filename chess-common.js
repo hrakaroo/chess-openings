@@ -33,7 +33,7 @@ function addNodeToGraph(state) {
 }
 
 // Add an edge to the graph if it doesn't exist
-function addEdgeToGraph(fromState, toState, annotation) {
+function addEdgeToGraph(fromState, toState, annotation, skipDraw) {
     var fromIndex = addNodeToGraph(fromState);
     var toIndex = addNodeToGraph(toState);
 
@@ -63,7 +63,9 @@ function addEdgeToGraph(fromState, toState, annotation) {
         lastEdgeIndex = existingEdgeIndex;
     }
 
-    drawGraph();
+    if (!skipDraw) {
+        drawGraph();
+    }
 }
 
 // Remove orphaned nodes (nodes with no incoming or outgoing edges)
@@ -169,7 +171,8 @@ function boardToString() {
     var emptyCount = 0;
 
     // Read board from rank 8 to rank 1 (top to bottom)
-    for (var rank = 7; rank >= 0; rank--) {
+    // board[0] = rank 8, board[7] = rank 1
+    for (var rank = 0; rank < 8; rank++) {
         for (var file = 0; file < 8; file++) {
             var square = board[rank][file];
 
@@ -365,7 +368,24 @@ function loadState(state, addToHistoryFlag) {
         updateTurnLabel();
     }
 
+    // Update evaluation label if present
+    updateEvaluationLabel();
+
     drawGraph();
+}
+
+// Update evaluation label with current position's evaluation
+function updateEvaluationLabel() {
+    var evalLabel = document.getElementById('evaluationLabel');
+    if (!evalLabel) return;
+
+    var evaluation = nodeEvaluations[currentBoardState];
+    if (evaluation) {
+        evalLabel.textContent = evaluation;
+        evalLabel.style.display = 'block';
+    } else {
+        evalLabel.style.display = 'none';
+    }
 }
 
 // Validate a state string format
@@ -399,9 +419,12 @@ function exportAllStates() {
         return;
     }
 
-    // Build position definitions if we have precomputed positions
+    // Check if we're in edit mode
+    var isEditMode = typeof updateHistoryButtons === 'function';
+
+    // Build position definitions (only in View mode, not Edit mode)
     var positionLines = [];
-    if (precomputedPositions && Object.keys(precomputedPositions).length > 0) {
+    if (!isEditMode && precomputedPositions && Object.keys(precomputedPositions).length > 0) {
         for (var state in precomputedPositions) {
             if (precomputedPositions.hasOwnProperty(state)) {
                 var pos = precomputedPositions[state];
@@ -609,6 +632,8 @@ function loadRoutesFromFile(fileContent, filename) {
     lastEdgeIndex = -1;
     precomputedPositions = {};
     nodeEvaluations = {};
+    cachedDagrePositions = null;
+    lastGraphStructure = null;
 
     // Parse file in two passes: first positions, then transitions
     var invalidCount = 0;
@@ -637,12 +662,12 @@ function loadRoutesFromFile(fileContent, filename) {
                     annotation = '';
                 }
 
-                // Validate and add to graph
+                // Validate and add to graph (skip drawing during bulk load)
                 var fromValid = validateState(fromState);
                 var toValid = validateState(toState);
 
                 if (fromValid.valid && toValid.valid) {
-                    addEdgeToGraph(fromState, toState, annotation);
+                    addEdgeToGraph(fromState, toState, annotation, true);
                 } else {
                     invalidCount++;
                     if (!fromValid.valid) {
@@ -658,36 +683,41 @@ function loadRoutesFromFile(fileContent, filename) {
             }
         } else if (line.indexOf(':') !== -1) {
             // This might be a position definition: "state : x, y" or "state : x, y, eval"
-            var colonPos = line.indexOf(':');
-            var state = line.substring(0, colonPos).trim();
-            var coords = line.substring(colonPos + 1).trim();
+            // In Edit mode, skip positions and evaluations (use dynamic layout)
+            var isEditMode = typeof updateHistoryButtons === 'function';
 
-            // Try to parse coordinates and optional evaluation
-            var coordParts = coords.split(',');
-            if (coordParts.length >= 2) {
-                var x = parseFloat(coordParts[0].trim());
-                var y = parseFloat(coordParts[1].trim());
+            if (!isEditMode) {
+                var colonPos = line.indexOf(':');
+                var state = line.substring(0, colonPos).trim();
+                var coords = line.substring(colonPos + 1).trim();
 
-                if (!isNaN(x) && !isNaN(y)) {
-                    // Valid position definition
-                    var stateValid = validateState(state);
-                    if (stateValid.valid) {
-                        precomputedPositions[state] = {x: x, y: y};
+                // Try to parse coordinates and optional evaluation
+                var coordParts = coords.split(',');
+                if (coordParts.length >= 2) {
+                    var x = parseFloat(coordParts[0].trim());
+                    var y = parseFloat(coordParts[1].trim());
 
-                        // Check if there's an evaluation (3rd part)
-                        if (coordParts.length >= 3) {
-                            var evaluation = coordParts[2].trim();
-                            if (evaluation.length > 0) {
-                                nodeEvaluations[state] = evaluation;
+                    if (!isNaN(x) && !isNaN(y)) {
+                        // Valid position definition
+                        var stateValid = validateState(state);
+                        if (stateValid.valid) {
+                            precomputedPositions[state] = {x: x, y: y};
+
+                            // Check if there's an evaluation (3rd part)
+                            if (coordParts.length >= 3) {
+                                var evaluation = coordParts[2].trim();
+                                if (evaluation.length > 0) {
+                                    nodeEvaluations[state] = evaluation;
+                                }
                             }
-                        }
 
-                        positionCount++;
+                            positionCount++;
+                        } else {
+                            console.warn('Line ' + (i + 1) + ': Invalid state in position definition - ' + stateValid.error);
+                        }
                     } else {
-                        console.warn('Line ' + (i + 1) + ': Invalid state in position definition - ' + stateValid.error);
+                        console.warn('Line ' + (i + 1) + ': Invalid coordinates in position definition');
                     }
-                } else {
-                    console.warn('Line ' + (i + 1) + ': Invalid coordinates in position definition');
                 }
             }
         }
@@ -697,6 +727,9 @@ function loadRoutesFromFile(fileContent, filename) {
     game.reset();
     board.position('start');
     currentBoardState = 'start[w]';
+
+    // Update evaluation label
+    updateEvaluationLabel();
 
     // Update loaded file label if present
     var label = document.getElementById('loadedFileLabel');
@@ -742,6 +775,8 @@ var canvas = null;
 var ctx = null;
 var nodePositions = [];
 var nodeRadius = 15;
+var cachedDagrePositions = null;  // Cache Dagre layout results
+var lastGraphStructure = null;    // Track graph changes
 
 // Node colors
 var NODE_COLORS = {
@@ -838,29 +873,8 @@ function drawGraph() {
 
     if (graphNodes.length === 0) return;
 
-    // Compute layout
-    var g = new dagre.graphlib.Graph();
-    g.setGraph({
-        rankdir: 'TB',
-        ranksep: 80,
-        nodesep: 60,
-        ranker: 'network-simplex',
-        align: 'DL'
-    });
-    g.setDefaultEdgeLabel(function() { return {}; });
-
-    // Add nodes
-    for (var i = 0; i < graphNodes.length; i++) {
-        g.setNode(i, {width: nodeRadius * 2, height: nodeRadius * 2});
-    }
-
-    // Add edges
-    for (var j = 0; j < graphEdges.length; j++) {
-        g.setEdge(graphEdges[j].from, graphEdges[j].to);
-    }
-
     // Use pre-computed positions if available
-    if (precomputedPositions) {
+    if (precomputedPositions && Object.keys(precomputedPositions).length > 0) {
         nodePositions = [];
         for (var k = 0; k < graphNodes.length; k++) {
             var state = graphNodes[k];
@@ -870,28 +884,55 @@ function drawGraph() {
                     y: precomputedPositions[state].y,
                     state: state
                 });
-            } else {
-                // Fallback to Dagre for missing nodes
-                dagre.layout(g);
-                var node = g.node(k);
-                if (node) {
-                    nodePositions.push({x: node.x, y: node.y, state: state});
-                }
             }
         }
     } else {
-        // Compute layout with Dagre
-        dagre.layout(g);
-        nodePositions = [];
-        for (var m = 0; m < graphNodes.length; m++) {
-            var node = g.node(m);
-            if (node) {
-                nodePositions.push({
-                    x: node.x,
-                    y: node.y,
-                    state: graphNodes[m]
-                });
+        // Check if graph structure changed
+        var currentStructure = graphNodes.length + '-' + graphEdges.length;
+        var structureChanged = currentStructure !== lastGraphStructure;
+
+        // Use cached positions if graph hasn't changed
+        if (!structureChanged && cachedDagrePositions) {
+            nodePositions = cachedDagrePositions;
+        } else {
+            // Build Dagre graph structure only when we need to compute layout
+            var g = new dagre.graphlib.Graph();
+            g.setGraph({
+                rankdir: 'TB',
+                ranksep: 80,
+                nodesep: 60,
+                ranker: 'network-simplex',
+                align: 'DL'
+            });
+            g.setDefaultEdgeLabel(function() { return {}; });
+
+            // Add nodes
+            for (var i = 0; i < graphNodes.length; i++) {
+                g.setNode(i, {width: nodeRadius * 2, height: nodeRadius * 2});
             }
+
+            // Add edges
+            for (var j = 0; j < graphEdges.length; j++) {
+                g.setEdge(graphEdges[j].from, graphEdges[j].to);
+            }
+
+            // Compute layout with Dagre
+            dagre.layout(g);
+            nodePositions = [];
+            for (var m = 0; m < graphNodes.length; m++) {
+                var node = g.node(m);
+                if (node) {
+                    nodePositions.push({
+                        x: node.x,
+                        y: node.y,
+                        state: graphNodes[m]
+                    });
+                }
+            }
+
+            // Cache the results
+            cachedDagrePositions = nodePositions;
+            lastGraphStructure = currentStructure;
         }
     }
 
@@ -1092,15 +1133,7 @@ function getMoveTooltip(state) {
         return 'Starting position';
     }
 
-    // Check if this node has an evaluation
-    var evaluation = nodeEvaluations[state];
-
-    // If node has evaluation, show ONLY the evaluation
-    if (evaluation) {
-        return evaluation;
-    }
-
-    // Find the edge that leads to this state (for non-evaluated nodes)
+    // Find the edge that leads to this state
     for (var i = 0; i < graphEdges.length; i++) {
         var edge = graphEdges[i];
         if (graphNodes[edge.to] === state) {

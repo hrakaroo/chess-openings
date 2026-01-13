@@ -101,6 +101,19 @@
         .mode-btn-practice:hover {
             background-color: #FFA000 !important;
         }
+
+        #evaluationLabel {
+            display: none;
+            padding: 12px 20px;
+            background-color: #E53935;
+            color: white;
+            border-radius: 4px;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
     </style>
 </head>
 <body>
@@ -121,6 +134,7 @@
         <tbody><tr>
             <td style="vertical-align: top;">
                 <div id="board" class="board-readonly" style="width: 600px;"></div>
+                <div id="evaluationLabel"></div>
             </td>
             <td style="vertical-align: top;">
                 <div style="margin-bottom: 10px; display: flex; justify-content: space-between; align-items: flex-start;">
@@ -161,6 +175,7 @@
         var config = {
             draggable: false,  // Read-only board
             position: 'start',
+            orientation: 'white',
             pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png'
         };
 
