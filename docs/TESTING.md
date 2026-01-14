@@ -64,7 +64,7 @@ Total tests: 10
 
 #### Test 1.1: Empty File
 1. Create an empty text file: `touch empty.txt`
-2. Open `edit.html` in browser
+2. Open `build.html` in browser
 3. Click "Load Routes" and select `empty.txt`
 4. **Expected:** Error modal appears with title "Empty File"
 5. Modal should have "Close" button and detailed error message
@@ -92,7 +92,7 @@ Total tests: 10
 ### 2. Test Loading Indicators
 
 #### Test 2.1: File Loading
-1. Open `edit.html`
+1. Open `build.html`
 2. Click "Load Routes" and select a large file (e.g., `Openings/London 1-7.txt`)
 3. **Expected:**
    - Loading spinner appears immediately
@@ -113,7 +113,7 @@ Total tests: 10
 
 #### Test 3.1: FEN Utils Module
 1. Open browser dev console (F12)
-2. Open `edit.html`
+2. Open `build.html`
 3. In console, type: `normalizeFEN('rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq d3 5 10')`
 4. **Expected:** Returns `'rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq - 0 1'`
 
@@ -122,7 +122,7 @@ Total tests: 10
 2. **Expected:** Error modal appears with expandable "Technical Details"
 
 #### Test 3.3: Module Loading Order
-1. View page source of `edit.html`
+1. View page source of `build.html`
 2. **Expected:** Scripts loaded in order:
    ```html
    <script src="fen-utils.js"></script>
@@ -134,7 +134,7 @@ Total tests: 10
 
 #### Test 4.1: Large Graph Performance
 1. Create a file with 500+ moves (or use a large opening file)
-2. Load in `edit.html`
+2. Load in `build.html`
 3. Make several rapid moves
 4. **Expected:**
    - Graph updates smoothly
@@ -194,13 +194,13 @@ Total tests: 10
 ## Integration Tests
 
 ### Test Scenario 1: Complete Workflow
-1. Open `edit.html`
+1. Open `build.html`
 2. Make moves: d4, d5, Bf4, Nf6
 3. Add annotation to Bf4: "London System"
 4. Click "Export Routes"
 5. Save as `test-export.txt`
 6. Close browser
-7. Re-open `edit.html`
+7. Re-open `build.html`
 8. Load `test-export.txt`
 9. **Expected:**
    - All moves present
@@ -209,7 +209,7 @@ Total tests: 10
    - Success notification appears
 
 ### Test Scenario 2: Error Recovery
-1. Open `edit.html`
+1. Open `build.html`
 2. Try to load invalid file
 3. See error modal
 4. Click "Close" on modal

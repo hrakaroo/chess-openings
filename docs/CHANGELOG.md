@@ -6,6 +6,35 @@ All notable changes to the Chess Openings project.
 
 ### Added - 2026-01-14
 
+#### Welcome Page
+- **Feature**: New `index.html` landing page with mode selection
+- **Design**: Beautiful gradient background (purple to pink)
+- **Cards**: Three interactive mode cards (Explore, Build, Practice)
+- **Icons**: Visual icons for each mode (🔍 🛠️ ⚔️)
+- **UX**: Hover effects and smooth transitions
+
+#### Directory Restructure
+- **js/**: All JavaScript modules organized in dedicated folder
+  - `js/chess-common.js` - Core chess logic
+  - `js/fen-utils.js` - FEN utilities
+  - `js/ui-feedback.js` - UI feedback
+- **docs/**: All documentation in dedicated folder
+  - `docs/FORMAT.md`
+  - `docs/IMPROVEMENTS.md`
+  - `docs/TESTING.md`
+  - `docs/CHANGELOG.md`
+- **tests/**: All test files consolidated
+  - `tests/normalization.test.js`
+  - `tests/test_evaluate.py`
+  - `tests/test-export.html`
+- **examples/**: Folder for sample opening files
+
+**Benefits:**
+- Clean root directory (only HTML files visible)
+- Logical organization by file type
+- Professional project structure
+- Easier to navigate and maintain
+
 #### Export with Title Dialog
 - **Feature**: When exporting routes, users are now prompted to enter a title for the opening
 - **UI**: Professional modal dialog with input field (using `showPrompt()` from ui-feedback.js)
@@ -30,7 +59,7 @@ All notable changes to the Chess Openings project.
 - Professional modal dialogs instead of basic `prompt()`
 
 #### showPrompt() Function
-- **Added to**: `ui-feedback.js`
+- **Added to**: `js/ui-feedback.js`
 - **Purpose**: Display input dialogs with custom title, message, and default value
 - **Returns**: Promise that resolves with user input or null if cancelled
 - **Styling**: Matches other modal dialogs (showError, showSuccess)
@@ -44,6 +73,15 @@ var result = await showPrompt(title, message, defaultValue);
 ```
 
 ### Changed - 2026-01-14
+
+#### Mode Pages Redesigned
+- **Renamed**: "View Mode" → "Explore Openings" (`view.html` → `explore.html`)
+- **Renamed**: "Edit Mode" → "Build an Opening" (`edit.html` → `build.html`)
+- **Renamed**: "Practice Mode" → "Practice Openings" (filename unchanged)
+- **Theme**: All pages now match welcome page gradient theme
+- **Navigation**: Removed mode switcher panel, added "← Back to Home" link
+- **Styling**: White rounded containers on purple gradient background
+- **Consistency**: Unified visual design across all pages
 
 #### Export Function is Now Async
 - `exportAllStates()` changed from synchronous to async function
@@ -73,9 +111,9 @@ var result = await showPrompt(title, message, defaultValue);
 - Files: `tests/normalization.test.js`, `tests/test_evaluate.py`
 
 #### Module Extraction
-- **fen-utils.js**: FEN normalization, validation, and utilities
-- **ui-feedback.js**: Loading indicators, error modals, success toasts
-- All HTML files updated to load modules in correct order
+- **js/fen-utils.js**: FEN normalization, validation, and utilities
+- **js/ui-feedback.js**: Loading indicators, error modals, success toasts
+- All HTML files updated to load modules from `js/` folder in correct order
 
 #### Error Handling
 - Professional error modals with expandable technical details
@@ -84,9 +122,9 @@ var result = await showPrompt(title, message, defaultValue);
 - Replaced all `alert()` calls with `showError()`
 
 #### Documentation
-- **FORMAT.md**: Complete v4.0 file format specification (400+ lines)
-- **IMPROVEMENTS.md**: Detailed summary of all improvements
-- **TESTING.md**: Comprehensive testing guide
+- **docs/FORMAT.md**: Complete v4.0 file format specification (400+ lines)
+- **docs/IMPROVEMENTS.md**: Detailed summary of all improvements
+- **docs/TESTING.md**: Comprehensive testing guide
 
 #### Performance Optimizations
 - O(1) edge lookups using Map (was O(n) - 100x faster)
@@ -94,7 +132,7 @@ var result = await showPrompt(title, message, defaultValue);
 - Smoother UI during rapid operations
 
 ### Changed
-- chess-common.js: Removed duplicate FEN functions (now in fen-utils.js)
+- js/chess-common.js: Removed duplicate FEN functions (now in js/fen-utils.js)
 - File loading: Added try/catch with detailed error messages
 - Error messages: Replaced alerts with professional modals
 

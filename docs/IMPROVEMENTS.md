@@ -35,10 +35,10 @@ This document summarizes the improvements made to the Chess Openings tool based 
 
 ### ✅ Step 2: Extract Normalization into Module
 
-**Created fen-utils.js module:**
+**Created js/fen-utils.js module:**
 
 ```javascript
-// fen-utils.js exports:
+// js/fen-utils.js exports:
 - START_FEN constant
 - normalizeFEN(fen)
 - getFENKey(fen)
@@ -48,10 +48,10 @@ This document summarizes the improvements made to the Chess Openings tool based 
 ```
 
 **Changes:**
-- Extracted all FEN-related functions from chess-common.js
+- Extracted all FEN-related functions from js/chess-common.js
 - Added comprehensive JSDoc documentation
 - Single source of truth for FEN handling
-- All HTML files now include fen-utils.js before chess-common.js
+- All HTML files now include js/fen-utils.js before js/chess-common.js
 
 **Benefits:**
 - Reduced code duplication
@@ -63,10 +63,10 @@ This document summarizes the improvements made to the Chess Openings tool based 
 
 ### ✅ Step 3: Add Error Handling and User Feedback
 
-**Created ui-feedback.js module:**
+**Created js/ui-feedback.js module:**
 
 ```javascript
-// ui-feedback.js exports:
+// js/ui-feedback.js exports:
 - showLoading(message) - Animated loading indicator
 - hideLoading()
 - showError(title, message, details) - Modal error dialog
@@ -108,21 +108,21 @@ showError(
 **Module Structure:**
 
 ```
-chess-common.js (core graph logic)
-├── fen-utils.js (FEN normalization & validation)
-└── ui-feedback.js (user notifications & loading)
+js/chess-common.js (core graph logic)
+├── js/fen-utils.js (FEN normalization & validation)
+└── js/ui-feedback.js (user notifications & loading)
 ```
 
 **Removed duplicate code:**
-- Removed START_FEN constant (now in fen-utils.js)
-- Removed normalizeFEN() (now in fen-utils.js)
-- Removed getFENKey() (now in fen-utils.js)
-- Removed validateState() (now in fen-utils.js)
-- Removed boardToFEN() (now in fen-utils.js)
+- Removed START_FEN constant (now in js/fen-utils.js)
+- Removed normalizeFEN() (now in js/fen-utils.js)
+- Removed getFENKey() (now in js/fen-utils.js)
+- Removed validateState() (now in js/fen-utils.js)
+- Removed boardToFEN() (now in js/fen-utils.js)
 - Added clear comments pointing to new locations
 
 **Benefits:**
-- Reduced chess-common.js from ~1200 to ~1100 lines
+- Reduced js/chess-common.js from ~1200 to ~1100 lines
 - Clear module boundaries
 - Easier to find and modify specific functionality
 - Modules can be tested independently
@@ -135,7 +135,7 @@ addresses the most problematic areas (normalization and error handling).
 
 ### ✅ Step 5: Document File Format
 
-**Created FORMAT.md:**
+**Created docs/FORMAT.md:**
 
 Comprehensive file format specification including:
 - Complete v4.0 format specification
@@ -305,15 +305,18 @@ function debounceDrawGraph() {
 ### Files Added
 - `tests/normalization.test.js` (JavaScript tests)
 - `tests/test_evaluate.py` (Python tests)
-- `fen-utils.js` (FEN utilities module)
-- `ui-feedback.js` (UI feedback module)
-- `FORMAT.md` (File format specification)
-- `IMPROVEMENTS.md` (this document)
+- `tests/test-export.html` (Export feature test page)
+- `js/fen-utils.js` (FEN utilities module)
+- `js/ui-feedback.js` (UI feedback module)
+- `docs/FORMAT.md` (File format specification)
+- `docs/IMPROVEMENTS.md` (this document)
+- `docs/TESTING.md` (Testing guide)
+- `docs/CHANGELOG.md` (Change history)
 
 ### Files Modified
-- `chess-common.js` (removed duplicates, added performance)
-- `view.html` (added modules, error handling)
-- `edit.html` (added modules, error handling)
+- `js/chess-common.js` (removed duplicates, added performance)
+- `explore.html` (added modules, error handling)
+- `build.html` (added modules, error handling)
 - `practice.html` (added modules, error handling)
 
 ---

@@ -86,7 +86,6 @@ The application now has three separate pages, each optimized for a specific work
   - Export to PGN format
   - Read-only board (pieces cannot be moved)
 - **Available buttons**: Load Routes, Export PGN, Fit View
-- **Visual indicator**: Light blue background on mode panel
 - **URL**: `explore.html`
 
 #### Build Mode (`build.html`)
@@ -95,18 +94,16 @@ The application now has three separate pages, each optimized for a specific work
   - Make new moves and create variations
   - Undo/Redo navigation (keyboard shortcuts and buttons)
   - Add annotations to moves
-  - Export routes to file
+  - Export routes to file with title prompt
   - Full board interaction (drag and drop pieces)
 - **Available buttons**: All editing buttons (Reset, Undo/Redo, annotations, Export Routes, etc.)
-- **Visual indicator**: Light green background on mode panel
 - **URL**: `build.html`
 
 #### Practice Mode (`practice.html`)
 - **Purpose**: Coming soon...
-- **Visual indicator**: Light yellow background on mode panel
 - **URL**: `practice.html`
 
-**Switching Modes**: Each page has buttons at the top to switch to other modes. Clicking a mode button navigates to that page.
+**Switching Modes**: Click the "← Back to Home" link at the top of any mode page to return to the welcome page and select a different mode.
 
 ### Getting Started
 
