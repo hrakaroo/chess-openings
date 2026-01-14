@@ -8,43 +8,15 @@ var game = new Chess();
 var graphNodes = [];  // Array of unique states
 var graphEdges = [];  // Array of {from: stateIndex, to: stateIndex, annotation: string}
 var stateToIndex = new Map();  // Map state string to its index in graphNodes
+var edgeMap = new Map();  // Map "from-to" key to edge index for O(1) lookup
 var currentBoardState = 'start';  // Track the current board state (FEN or 'start')
 var lastEdgeIndex = -1;  // Track the last edge created for annotation
 var precomputedPositions = null;  // Optional pre-computed node positions from JSON
 var nodeEvaluations = {};  // Map state string to evaluation string (e.g., "+0.50", "M5")
 var loadedTitle = '';  // Title of the loaded route file
 
-// Starting position FEN
-var START_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
-
-// Normalize FEN for consistent state matching
-// Clears en passant and replaces move counters with '- 0 1'
-function normalizeFEN(fen) {
-    if (fen === 'start') return 'start';
-
-    var parts = fen.split(' ');
-    if (parts.length === 6) {
-        // Clear en passant (ephemeral, only valid for one move)
-        parts[3] = '-';
-        // Replace halfmove clock with 0 and fullmove number with 1
-        parts[4] = '0';
-        parts[5] = '1';
-        return parts.join(' ');
-    }
-    return fen;
-}
-
-// Get FEN key for position lookups (ignores en passant and move counters for matching)
-function getFENKey(fen) {
-    if (fen === 'start') return 'start';
-
-    var parts = fen.split(' ');
-    if (parts.length >= 3) {
-        // Return board + turn + castling (ignore en passant and move counters)
-        return parts.slice(0, 3).join(' ');
-    }
-    return fen;
-}
+// NOTE: FEN normalization functions (normalizeFEN, getFENKey, validateState, etc.)
+// are now in fen-utils.js module
 
 // History tracking for undo/redo
 var moveHistory = ['start'];  // Array of states in chronological order (FEN or 'start')
@@ -73,24 +45,21 @@ function addEdgeToGraph(fromState, toState, annotation, skipDraw) {
     var fromIndex = addNodeToGraph(fromState);
     var toIndex = addNodeToGraph(toState);
 
-    // Check if edge already exists
-    var existingEdgeIndex = -1;
-    for (var i = 0; i < graphEdges.length; i++) {
-        if (graphEdges[i].from === fromIndex && graphEdges[i].to === toIndex) {
-            existingEdgeIndex = i;
-            break;
-        }
-    }
+    // Check if edge already exists using Map for O(1) lookup
+    var edgeKey = fromIndex + '-' + toIndex;
+    var existingEdgeIndex = edgeMap.get(edgeKey);
 
-    if (existingEdgeIndex === -1) {
+    if (existingEdgeIndex === undefined) {
         // Create new edge
         var newEdge = {
             from: fromIndex,
             to: toIndex,
             annotation: annotation || ''
         };
+        var newIndex = graphEdges.length;
         graphEdges.push(newEdge);
-        lastEdgeIndex = graphEdges.length - 1;
+        edgeMap.set(edgeKey, newIndex);
+        lastEdgeIndex = newIndex;
     } else {
         // Update existing edge annotation if provided
         if (annotation !== undefined && annotation !== '') {
@@ -190,15 +159,7 @@ function removeFutureFromGraph(fromStateIndex) {
 }
 
 // Get current board state as FEN (or 'start' for starting position)
-function boardToFEN() {
-    var fen = game.fen();
-    // If it's the starting position, return 'start' for convenience
-    if (fen === START_FEN) {
-        return 'start';
-    }
-    // Normalize FEN: replace halfmove clock and fullmove number with '-'
-    return normalizeFEN(fen);
-}
+// NOTE: boardToFEN() is now in fen-utils.js module
 
 // Load a state onto the board
 function loadState(state, addToHistoryFlag) {
@@ -275,25 +236,26 @@ function updateEvaluationLabel() {
 }
 
 // Validate a state string format
-function validateState(state) {
-    if (state === 'start') {
-        return {valid: true};
-    }
-
-    // Try to load the FEN into a temporary game to validate it
-    try {
-        var testGame = new Chess();
-        testGame.load(state);
-        return {valid: true};
-    } catch (e) {
-        return {valid: false, error: 'Invalid FEN: ' + e.message};
-    }
-}
+// NOTE: validateState() is now in fen-utils.js module
 
 // Export all graph states to v4.0 format
-function exportAllStates() {
+async function exportAllStates() {
     if (graphEdges.length === 0) {
-        alert('No routes to export. Add some moves first.');
+        showError('No Routes to Export', 'You need to add some moves before exporting.');
+        return;
+    }
+
+    // Prompt for title
+    var title = await showPrompt(
+        'Export Opening',
+        'Enter a title for this opening:',
+        loadedTitle || 'My Opening'
+    );
+
+    if (title === null) return; // User cancelled
+
+    if (!title) {
+        showError('Title Required', 'Please enter a title for the opening.');
         return;
     }
 
@@ -337,19 +299,28 @@ function exportAllStates() {
         transitionLines.push(fromState + ' -> ' + moveNotation);
     }
 
-    // Add version header, title (if exists), and combine positions + transitions
+    // Add version header, title, and combine positions + transitions
     var content = 'v4.0\n';
-    if (loadedTitle) {
-        content += '= ' + loadedTitle + '\n';
-    }
+    content += '= ' + title + '\n';
     if (positionLines.length > 0) {
         content += positionLines.join('\n') + '\n';
     }
     content += transitionLines.join('\n');
 
     // Prompt for filename
-    var filename = prompt('Enter filename for export:', 'openings.txt');
-    if (!filename) return;
+    var defaultFilename = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '.txt';
+    var filename = await showPrompt(
+        'Save File',
+        'Enter filename for export:',
+        defaultFilename
+    );
+
+    if (filename === null) return; // User cancelled
+
+    if (!filename) {
+        showError('Filename Required', 'Please enter a filename.');
+        return;
+    }
 
     if (!filename.endsWith('.txt')) {
         filename += '.txt';
@@ -365,6 +336,9 @@ function exportAllStates() {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+
+    // Show success message
+    showSuccess('Opening exported: ' + filename);
 }
 
 // Export to PGN format
@@ -505,25 +479,37 @@ function loadRoutesFromFile(fileContent, filename) {
     var lines = fileContent.split('\n');
 
     if (lines.length === 0) {
-        alert('File is empty');
+        showError('Empty File', 'The file you selected is empty. Please select a valid opening file.');
         return;
     }
 
     // Check version header
     var version = lines[0].trim();
     if (!version.startsWith('v')) {
-        alert('Invalid file format. Missing version header.');
+        showError(
+            'Invalid File Format',
+            'The file is missing a version header. Expected first line to start with "v" (e.g., v4.0)',
+            'First line: ' + lines[0]
+        );
         return;
     }
 
     if (version !== 'v4.0') {
-        alert('Invalid file format. Expected v4.0, got ' + version);
+        showError(
+            'Unsupported Version',
+            'This file format version is not supported. Expected v4.0, but got ' + version,
+            'The application only supports v4.0 format. You may need to convert this file or use an older version of the application.'
+        );
         return;
     }
 
     // Parse title (required in v4.0 format)
     if (lines.length < 2 || !lines[1].trim().startsWith('=')) {
-        alert('Invalid file format. Missing title line (= Title).');
+        showError(
+            'Invalid File Format',
+            'The file is missing a title line. Expected second line to start with "=" (e.g., = London System)',
+            'Second line: ' + (lines.length >= 2 ? lines[1] : '(missing)')
+        );
         return;
     }
     loadedTitle = lines[1].trim().substring(1).trim();
@@ -533,6 +519,7 @@ function loadRoutesFromFile(fileContent, filename) {
     graphNodes = [];
     graphEdges = [];
     stateToIndex = new Map();
+    edgeMap = new Map();
     moveHistory = ['start'];
     historyIndex = 0;
     lastEdgeIndex = -1;
@@ -753,6 +740,18 @@ var isDragging = false;
 var dragStartX = 0;
 var dragStartY = 0;
 var hoveredNodeIndex = -1;
+
+// Performance: Debounce helper
+var drawGraphPending = false;
+function debounceDrawGraph() {
+    if (!drawGraphPending) {
+        drawGraphPending = true;
+        requestAnimationFrame(function() {
+            drawGraph();
+            drawGraphPending = false;
+        });
+    }
+}
 
 // Initialize canvas
 function initCanvas() {

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Export with Title</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        button {
+            padding: 10px 20px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 10px 0;
+        }
+        button:hover {
+            background: #2980b9;
+        }
+        .instructions {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test Export with Title Feature</h1>
+
+    <div class="instructions">
+        <h3>Test Instructions:</h3>
+        <ol>
+            <li>Click the "Test showPrompt" button to see the title input dialog</li>
+            <li>Try entering a title and clicking OK</li>
+            <li>Try clicking Cancel</li>
+            <li>Try pressing Enter to submit</li>
+            <li>Try pressing Escape to cancel</li>
+        </ol>
+    </div>
+
+    <button onclick="testPrompt()">Test showPrompt</button>
+    <button onclick="testExportFlow()">Test Export Flow</button>
+
+    <div id="result" style="margin-top: 20px; padding: 15px; background: #e8f5e9; border-radius: 4px; display: none;">
+        <strong>Result:</strong> <span id="resultText"></span>
+    </div>
+
+    <!-- UI Feedback -->
+    <script src="../js/ui-feedback.js"></script>
+
+    <script>
+        async function testPrompt() {
+            var title = await showPrompt(
+                'Export Opening',
+                'Enter a title for this opening:',
+                'London System'
+            );
+
+            var result = document.getElementById('result');
+            var resultText = document.getElementById('resultText');
+
+            if (title === null) {
+                resultText.textContent = 'User cancelled';
+            } else if (!title) {
+                resultText.textContent = 'Empty title entered';
+            } else {
+                resultText.textContent = 'Title entered: "' + title + '"';
+            }
+
+            result.style.display = 'block';
+        }
+
+        async function testExportFlow() {
+            // Simulate the export flow
+            var title = await showPrompt(
+                'Export Opening',
+                'Enter a title for this opening:',
+                'My Opening'
+            );
+
+            if (title === null) {
+                showError('Export Cancelled', 'You cancelled the export.');
+                return;
+            }
+
+            if (!title) {
+                showError('Title Required', 'Please enter a title for the opening.');
+                return;
+            }
+
+            // Generate filename from title
+            var defaultFilename = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '.txt';
+
+            var filename = await showPrompt(
+                'Save File',
+                'Enter filename for export:',
+                defaultFilename
+            );
+
+            if (filename === null) {
+                showError('Export Cancelled', 'You cancelled the export.');
+                return;
+            }
+
+            if (!filename) {
+                showError('Filename Required', 'Please enter a filename.');
+                return;
+            }
+
+            if (!filename.endsWith('.txt')) {
+                filename += '.txt';
+            }
+
+            // Show success
+            showSuccess('Opening exported: ' + filename);
+
+            // Show result
+            var result = document.getElementById('result');
+            var resultText = document.getElementById('resultText');
+            resultText.innerHTML = 'Would export with:<br>Title: "' + title + '"<br>Filename: "' + filename + '"';
+            result.style.display = 'block';
+        }
+    </script>
+</body>
+</html>

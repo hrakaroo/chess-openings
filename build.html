@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chess Openings - Edit Mode</title>
+    <title>Chess Openings - Build an Opening</title>
 
     <!-- Chessboard.js CSS -->
     <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
@@ -11,30 +11,66 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            text-align: center;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
             margin: 20px;
         }
 
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 15px;
+            color: #667eea;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .back-link:hover {
+            color: #764ba2;
+            text-decoration: underline;
+        }
+
         h1 {
-            color: #333;
+            color: #2c3e50;
+            margin: 0;
+            font-size: 32px;
         }
 
         button {
             padding: 10px 20px;
             font-size: 14px;
             cursor: pointer;
-            background-color: #f0f0f0;
-            border: 1px solid #ccc;
+            background-color: #667eea;
+            color: white;
+            border: none;
             border-radius: 4px;
             margin: 5px;
+            transition: background-color 0.3s;
         }
 
         button:hover {
-            background-color: #e0e0e0;
+            background-color: #764ba2;
         }
 
         button:disabled {
-            background-color: #f5f5f5;
+            background-color: #ddd;
             color: #999;
             cursor: not-allowed;
         }
@@ -42,14 +78,15 @@
         input[type="text"] {
             padding: 8px;
             font-size: 14px;
-            border: 1px solid #ccc;
+            border: 1px solid #ddd;
             border-radius: 4px;
         }
 
         .graph-container {
-            border: 1px solid #ccc;
+            border: 1px solid #e0e0e0;
             display: inline-block;
             background-color: #fafafa;
+            border-radius: 4px;
         }
 
         #loadedFileLabel {
@@ -59,125 +96,65 @@
             font-style: italic;
         }
 
-        #modePanel {
-            background-color: #e8f5e9;
-            padding: 15px;
-            border-radius: 5px;
-            margin: 0 auto 20px;
-            width: 1200px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .mode-label {
-            font-weight: bold;
-            font-size: 16px;
-        }
-
-        .mode-btn-view {
-            background-color: #2196F3 !important;
-            color: white !important;
-            border-color: #1976D2 !important;
-        }
-
-        .mode-btn-view:hover {
-            background-color: #1976D2 !important;
-        }
-
-        .mode-btn-edit {
-            background-color: #4CAF50 !important;
-            color: white !important;
-            border-color: #388E3C !important;
-        }
-
-        .mode-btn-edit:hover {
-            background-color: #388E3C !important;
-        }
-
-        .mode-btn-practice {
-            background-color: #FFC107 !important;
-            color: #333 !important;
-            border-color: #FFA000 !important;
-        }
-
-        .mode-btn-practice:hover {
-            background-color: #FFA000 !important;
-        }
-
         #newRouteBtn {
-            background-color: #FF5722;
-            color: white;
-            border-color: #E64A19;
+            background-color: #e74c3c;
         }
 
         #newRouteBtn:hover {
-            background-color: #E64A19;
+            background-color: #c0392b;
         }
 
         #resetGraphBtn {
-            background-color: #F44336;
-            color: white;
-            border-color: #D32F2F;
+            background-color: #c0392b;
         }
 
         #resetGraphBtn:hover {
-            background-color: #D32F2F;
+            background-color: #a93226;
         }
 
         #undoBtn, #redoBtn {
-            background-color: #607D8B;
-            color: white;
-            border-color: #455A64;
+            background-color: #95a5a6;
         }
 
         #undoBtn:hover, #redoBtn:hover {
-            background-color: #455A64;
+            background-color: #7f8c8d;
         }
 
         #undoBtn:disabled, #redoBtn:disabled {
-            background-color: #f5f5f5;
+            background-color: #ddd;
             color: #999;
         }
 
         #saveAnnotationBtn {
-            background-color: #4CAF50;
-            color: white;
-            border-color: #388E3C;
+            background-color: #27ae60;
         }
 
         #saveAnnotationBtn:hover {
-            background-color: #388E3C;
+            background-color: #229954;
         }
 
         #exportBtn {
-            background-color: #2196F3;
-            color: white;
-            border-color: #1976D2;
+            background-color: #3498db;
         }
 
         #exportBtn:hover {
-            background-color: #1976D2;
+            background-color: #2980b9;
         }
 
         #loadBtn {
-            background-color: #2196F3;
-            color: white;
-            border-color: #1976D2;
+            background-color: #3498db;
         }
 
         #loadBtn:hover {
-            background-color: #1976D2;
+            background-color: #2980b9;
         }
 
         #fitViewBtn {
-            background-color: #9E9E9E;
-            color: white;
-            border-color: #757575;
+            background-color: #95a5a6;
         }
 
         #fitViewBtn:hover {
-            background-color: #757575;
+            background-color: #7f8c8d;
         }
 
         #evaluationLabel {
@@ -195,20 +172,13 @@
     </style>
 </head>
 <body>
-    <h1>Chess Openings - Edit Mode</h1>
-
-    <!-- Mode indicator -->
-    <div id="modePanel">
-        <div class="mode-label">
-            Current Mode: <span>Edit</span>
+    <div class="container">
+        <div class="header">
+            <a href="index.html" class="back-link">← Back to Home</a>
+            <h1>Build an Opening</h1>
         </div>
-        <div>
-            <button class="mode-btn-view" onclick="window.location.href='view.html'">Switch to View Mode</button>
-            <button class="mode-btn-practice" onclick="window.location.href='practice.html'" style="margin-left: 10px;">Switch to Practice Mode</button>
-        </div>
-    </div>
 
-    <table style="margin: 0 auto; border-spacing: 20px;">
+        <table style="margin: 0 auto; border-spacing: 20px;">
         <tbody><tr>
             <td style="vertical-align: top;">
                 <div style="margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; width: 600px;">
@@ -247,6 +217,7 @@
             </td>
         </tr>
     </tbody></table>
+    </div>
 
     <!-- jQuery (required by chessboard.js) -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -260,8 +231,14 @@
     <!-- Dagre for graph layout -->
     <script src="https://cdn.jsdelivr.net/npm/dagre@0.8.5/dist/dagre.min.js"></script>
 
+    <!-- FEN utilities -->
+    <script src="js/fen-utils.js"></script>
+
+    <!-- UI Feedback -->
+    <script src="js/ui-feedback.js"></script>
+
     <!-- Common chess logic -->
-    <script src="chess-common.js"></script>
+    <script src="js/chess-common.js"></script>
 
     <script>
         // Edit mode specific functions
@@ -490,9 +467,28 @@
         document.getElementById('fileInput').addEventListener('change', function(event) {
             var file = event.target.files[0];
             if (file) {
+                var hideLoading = showLoading('Loading opening file: ' + file.name);
                 var reader = new FileReader();
                 reader.onload = function(e) {
-                    loadRoutesFromFile(e.target.result, file.name);
+                    try {
+                        loadRoutesFromFile(e.target.result, file.name);
+                        hideLoading();
+                        showSuccess('Loaded: ' + file.name);
+                    } catch (error) {
+                        hideLoading();
+                        showError(
+                            'Error Loading File',
+                            'Failed to load the opening file: ' + error.message,
+                            error.stack
+                        );
+                    }
+                };
+                reader.onerror = function() {
+                    hideLoading();
+                    showError(
+                        'File Read Error',
+                        'Failed to read the file. Please try again.'
+                    );
                 };
                 reader.readAsText(file);
             }

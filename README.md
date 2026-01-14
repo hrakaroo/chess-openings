@@ -43,7 +43,7 @@ much how to get there.
   - Export to v4.0 format (.txt) with FEN notation, positions, evaluations, and titles
   - Export to standard PGN format for use in other chess software
   - Import from saved v4.0 files with annotation and title support
-- **Keyboard shortcuts** - Ctrl+Z/Cmd+Z for undo, Ctrl+Y/Cmd+Shift+Z for redo, arrow keys for navigation (Edit Mode only)
+- **Keyboard shortcuts** - Ctrl+Z/Cmd+Z for undo, Ctrl+Y/Cmd+Shift+Z for redo, arrow keys for navigation (Build Mode only)
 - **Turn indicator** - shows whose move it is at all times
 
 ## How to Use
@@ -54,16 +54,31 @@ The application now has three separate pages, each optimized for a specific work
 
 ```
 /practice/
-  ├── index.html          - Redirects to view.html (default)
-  ├── view.html           - View Mode: Browse and explore routes
-  ├── edit.html           - Edit Mode: Build and modify repertoires
+  ├── index.html          - Welcome page with mode selection
+  ├── explore.html        - Explore Mode: Browse and explore routes
+  ├── build.html          - Build Mode: Build and modify repertoires
   ├── practice.html       - Practice Mode: Coming soon
-  └── chess-common.js     - Shared functions across all pages
+  ├── evaluate.py         - Python script for layout optimization
+  ├── README.md           - Main documentation
+  ├── js/                 - JavaScript modules
+  │   ├── chess-common.js - Shared chess logic
+  │   ├── fen-utils.js    - FEN normalization utilities
+  │   └── ui-feedback.js  - User interface feedback (modals, toasts)
+  ├── docs/               - Documentation files
+  │   ├── FORMAT.md       - v4.0 file format specification
+  │   ├── IMPROVEMENTS.md - Summary of improvements
+  │   ├── TESTING.md      - Testing guide
+  │   └── CHANGELOG.md    - Change history
+  ├── tests/              - Test files
+  │   ├── normalization.test.js - JavaScript tests
+  │   ├── test_evaluate.py      - Python tests
+  │   └── test-export.html      - Export feature test page
+  └── examples/           - Sample opening files (.txt)
 ```
 
 ### Modes
 
-#### View Mode (`view.html`) - Default
+#### Explore Mode (`explore.html`)
 - **Purpose**: Load and view opening routes without making changes
 - **Features**:
   - Load route files (with embedded positions)
@@ -72,9 +87,9 @@ The application now has three separate pages, each optimized for a specific work
   - Read-only board (pieces cannot be moved)
 - **Available buttons**: Load Routes, Export PGN, Fit View
 - **Visual indicator**: Light blue background on mode panel
-- **URL**: `view.html`
+- **URL**: `explore.html`
 
-#### Edit Mode (`edit.html`)
+#### Build Mode (`build.html`)
 - **Purpose**: Build and modify opening repertoires
 - **Features**:
   - Make new moves and create variations
@@ -84,7 +99,7 @@ The application now has three separate pages, each optimized for a specific work
   - Full board interaction (drag and drop pieces)
 - **Available buttons**: All editing buttons (Reset, Undo/Redo, annotations, Export Routes, etc.)
 - **Visual indicator**: Light green background on mode panel
-- **URL**: `edit.html`
+- **URL**: `build.html`
 
 #### Practice Mode (`practice.html`)
 - **Purpose**: Coming soon...
@@ -96,19 +111,19 @@ The application now has three separate pages, each optimized for a specific work
 ### Getting Started
 
 1. Open `index.html` in your web browser (or visit https://hrakaroo.github.io/chess-openings/)
-   - This will redirect you to **View Mode** by default
-2. To view existing routes: Stay in View Mode, click **Load Routes**, and select a `.txt` file
-3. To build a new repertoire: Click **Switch to Edit Mode** at the top
+   - You'll see a welcome page with three mode options
+2. To view existing routes: Click **Explore** mode, then click **Load Routes** and select a `.txt` file
+3. To build a new repertoire: Click **Build** mode at the welcome page
 
-### Exploring Openings (Edit Mode)
+### Exploring Openings (Build Mode)
 
-1. Navigate to `edit.html` or click **Switch to Edit Mode** from View Mode
+1. Navigate to `build.html` or click **Build** from the welcome page
 2. Move pieces on the board to explore opening lines (drag and drop)
 3. The turn indicator shows whose move it is (White or Black)
 4. Watch the tree graph build as you make moves
 5. Click any node in the graph to jump to that position
 
-### Adding Annotations (Edit Mode)
+### Adding Annotations (Build Mode)
 
 1. After making a move, the annotation text box will show any existing annotation for that move
 2. Type your note or comment in the text box (e.g., "Main line", "Tricky trap!", "Best for White")
@@ -124,7 +139,7 @@ The application now has three separate pages, each optimized for a specific work
 - **Reset Board and Graph** - return to the starting position and completely clear all graph data (removes all explored positions and variations)
 - **Undo** - go back to the previous position in your move history (Ctrl+Z, Cmd+Z, or Left Arrow)
 - **Redo** - move forward in your history after undoing (Ctrl+Y, Ctrl+Shift+Z, Cmd+Shift+Z, or Right Arrow)
-- **Export Routes** - prompts for a filename, then saves all recorded transitions to a `.txt` file (v4.0 format with FEN notation and title)
+- **Export Routes** - prompts for a title and filename, then saves all recorded transitions to a `.txt` file (v4.0 format with FEN notation and title). The title defaults to the loaded opening name if available.
 - **Load Routes** - import a previously saved v4.0 .txt file to restore your opening tree (displays the loaded title, filename and version below the graph)
 - **Load Positions** - optionally load a pre-computed positions JSON file generated by `evaluate.py` for optimal graph layout with minimal edge crossings
 - **Export PGN** - exports your opening tree to standard PGN (Portable Game Notation) format with variations, compatible with chess software like Lichess, Chess.com, and ChessBase
@@ -219,7 +234,7 @@ For complex opening trees with many variations, you can use the Python script to
 
 ### Keyboard Shortcuts
 
-#### Edit Mode
+#### Build Mode
 - **Ctrl+Z** (Windows/Linux) or **Cmd+Z** (Mac) - Undo
 - **Ctrl+Y** (Windows/Linux) or **Cmd+Shift+Z** (Mac) - Redo
 - **Ctrl+Shift+Z** (Windows/Linux) - Redo (alternative)
@@ -228,13 +243,13 @@ For complex opening trees with many variations, you can use the Python script to
 - **Up Arrow** - Navigate to parent node
 - **Down Arrow** - Navigate to child node
 
-#### View Mode / Practice Mode
+#### Explore Mode / Practice Mode
 - **Down Arrow** - Navigate to next child node (move forward in the opening)
 - **Up Arrow** - Navigate to parent node (move backward)
 - **Right Arrow** - Cycle to next sibling variation (alternate move from same position)
 - **Left Arrow** - Cycle to previous sibling variation
 
-**Note**: In View/Practice modes, arrow keys provide full graph navigation. In Edit mode, Left/Right arrows are reserved for Undo/Redo, while Up/Down navigate the graph.
+**Note**: In Explore/Practice modes, arrow keys provide full graph navigation. In Build mode, Left/Right arrows are reserved for Undo/Redo, while Up/Down navigate the graph.
 
 ## Board State Encoding
 

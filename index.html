@@ -2,20 +2,139 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="refresh" content="0; url=view.html">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chess Openings</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            text-align: center;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 800px;
             padding: 50px;
+            text-align: center;
+        }
+        h1 {
+            color: #2c3e50;
+            margin-top: 0;
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 18px;
+            margin-bottom: 40px;
+        }
+        .description {
+            color: #34495e;
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 40px;
+            text-align: left;
+        }
+        .modes {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .mode-card {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 30px;
+            width: 220px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: inherit;
+        }
+        .mode-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            border-color: #667eea;
+        }
+        .mode-card.explore:hover {
+            border-color: #3498db;
+        }
+        .mode-card.build:hover {
+            border-color: #27ae60;
+        }
+        .mode-card.practice:hover {
+            border-color: #f39c12;
+        }
+        .mode-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+        .mode-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+        .mode-description {
+            color: #7f8c8d;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+            color: #95a5a6;
+            font-size: 14px;
         }
     </style>
 </head>
 <body>
-    <h1>Chess Openings</h1>
-    <p>Redirecting to View Mode...</p>
-    <p>If you are not redirected automatically, <a href="view.html">click here</a>.</p>
+    <div class="container">
+        <h1>Chess Openings</h1>
+        <div class="subtitle">A tool for learning and practicing chess openings</div>
+
+        <div class="description">
+            <p>This tool helps you visualize, build, and practice chess opening repertoires. All positions are tracked as a tree graph, making it easy to see transpositions and variations.</p>
+            <p><strong>Choose a mode to get started:</strong></p>
+        </div>
+
+        <div class="modes">
+            <a href="explore.html" class="mode-card explore">
+                <div class="mode-icon">🔍</div>
+                <div class="mode-title">Explore</div>
+                <div class="mode-description">
+                    Load and browse opening files. Navigate through positions by clicking nodes in the graph.
+                </div>
+            </a>
+
+            <a href="build.html" class="mode-card build">
+                <div class="mode-icon">🛠️</div>
+                <div class="mode-title">Build</div>
+                <div class="mode-description">
+                    Create new openings and variations. Make moves, add annotations, and export your repertoire.
+                </div>
+            </a>
+
+            <a href="practice.html" class="mode-card practice">
+                <div class="mode-icon">⚔️</div>
+                <div class="mode-title">Practice</div>
+                <div class="mode-description">
+                    Test your knowledge by playing through your openings. Coming soon!
+                </div>
+            </a>
+        </div>
+
+        <div class="footer">
+            <p>All files are stored locally. No server required.</p>
+        </div>
+    </div>
 </body>
 </html>
