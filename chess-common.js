@@ -17,6 +17,35 @@ var loadedTitle = '';  // Title of the loaded route file
 // Starting position FEN
 var START_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 
+// Normalize FEN for consistent state matching
+// Clears en passant and replaces move counters with '- 0 1'
+function normalizeFEN(fen) {
+    if (fen === 'start') return 'start';
+
+    var parts = fen.split(' ');
+    if (parts.length === 6) {
+        // Clear en passant (ephemeral, only valid for one move)
+        parts[3] = '-';
+        // Replace halfmove clock with 0 and fullmove number with 1
+        parts[4] = '0';
+        parts[5] = '1';
+        return parts.join(' ');
+    }
+    return fen;
+}
+
+// Get FEN key for position lookups (ignores en passant and move counters for matching)
+function getFENKey(fen) {
+    if (fen === 'start') return 'start';
+
+    var parts = fen.split(' ');
+    if (parts.length >= 3) {
+        // Return board + turn + castling (ignore en passant and move counters)
+        return parts.slice(0, 3).join(' ');
+    }
+    return fen;
+}
+
 // History tracking for undo/redo
 var moveHistory = ['start'];  // Array of states in chronological order (FEN or 'start')
 var historyIndex = 0;  // Current position in history
@@ -27,13 +56,16 @@ var board = null;
 
 // Add a node to the graph if it doesn't exist, return its index
 function addNodeToGraph(state) {
-    if (!stateToIndex.has(state)) {
+    // Normalize state to ensure consistent comparison
+    var normalizedState = normalizeFEN(state);
+
+    if (!stateToIndex.has(normalizedState)) {
         var index = graphNodes.length;
-        graphNodes.push(state);
-        stateToIndex.set(state, index);
+        graphNodes.push(normalizedState);
+        stateToIndex.set(normalizedState, index);
         return index;
     }
-    return stateToIndex.get(state);
+    return stateToIndex.get(normalizedState);
 }
 
 // Add an edge to the graph if it doesn't exist
@@ -164,21 +196,25 @@ function boardToFEN() {
     if (fen === START_FEN) {
         return 'start';
     }
-    return fen;
+    // Normalize FEN: replace halfmove clock and fullmove number with '-'
+    return normalizeFEN(fen);
 }
 
 // Load a state onto the board
 function loadState(state, addToHistoryFlag) {
+    // Normalize state for consistency
+    var normalizedState = normalizeFEN(state);
+
     // Load FEN into game engine
-    if (state === 'start') {
+    if (normalizedState === 'start') {
         game.reset();
         board.position('start');
     } else {
-        game.load(state);
+        game.load(normalizedState);
         board.position(game.fen());
     }
 
-    currentBoardState = state;
+    currentBoardState = normalizedState;
 
     if (addToHistoryFlag && !isNavigatingHistory) {
         // Trim history after current index and add new state
@@ -207,12 +243,29 @@ function loadState(state, addToHistoryFlag) {
     drawGraph();
 }
 
+// Helper function to find evaluation with fuzzy FEN matching
+function findEvaluation(state) {
+    // Try exact match first
+    if (nodeEvaluations[state]) {
+        return nodeEvaluations[state];
+    }
+
+    // Try fuzzy match (ignore move counters)
+    var stateKey = getFENKey(state);
+    for (var evalState in nodeEvaluations) {
+        if (getFENKey(evalState) === stateKey) {
+            return nodeEvaluations[evalState];
+        }
+    }
+    return null;
+}
+
 // Update evaluation label with current position's evaluation
 function updateEvaluationLabel() {
     var evalLabel = document.getElementById('evaluationLabel');
     if (!evalLabel) return;
 
-    var evaluation = nodeEvaluations[currentBoardState];
+    var evaluation = findEvaluation(currentBoardState);
     if (evaluation) {
         evalLabel.textContent = evaluation;
         evalLabel.style.display = 'block';
@@ -277,8 +330,11 @@ function exportAllStates() {
             transitionLines.push('# ' + edge.annotation);
         }
 
-        // Add transition
-        transitionLines.push(fromState + ' -> ' + toState);
+        // Get move notation instead of full target FEN
+        var moveNotation = getMoveNotation(fromState, toState);
+
+        // Add transition as: from_state -> move
+        transitionLines.push(fromState + ' -> ' + moveNotation);
     }
 
     // Add version header, title (if exists), and combine positions + transitions
@@ -424,15 +480,17 @@ function getMoveNotation(fromState, toState) {
     var tempGame = new Chess(fromFen);
     var moves = tempGame.moves({verbose: true});
 
+    // Get FEN key of target (first 4 fields for fuzzy matching)
+    var targetKey = getFENKey(toFen);
+
     for (var i = 0; i < moves.length; i++) {
         tempGame.move(moves[i]);
         var resultFen = tempGame.fen();
 
-        // Compare board position (ignore move counters)
-        var resultBoard = resultFen.split(' ').slice(0, 2).join(' ');
-        var targetBoard = toFen.split(' ').slice(0, 2).join(' ');
+        // Compare using FEN key (first 4 fields: board + turn + castling + en passant)
+        var resultKey = getFENKey(resultFen);
 
-        if (resultBoard === targetBoard) {
+        if (resultKey === targetKey) {
             return moves[i].san;
         }
 
@@ -503,30 +561,56 @@ function loadRoutesFromFile(fileContent, filename) {
 
         // Check if this is a position definition or transition
         if (line.indexOf('->') !== -1) {
-            // This is a transition: "state1 -> state2"
+            // This is a transition: "state -> move" or "state -> state" (old format)
             var arrowSplit = line.split('->');
             if (arrowSplit.length === 2) {
                 var fromState = arrowSplit[0].trim();
-                var toState = arrowSplit[1].trim();
+                var toPart = arrowSplit[1].trim();
 
                 // Join accumulated comments as annotation
                 var annotation = pendingComments.join(' ');
                 pendingComments = [];  // Clear for next transition
 
-                // Validate and add to graph (skip drawing during bulk load)
+                // Validate fromState
                 var fromValid = validateState(fromState);
-                var toValid = validateState(toState);
 
-                if (fromValid.valid && toValid.valid) {
-                    addEdgeToGraph(fromState, toState, annotation, true);
+                if (fromValid.valid) {
+                    // Check if toPart is a FEN string (contains '/') or move notation
+                    if (toPart.indexOf('/') !== -1 || toPart === 'start') {
+                        // Old format: toPart is a full FEN state
+                        var toState = toPart;
+                        var toValid = validateState(toState);
+                        if (toValid.valid) {
+                            addEdgeToGraph(fromState, toState, annotation, true);
+                        } else {
+                            invalidCount++;
+                            console.warn('Line ' + (i + 1) + ': Invalid to state - ' + toValid.error);
+                        }
+                    } else {
+                        // New format: toPart is move notation - apply the move to get toState
+                        var moveNotation = toPart;
+                        var fromFen = (fromState === 'start') ? START_FEN : fromState;
+                        var tempGame = new Chess(fromFen);
+
+                        try {
+                            var move = tempGame.move(moveNotation);
+                            if (move === null) {
+                                invalidCount++;
+                                console.warn('Line ' + (i + 1) + ': Invalid move "' + moveNotation + '" from state ' + fromState.substring(0, 20) + '...');
+                            } else {
+                                // Get resulting FEN, normalize, and convert to 'start' if needed
+                                var resultFen = tempGame.fen();
+                                var toState = (resultFen === START_FEN) ? 'start' : normalizeFEN(resultFen);
+                                addEdgeToGraph(fromState, toState, annotation, true);
+                            }
+                        } catch (e) {
+                            invalidCount++;
+                            console.warn('Line ' + (i + 1) + ': Error applying move "' + moveNotation + '" - ' + e.message);
+                        }
+                    }
                 } else {
                     invalidCount++;
-                    if (!fromValid.valid) {
-                        console.warn('Line ' + (i + 1) + ': Invalid from state - ' + fromValid.error);
-                    }
-                    if (!toValid.valid) {
-                        console.warn('Line ' + (i + 1) + ': Invalid to state - ' + toValid.error);
-                    }
+                    console.warn('Line ' + (i + 1) + ': Invalid from state - ' + fromValid.error);
                 }
             } else {
                 invalidCount++;
@@ -743,15 +827,33 @@ function drawGraph() {
 
     if (graphNodes.length === 0) return;
 
+    // Helper function to find precomputed position with fuzzy FEN matching
+    function findPrecomputedPosition(state) {
+        // Try exact match first
+        if (precomputedPositions[state]) {
+            return precomputedPositions[state];
+        }
+
+        // Try fuzzy match (ignore move counters)
+        var stateKey = getFENKey(state);
+        for (var precompState in precomputedPositions) {
+            if (getFENKey(precompState) === stateKey) {
+                return precomputedPositions[precompState];
+            }
+        }
+        return null;
+    }
+
     // Use pre-computed positions if available
     if (precomputedPositions && Object.keys(precomputedPositions).length > 0) {
         nodePositions = [];
         for (var k = 0; k < graphNodes.length; k++) {
             var state = graphNodes[k];
-            if (precomputedPositions[state]) {
+            var pos = findPrecomputedPosition(state);
+            if (pos) {
                 nodePositions.push({
-                    x: precomputedPositions[state].x,
-                    y: precomputedPositions[state].y,
+                    x: pos.x,
+                    y: pos.y,
                     state: state
                 });
             }
@@ -838,7 +940,7 @@ function drawGraph() {
             ctx.fillStyle = NODE_COLORS.CURRENT;
         } else if (state === 'start') {
             ctx.fillStyle = NODE_COLORS.START;
-        } else if (nodeEvaluations[state]) {
+        } else if (findEvaluation(state)) {
             // Node has Stockfish evaluation - color it red
             ctx.fillStyle = NODE_COLORS.EVALUATED;
         } else {

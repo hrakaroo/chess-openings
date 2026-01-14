@@ -29,14 +29,35 @@ except ImportError:
     print("  Windows: Download from https://graphviz.org/download/")
     sys.exit(1)
 
+# chess library is required for parsing move notation
 try:
     import chess
+except ImportError:
+    print("Error: python-chess is required.")
+    print("Please install with: pip install chess")
+    sys.exit(1)
+
+# chess.engine is optional (only needed for Stockfish evaluation)
+try:
     import chess.engine
     STOCKFISH_AVAILABLE = True
 except ImportError:
-    print("Warning: python-chess not found. Position evaluation will be skipped.")
+    print("Warning: python-chess engine module not found. Position evaluation will be skipped.")
     print("To enable evaluation: pip install chess")
     STOCKFISH_AVAILABLE = False
+
+
+def normalize_fen(fen):
+    """Normalize FEN by clearing en passant and setting move counters to '- 0 1'."""
+    if fen == 'start':
+        return 'start'
+    parts = fen.split(' ')
+    if len(parts) == 6:
+        parts[3] = '-'  # en passant (ephemeral, only valid for one move)
+        parts[4] = '0'  # halfmove clock
+        parts[5] = '1'  # fullmove number (must be at least 1)
+        return ' '.join(parts)
+    return fen
 
 
 def state_to_fen(state):
@@ -45,6 +66,18 @@ def state_to_fen(state):
         return 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
     # In v4.0 format, states are already in FEN notation
     return state
+
+
+def fen_key(fen):
+    """Get FEN key for comparison (first 3 fields + normalized en passant/move counters)."""
+    if fen == 'start':
+        return 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
+
+    parts = fen.split(' ')
+    if len(parts) >= 3:
+        # Compare board + turn + castling, ignore en passant and move counters
+        return ' '.join(parts[:3]) + ' - 0 1'
+    return fen
 
 
 def find_leaf_nodes(edges):
@@ -198,14 +231,20 @@ def parse_v4_file(filename):
         # We only need transitions for rebuilding the graph
         if '->' not in line:
             # Position definitions have format: "state : x, y" or "state : x, y, eval"
-            if ':' in line and '[' in line and ']' in line:
-                # This looks like a position definition, skip silently
-                pending_comments = []  # Clear comments before position definitions
-                continue
-            else:
-                # This is actually malformed
-                print(f"Warning: Skipping malformed line {i}: {line}")
-                pending_comments = []
+            if ':' in line:
+                # Check if this looks like a position definition (has numbers after colon)
+                parts = line.split(':', 1)
+                if len(parts) == 2:
+                    coords = parts[1].strip()
+                    # Check if it starts with a number (coordinate)
+                    if coords and coords[0].isdigit():
+                        # This looks like a position definition, skip silently
+                        pending_comments = []  # Clear comments before position definitions
+                        continue
+
+            # This is actually malformed
+            print(f"Warning: Skipping malformed line {i}: {line}")
+            pending_comments = []
             continue
 
         parts = line.split('->')
@@ -215,16 +254,41 @@ def parse_v4_file(filename):
             continue
 
         from_state = parts[0].strip()
-        to_state = parts[1].strip()
+        to_part = parts[1].strip()
 
         # Join accumulated comments as annotation
         annotation = ' '.join(pending_comments)
         pending_comments = []  # Clear for next transition
 
-        # States are in FEN format (or 'start' keyword)
-        states.add(from_state)
-        states.add(to_state)
-        edges.append((from_state, to_state, annotation))
+        # Check if to_part is a FEN string (contains '/') or move notation
+        if '/' in to_part or to_part == 'start':
+            # Old format: to_part is a full FEN state
+            to_state = to_part
+            states.add(from_state)
+            states.add(to_state)
+            edges.append((from_state, to_state, annotation))
+        else:
+            # New format: to_part is move notation - apply the move to get to_state
+            move_notation = to_part
+            try:
+                from_fen = state_to_fen(from_state)
+                board = chess.Board(from_fen)
+                move = board.parse_san(move_notation)
+                board.push(move)
+                to_fen = board.fen()
+                # Convert back to 'start' if it matches starting position
+                if to_fen == 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1':
+                    to_state = 'start'
+                else:
+                    to_state = normalize_fen(to_fen)
+
+                # States are in FEN format (or 'start' keyword)
+                states.add(from_state)
+                states.add(to_state)
+                edges.append((from_state, to_state, annotation))
+            except Exception as e:
+                print(f"Warning: Line {i}: Could not apply move '{move_notation}' from state '{from_state[:30]}...' - {e}")
+                continue
 
     print(f"Parsed {len(states)} unique states and {len(edges)} transitions")
     if title:
@@ -316,11 +380,14 @@ def update_file_with_positions(input_file, positions, evaluations, output_file, 
         # Flip Y coordinate for canvas
         flipped_y = max_y - y
 
+        # Normalize state before writing (replace move counters with '-')
+        normalized_state = normalize_fen(state)
+
         # Add evaluation if available
         if state in evaluations:
-            position_lines.append(f"{state} : {x}, {flipped_y}, {evaluations[state]}")
+            position_lines.append(f"{normalized_state} : {x}, {flipped_y}, {evaluations[state]}")
         else:
-            position_lines.append(f"{state} : {x}, {flipped_y}")
+            position_lines.append(f"{normalized_state} : {x}, {flipped_y}")
 
     # Build transition lines with annotations as # comments
     transition_lines = []
@@ -328,8 +395,41 @@ def update_file_with_positions(input_file, positions, evaluations, output_file, 
         # Add annotation as # comment if present
         if annotation:
             transition_lines.append(f"# {annotation}")
-        # Add transition
-        transition_lines.append(f"{from_state} -> {to_state}")
+
+        # Find the move that leads from from_state to to_state
+        try:
+            from_fen = state_to_fen(from_state)
+            to_fen = state_to_fen(to_state)
+            board = chess.Board(from_fen)
+
+            # Try all legal moves to find the one that matches
+            move_notation = None
+            to_fen_key = fen_key(to_fen)
+            for move in board.legal_moves:
+                board.push(move)
+                if fen_key(board.fen()) == to_fen_key:
+                    # Found the move! Get SAN notation
+                    board.pop()
+                    move_notation = board.san(move)
+                    break
+                board.pop()
+
+            if move_notation:
+                # Normalize from_state before writing
+                normalized_from = normalize_fen(from_state)
+                transition_lines.append(f"{normalized_from} -> {move_notation}")
+            else:
+                # Fallback to old format if move not found
+                print(f"Warning: Could not find move from {from_state[:30]}... to {to_state[:30]}...")
+                normalized_from = normalize_fen(from_state)
+                normalized_to = normalize_fen(to_state)
+                transition_lines.append(f"{normalized_from} -> {normalized_to}")
+        except Exception as e:
+            print(f"Warning: Error converting transition: {e}")
+            # Fallback to old format
+            normalized_from = normalize_fen(from_state)
+            normalized_to = normalize_fen(to_state)
+            transition_lines.append(f"{normalized_from} -> {normalized_to}")
 
     # Write updated file
     with open(output_file, 'w', encoding='utf-8') as f:

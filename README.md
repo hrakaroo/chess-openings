@@ -300,15 +300,18 @@ Where:
 
 **2. Transition Lines**:
 ```
-fen_state_before -> fen_state_after
+state -> move
 ```
+Where:
+- `state` is either `start` or a full FEN string representing the board position
+- `move` is the chess move in Standard Algebraic Notation (SAN), e.g., "e4", "Nf3", "O-O", "Qxd5"
 
 **3. Annotations**:
 Annotations are specified using `#` comment lines immediately before the transition:
 ```
 # Annotation text here
 # Multiple lines are joined with spaces
-fen_state_before -> fen_state_after
+state -> move
 ```
 
 Example file with title, positions, evaluations, annotations, and transitions:
@@ -320,27 +323,31 @@ rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1 : 283.8, 129.6
 rnbqkbnr/pp1ppppp/8/2p5/4P3/8/PPPP1PPP/RNBQKBNR w KQkq c6 0 2 : 283.8, 259.2, white +0.25
 rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2 : 450.2, 388.8, black +0.35
 # Main line, e4
-start -> rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1
+start -> e4
 # Sicilian Defense, c5
-rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1 -> rnbqkbnr/pp1ppppp/8/2p5/4P3/8/PPPP1PPP/RNBQKBNR w KQkq c6 0 2
+rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1 -> c5
 # Nf3
-rnbqkbnr/pp1ppppp/8/2p5/4P3/8/PPPP1PPP/RNBQKBNR w KQkq c6 0 2 -> rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2
+rnbqkbnr/pp1ppppp/8/2p5/4P3/8/PPPP1PPP/RNBQKBNR w KQkq c6 0 2 -> Nf3
 ```
 
 Note: In this example, the last two positions are leaf nodes (no further moves), so they have Stockfish evaluations. Hover over the red nodes in the graph to see which color is favored.
 
 **Format Benefits**:
-- **Standard notation**: Uses industry-standard FEN format
+- **Highly readable**: Transitions show actual chess moves (e4, Nf3, O-O) instead of full board positions
+- **Compact**: Move notation is much shorter than full FEN strings, reducing file size significantly
+- **Standard notation**: Uses industry-standard FEN and SAN (Standard Algebraic Notation)
 - **Unified file**: Positions, evaluations, and routes in a single file (no separate files needed)
 - **Optional positions**: Position definitions are optional - files work without them (uses Dagre layout)
 - **Optional evaluations**: Stockfish evaluations are optional and only computed for leaf nodes
-- **Human-readable**: FEN notation can be manually inspected and understood
-- **Universal compatibility**: FEN strings work with all chess software and libraries
+- **Easy to edit**: You can manually edit move sequences without reconstructing full board positions
+- **Universal compatibility**: FEN and SAN work with all chess software and libraries
 
 **Notes**:
 - Position lines come before transition lines
 - Positions are optional - if not present, browser uses Dagre layout
 - Evaluations are optional - only generated for leaf positions (terminal nodes)
+- Transitions use Standard Algebraic Notation (SAN) for moves, not full FEN strings
+- The target state is computed by applying the move to the source state
 - Annotations use `#` comment lines immediately before the transition
 - Multiple `#` comment lines before a transition are joined with spaces
 - Empty `#` lines are ignored
