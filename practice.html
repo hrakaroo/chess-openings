@@ -324,7 +324,7 @@
                 setTimeout(function() {
                     game.reset();
                     board.position('start');
-                    currentBoardState = 'start[w]';
+                    currentBoardState = 'start';
                     mistakeInCurrentRun = false;  // Reset mistake flag for new run
                     updateEvaluationLabel();
                     drawGraph();
@@ -376,7 +376,7 @@
             if (move === null) return 'snapback';
 
             // Get state after move
-            var stateAfter = boardToString();
+            var stateAfter = boardToFEN();
 
             // Check if this state is a valid child in the graph
             var validChildren = getValidChildren(stateBefore);
@@ -414,7 +414,7 @@
                 setTimeout(function() {
                     game.reset();
                     board.position('start');
-                    currentBoardState = 'start[w]';
+                    currentBoardState = 'start';
                     mistakeInCurrentRun = false;  // Reset mistake flag for new run
                     updateEvaluationLabel();
                     drawGraph();
@@ -491,7 +491,7 @@
                 // Reset game
                 game.reset();
                 board.position('start');
-                currentBoardState = 'start[w]';
+                currentBoardState = 'start';
                 currentStreak = 0;
                 drawGraph();
             } else {
@@ -500,7 +500,7 @@
 
                 // Reset game
                 game.reset();
-                currentBoardState = 'start[w]';
+                currentBoardState = 'start';
                 currentStreak = 0;
                 mistakeInCurrentRun = false;
                 childQueues = {};  // Clear shuffled queues for fresh start

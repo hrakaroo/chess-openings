@@ -292,7 +292,7 @@
             if (move === null) return 'snapback';
 
             // Get state after move
-            var stateAfter = boardToString();
+            var stateAfter = boardToFEN();
             console.log('Move made - From:', stateBefore, 'To:', stateAfter);
 
             // Add edge to graph
@@ -381,10 +381,10 @@
         function createNewRoute() {
             game.reset();
             board.position('start');
-            currentBoardState = 'start[w]';
+            currentBoardState = 'start';
 
             // Reset history
-            moveHistory = ['start[w]'];
+            moveHistory = ['start'];
             historyIndex = 0;
             updateHistoryButtons();
 
@@ -407,7 +407,7 @@
 
             game.reset();
             board.position('start');
-            currentBoardState = 'start[w]';
+            currentBoardState = 'start';
 
             // Clear graph
             graphNodes = [];
@@ -419,12 +419,12 @@
             lastGraphStructure = null;
 
             // Reset history
-            moveHistory = ['start[w]'];
+            moveHistory = ['start'];
             historyIndex = 0;
             updateHistoryButtons();
 
             // Re-add starting node
-            addNodeToGraph('start[w]');
+            addNodeToGraph('start');
 
             // Clear loaded file label
             document.getElementById('loadedFileLabel').innerText = '';

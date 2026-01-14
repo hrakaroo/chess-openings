@@ -8,13 +8,17 @@ var game = new Chess();
 var graphNodes = [];  // Array of unique states
 var graphEdges = [];  // Array of {from: stateIndex, to: stateIndex, annotation: string}
 var stateToIndex = new Map();  // Map state string to its index in graphNodes
-var currentBoardState = 'start[w]';  // Track the current board state
+var currentBoardState = 'start';  // Track the current board state (FEN or 'start')
 var lastEdgeIndex = -1;  // Track the last edge created for annotation
 var precomputedPositions = null;  // Optional pre-computed node positions from JSON
 var nodeEvaluations = {};  // Map state string to evaluation string (e.g., "+0.50", "M5")
+var loadedTitle = '';  // Title of the loaded route file
+
+// Starting position FEN
+var START_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 
 // History tracking for undo/redo
-var moveHistory = ['start[w]'];  // Array of states in chronological order
+var moveHistory = ['start'];  // Array of states in chronological order (FEN or 'start')
 var historyIndex = 0;  // Current position in history
 var isNavigatingHistory = false;  // Flag to prevent adding to history during undo/redo
 
@@ -72,7 +76,7 @@ function addEdgeToGraph(fromState, toState, annotation, skipDraw) {
 function removeOrphanedNodes() {
     // Build a set of nodes that have edges
     var nodesWithEdges = new Set();
-    nodesWithEdges.add(stateToIndex.get('start[w]')); // Always keep start node
+    nodesWithEdges.add(stateToIndex.get('start')); // Always keep start node
 
     for (var i = 0; i < graphEdges.length; i++) {
         nodesWithEdges.add(graphEdges[i].from);
@@ -126,8 +130,8 @@ function removeFutureFromGraph(fromStateIndex) {
 
     // BFS to find all reachable nodes from start
     var reachableFromStart = new Set();
-    var queue = [stateToIndex.get('start[w]')];
-    reachableFromStart.add(stateToIndex.get('start[w]'));
+    var queue = [stateToIndex.get('start')];
+    reachableFromStart.add(stateToIndex.get('start'));
 
     while (queue.length > 0) {
         var node = queue.shift();
@@ -153,196 +157,25 @@ function removeFutureFromGraph(fromStateIndex) {
     drawGraph();
 }
 
-// Piece encoding maps
-var PIECE_MAP_ENCODE = {
-    'w': {'p': 'A', 'n': 'B', 'b': 'C', 'r': 'D', 'q': 'E', 'k': 'F'},
-    'b': {'p': 'G', 'n': 'H', 'b': 'I', 'r': 'J', 'q': 'K', 'k': 'L'}
-};
-
-var PIECE_MAP_DECODE = {
-    'A': 'wP', 'B': 'wN', 'C': 'wB', 'D': 'wR', 'E': 'wQ', 'F': 'wK',
-    'G': 'bP', 'H': 'bN', 'I': 'bB', 'J': 'bR', 'K': 'bQ', 'L': 'bK'
-};
-
-// Convert board to compact state string
-function boardToString() {
-    var board = game.board();
-    var output = '';
-    var emptyCount = 0;
-
-    // Read board from rank 8 to rank 1 (top to bottom)
-    // board[0] = rank 8, board[7] = rank 1
-    for (var rank = 0; rank < 8; rank++) {
-        for (var file = 0; file < 8; file++) {
-            var square = board[rank][file];
-
-            if (square === null) {
-                emptyCount++;
-            } else {
-                // Flush empty count
-                while (emptyCount > 0) {
-                    if (emptyCount >= 9) {
-                        output += '9';
-                        emptyCount -= 9;
-                    } else {
-                        output += emptyCount.toString();
-                        emptyCount = 0;
-                    }
-                }
-
-                // Add piece
-                var color = square.color;
-                var type = square.type;
-                output += PIECE_MAP_ENCODE[color][type];
-            }
-        }
-    }
-
-    // Flush remaining empty count
-    while (emptyCount > 0) {
-        if (emptyCount >= 9) {
-            output += '9';
-            emptyCount -= 9;
-        } else {
-            output += emptyCount.toString();
-            emptyCount = 0;
-        }
-    }
-
-    // Append turn
-    var turn = game.turn() === 'w' ? 'w' : 'b';
-    return output + '[' + turn + ']';
-}
-
-// Convert state string to position object for chessboard.js
-function stateToPosition(state) {
-    if (state === 'start[w]') {
+// Get current board state as FEN (or 'start' for starting position)
+function boardToFEN() {
+    var fen = game.fen();
+    // If it's the starting position, return 'start' for convenience
+    if (fen === START_FEN) {
         return 'start';
     }
-
-    // Extract the board encoding (everything before the turn indicator)
-    var bracketIndex = state.indexOf('[');
-    if (bracketIndex === -1) return 'start';
-
-    var encoding = state.substring(0, bracketIndex);
-
-    // Decode the encoding into a 64-square array
-    var squares = [];
-    for (var i = 0; i < encoding.length; i++) {
-        var char = encoding[i];
-        if (char >= '1' && char <= '9') {
-            // Empty squares
-            var count = parseInt(char);
-            for (var j = 0; j < count; j++) {
-                squares.push(null);
-            }
-        } else {
-            // Piece
-            var piece = PIECE_MAP_DECODE[char];
-            if (piece) {
-                squares.push(piece);
-            } else {
-                console.error('Unknown piece encoding:', char);
-                squares.push(null);
-            }
-        }
-    }
-
-    // Convert to chessboard.js position object
-    var position = {};
-    var files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
-    var squareIndex = 0;
-
-    // Read from rank 8 to rank 1
-    for (var rank = 8; rank >= 1; rank--) {
-        for (var file = 0; file < 8; file++) {
-            if (squareIndex < squares.length && squares[squareIndex] !== null) {
-                var squareName = files[file] + rank;
-                position[squareName] = squares[squareIndex];
-            }
-            squareIndex++;
-        }
-    }
-
-    return position;
-}
-
-// Convert state string to FEN
-function stateToFEN(state) {
-    if (state === 'start[w]') {
-        return 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
-    }
-
-    // Extract encoding and turn
-    var bracketIndex = state.indexOf('[');
-    if (bracketIndex === -1) return null;
-
-    var encoding = state.substring(0, bracketIndex);
-    var turn = state.charAt(bracketIndex + 1);
-
-    // Decode to 64 squares
-    var squares = [];
-    for (var i = 0; i < encoding.length; i++) {
-        var char = encoding[i];
-        if (char >= '1' && char <= '9') {
-            var count = parseInt(char);
-            for (var j = 0; j < count; j++) {
-                squares.push(null);
-            }
-        } else {
-            squares.push(PIECE_MAP_DECODE[char] || null);
-        }
-    }
-
-    // Convert to FEN board string (rank 8 to rank 1)
-    var fenParts = [];
-    for (var rank = 0; rank < 8; rank++) {
-        var rankStr = '';
-        var emptyCount = 0;
-
-        for (var file = 0; file < 8; file++) {
-            var squareIndex = rank * 8 + file;
-            var piece = squares[squareIndex];
-
-            if (piece === null) {
-                emptyCount++;
-            } else {
-                if (emptyCount > 0) {
-                    rankStr += emptyCount.toString();
-                    emptyCount = 0;
-                }
-
-                // Convert piece notation (wP -> P, bP -> p)
-                var pieceChar = piece[1]; // P, N, B, R, Q, K
-                if (piece[0] === 'b') pieceChar = pieceChar.toLowerCase();
-                rankStr += pieceChar;
-            }
-        }
-
-        if (emptyCount > 0) {
-            rankStr += emptyCount.toString();
-        }
-
-        fenParts.push(rankStr);
-    }
-
-    // Build full FEN string (simplified - no castling, en passant, etc.)
-    var fenBoard = fenParts.join('/');
-    var fenTurn = turn === 'w' ? 'w' : 'b';
-    return fenBoard + ' ' + fenTurn + ' - - 0 1';
+    return fen;
 }
 
 // Load a state onto the board
 function loadState(state, addToHistoryFlag) {
-    var position = stateToPosition(state);
-    var fen = stateToFEN(state);
-
-    board.position(position);
-
-    if (fen) {
-        game.load(fen);
-    } else {
+    // Load FEN into game engine
+    if (state === 'start') {
         game.reset();
+        board.position('start');
+    } else {
+        game.load(state);
+        board.position(game.fen());
     }
 
     currentBoardState = state;
@@ -390,29 +223,21 @@ function updateEvaluationLabel() {
 
 // Validate a state string format
 function validateState(state) {
-    if (state === 'start[w]') {
+    if (state === 'start') {
         return {valid: true};
     }
 
-    // Check format: should end with [w] or [b]
-    if (!state.endsWith('[w]') && !state.endsWith('[b]')) {
-        return {valid: false, error: 'Missing turn indicator [w] or [b]'};
+    // Try to load the FEN into a temporary game to validate it
+    try {
+        var testGame = new Chess();
+        testGame.load(state);
+        return {valid: true};
+    } catch (e) {
+        return {valid: false, error: 'Invalid FEN: ' + e.message};
     }
-
-    // Extract encoding
-    var bracketIndex = state.indexOf('[');
-    var encoding = state.substring(0, bracketIndex);
-
-    // Validate encoding characters
-    var validChars = /^[A-L1-9]+$/;
-    if (!validChars.test(encoding)) {
-        return {valid: false, error: 'Invalid characters in state encoding'};
-    }
-
-    return {valid: true};
 }
 
-// Export all graph states to v2.0 format
+// Export all graph states to v4.0 format
 function exportAllStates() {
     if (graphEdges.length === 0) {
         alert('No routes to export. Add some moves first.');
@@ -440,23 +265,31 @@ function exportAllStates() {
         }
     }
 
-    // Build transitions from graph edges (using text format)
-    var transitions = graphEdges.map(function(edge) {
+    // Build transitions with annotations as # comment lines
+    var transitionLines = [];
+    for (var i = 0; i < graphEdges.length; i++) {
+        var edge = graphEdges[i];
         var fromState = graphNodes[edge.from];
         var toState = graphNodes[edge.to];
-        var transition = fromState + ' -> ' + toState;
-        if (edge.annotation && edge.annotation.length > 0) {
-            transition += ': ' + edge.annotation;
-        }
-        return transition;
-    });
 
-    // Add version header and combine positions + transitions
-    var content = 'v2.0\n';
+        // Add annotation as # comment lines if present
+        if (edge.annotation && edge.annotation.length > 0) {
+            transitionLines.push('# ' + edge.annotation);
+        }
+
+        // Add transition
+        transitionLines.push(fromState + ' -> ' + toState);
+    }
+
+    // Add version header, title (if exists), and combine positions + transitions
+    var content = 'v4.0\n';
+    if (loadedTitle) {
+        content += '= ' + loadedTitle + '\n';
+    }
     if (positionLines.length > 0) {
         content += positionLines.join('\n') + '\n';
     }
-    content += transitions.join('\n');
+    content += transitionLines.join('\n');
 
     // Prompt for filename
     var filename = prompt('Enter filename for export:', 'openings.txt');
@@ -513,7 +346,14 @@ function exportToPGN() {
         if (!currentMoves || currentMoves.length === 0) return '';
 
         var result = '';
-        var isWhiteToMove = state.indexOf('[w]') !== -1;
+        // Determine whose turn it is from FEN or 'start' keyword
+        var isWhiteToMove = true;
+        if (state !== 'start') {
+            var fenParts = state.split(' ');
+            if (fenParts.length >= 2) {
+                isWhiteToMove = fenParts[1] === 'w';
+            }
+        }
 
         // Main line (first move)
         var mainMove = currentMoves[0];
@@ -551,7 +391,7 @@ function exportToPGN() {
         return result;
     }
 
-    pgn += generatePGNMoveText('start[w]', 1, '');
+    pgn += generatePGNMoveText('start', 1, '');
     pgn += ' *\n';
 
     // Prompt for filename
@@ -576,10 +416,9 @@ function exportToPGN() {
 
 // Get move notation between two states
 function getMoveNotation(fromState, toState) {
-    var fromFen = stateToFEN(fromState);
-    var toFen = stateToFEN(toState);
-
-    if (!fromFen || !toFen) return '???';
+    // Handle 'start' keyword
+    var fromFen = (fromState === 'start') ? START_FEN : fromState;
+    var toFen = (toState === 'start') ? START_FEN : toState;
 
     // Create temporary game to find the move
     var tempGame = new Chess(fromFen);
@@ -619,15 +458,24 @@ function loadRoutesFromFile(fileContent, filename) {
         return;
     }
 
-    if (version !== 'v2.0') {
-        console.warn('File version is ' + version + ', expected v2.0');
+    if (version !== 'v4.0') {
+        alert('Invalid file format. Expected v4.0, got ' + version);
+        return;
     }
+
+    // Parse title (required in v4.0 format)
+    if (lines.length < 2 || !lines[1].trim().startsWith('=')) {
+        alert('Invalid file format. Missing title line (= Title).');
+        return;
+    }
+    loadedTitle = lines[1].trim().substring(1).trim();
+    var startLine = 2;
 
     // Reset graph
     graphNodes = [];
     graphEdges = [];
     stateToIndex = new Map();
-    moveHistory = ['start[w]'];
+    moveHistory = ['start'];
     historyIndex = 0;
     lastEdgeIndex = -1;
     precomputedPositions = {};
@@ -638,29 +486,32 @@ function loadRoutesFromFile(fileContent, filename) {
     // Parse file in two passes: first positions, then transitions
     var invalidCount = 0;
     var positionCount = 0;
+    var pendingComments = [];  // Accumulate # comment lines before transitions
 
-    for (var i = 1; i < lines.length; i++) {
+    for (var i = startLine; i < lines.length; i++) {
         var line = lines[i].trim();
         if (line.length === 0) continue;
 
+        // Check if this is a comment line (starts with #)
+        if (line.startsWith('#')) {
+            var comment = line.substring(1).trim();
+            if (comment.length > 0) {
+                pendingComments.push(comment);
+            }
+            continue;
+        }
+
         // Check if this is a position definition or transition
         if (line.indexOf('->') !== -1) {
-            // This is a transition: "state1 -> state2" or "state1 -> state2: annotation"
+            // This is a transition: "state1 -> state2"
             var arrowSplit = line.split('->');
             if (arrowSplit.length === 2) {
                 var fromState = arrowSplit[0].trim();
-                var rightSide = arrowSplit[1];
+                var toState = arrowSplit[1].trim();
 
-                // Parse annotation
-                var colonIndex = rightSide.indexOf(':');
-                var toState, annotation;
-                if (colonIndex !== -1) {
-                    toState = rightSide.substring(0, colonIndex).trim();
-                    annotation = rightSide.substring(colonIndex + 1).trim();
-                } else {
-                    toState = rightSide.trim();
-                    annotation = '';
-                }
+                // Join accumulated comments as annotation
+                var annotation = pendingComments.join(' ');
+                pendingComments = [];  // Clear for next transition
 
                 // Validate and add to graph (skip drawing during bulk load)
                 var fromValid = validateState(fromState);
@@ -680,8 +531,11 @@ function loadRoutesFromFile(fileContent, filename) {
             } else {
                 invalidCount++;
                 console.warn('Line ' + (i + 1) + ': Malformed transition (missing ->)');
+                pendingComments = [];  // Clear on error
             }
         } else if (line.indexOf(':') !== -1) {
+            // Clear comments before position definitions
+            pendingComments = [];
             // This might be a position definition: "state : x, y" or "state : x, y, eval"
             // In Edit mode, skip positions and evaluations (use dynamic layout)
             var isEditMode = typeof updateHistoryButtons === 'function';
@@ -726,7 +580,7 @@ function loadRoutesFromFile(fileContent, filename) {
     // Reset board to starting position
     game.reset();
     board.position('start');
-    currentBoardState = 'start[w]';
+    currentBoardState = 'start';
 
     // Update evaluation label
     updateEvaluationLabel();
@@ -734,7 +588,11 @@ function loadRoutesFromFile(fileContent, filename) {
     // Update loaded file label if present
     var label = document.getElementById('loadedFileLabel');
     if (label) {
-        var message = 'Loaded: ' + filename + ' (' + version + ')';
+        var message = 'Loaded: ';
+        if (loadedTitle) {
+            message += loadedTitle + ' - ';
+        }
+        message += filename + ' (' + version + ')';
         if (positionCount > 0) {
             message += ' with ' + positionCount + ' positions';
         }
@@ -826,7 +684,7 @@ function initCanvas() {
     setupCanvasEventListeners();
 
     // Initialize with starting node
-    addNodeToGraph('start[w]');
+    addNodeToGraph('start');
 
     // Set up resize handler
     resizeCanvas();
@@ -978,13 +836,20 @@ function drawGraph() {
         // Determine color (priority: current > start > evaluated > default)
         if (state === currentBoardState) {
             ctx.fillStyle = NODE_COLORS.CURRENT;
-        } else if (state === 'start[w]') {
+        } else if (state === 'start') {
             ctx.fillStyle = NODE_COLORS.START;
         } else if (nodeEvaluations[state]) {
             // Node has Stockfish evaluation - color it red
             ctx.fillStyle = NODE_COLORS.EVALUATED;
         } else {
-            var isWhiteTurn = state.indexOf('[w]') !== -1;
+            // Determine whose turn it is from FEN string
+            var isWhiteTurn = true;  // default
+            if (state !== 'start') {
+                var fenParts = state.split(' ');
+                if (fenParts.length >= 2) {
+                    isWhiteTurn = fenParts[1] === 'w';
+                }
+            }
             ctx.fillStyle = isWhiteTurn ? NODE_COLORS.WHITE_TO_MOVE : NODE_COLORS.BLACK_TO_MOVE;
         }
 
@@ -1003,7 +868,7 @@ function drawGraph() {
         ctx.stroke();
 
         // Draw label only for start node
-        if (state === 'start[w]') {
+        if (state === 'start') {
             ctx.fillStyle = '#fff';
             ctx.font = 'bold 10px Arial';
             ctx.textAlign = 'center';
@@ -1147,7 +1012,7 @@ function setupCanvasEventListeners() {
 
 // Get tooltip text for a node
 function getMoveTooltip(state) {
-    if (state === 'start[w]') {
+    if (state === 'start') {
         return 'Starting position';
     }
 

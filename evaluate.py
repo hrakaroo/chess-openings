@@ -2,7 +2,7 @@
 """
 Generate optimal node positions and evaluations for chess opening graphs.
 
-This script parses a v2.0 chess openings file with text-encoded states,
+This script parses a v4.0 chess openings file with FEN-encoded states,
 builds a directed graph, computes optimal node positions using various
 layout algorithms, evaluates leaf positions with Stockfish, and embeds
 everything back into the file.
@@ -41,62 +41,10 @@ except ImportError:
 
 def state_to_fen(state):
     """Convert state string to FEN notation."""
-    if state == 'start[w]':
+    if state == 'start':
         return 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
-
-    # Extract encoding and turn
-    bracket_index = state.index('[')
-    encoding = state[:bracket_index]
-    turn = state[bracket_index+1]  # 'w' or 'b'
-
-    # Piece mapping
-    piece_map = {
-        'A': 'P', 'B': 'N', 'C': 'B', 'D': 'R', 'E': 'Q', 'F': 'K',
-        'G': 'p', 'H': 'n', 'I': 'b', 'J': 'r', 'K': 'q', 'L': 'k'
-    }
-
-    # Decode to 64 squares
-    squares = []
-    i = 0
-    while i < len(encoding):
-        char = encoding[i]
-        if char.isdigit():
-            # Empty squares
-            count = int(char)
-            squares.extend([None] * count)
-        else:
-            # Piece
-            squares.append(piece_map.get(char, '?'))
-        i += 1
-
-    # Build FEN board string (rank 8 to rank 1)
-    fen_parts = []
-    for rank in range(8):
-        rank_str = ''
-        empty_count = 0
-
-        for file in range(8):
-            square_index = rank * 8 + file
-            piece = squares[square_index] if square_index < len(squares) else None
-
-            if piece is None:
-                empty_count += 1
-            else:
-                if empty_count > 0:
-                    rank_str += str(empty_count)
-                    empty_count = 0
-                rank_str += piece
-
-        if empty_count > 0:
-            rank_str += str(empty_count)
-
-        fen_parts.append(rank_str)
-
-    fen_board = '/'.join(fen_parts)
-    fen_turn = 'w' if turn == 'w' else 'b'
-
-    # Simplified FEN (no castling, en passant tracking)
-    return f"{fen_board} {fen_turn} - - 0 1"
+    # In v4.0 format, states are already in FEN notation
+    return state
 
 
 def find_leaf_nodes(edges):
@@ -208,8 +156,8 @@ def evaluate_positions(leaf_nodes, stockfish_path=None):
     return evaluations
 
 
-def parse_v2_file(filename):
-    """Parse a v2.0 format chess openings file and extract transitions."""
+def parse_v4_file(filename):
+    """Parse a v4.0 format chess openings file and extract transitions."""
     with open(filename, 'r', encoding='utf-8') as f:
         lines = f.readlines()
 
@@ -218,15 +166,32 @@ def parse_v2_file(filename):
         sys.exit(1)
 
     version = lines[0].strip()
-    if version != 'v2.0':
-        print(f"Warning: File version is {version}, expected v2.0")
+    if version != 'v4.0':
+        print(f"Error: File version is {version}, expected v4.0")
+        sys.exit(1)
+
+    # Parse title (required in v4.0 format)
+    if len(lines) < 2 or not lines[1].strip().startswith('='):
+        print(f"Error: Missing title line. Expected '= Title' on line 2.")
+        sys.exit(1)
+
+    title = lines[1].strip()[1:].strip()
+    start_line = 2
 
     edges = []
     states = set()
+    pending_comments = []  # Accumulate # comment lines before transitions
 
-    for i, line in enumerate(lines[1:], start=2):
+    for i, line in enumerate(lines[start_line:], start=start_line+1):
         line = line.strip()
         if not line:
+            continue
+
+        # Check if this is a comment line (starts with #)
+        if line.startswith('#'):
+            comment = line[1:].strip()
+            if comment:
+                pending_comments.append(comment)
             continue
 
         # Skip position definition lines (state : x, y) or (state : x, y, eval)
@@ -235,36 +200,36 @@ def parse_v2_file(filename):
             # Position definitions have format: "state : x, y" or "state : x, y, eval"
             if ':' in line and '[' in line and ']' in line:
                 # This looks like a position definition, skip silently
+                pending_comments = []  # Clear comments before position definitions
                 continue
             else:
                 # This is actually malformed
                 print(f"Warning: Skipping malformed line {i}: {line}")
+                pending_comments = []
             continue
 
         parts = line.split('->')
         if len(parts) != 2:
             print(f"Warning: Skipping malformed line {i}: {line}")
+            pending_comments = []
             continue
 
         from_state = parts[0].strip()
-        right_side = parts[1]
+        to_state = parts[1].strip()
 
-        # Check for annotation (after colon)
-        if ':' in right_side:
-            colon_idx = right_side.index(':')
-            to_state = right_side[:colon_idx].strip()
-            annotation = right_side[colon_idx+1:].strip()
-        else:
-            to_state = right_side.strip()
-            annotation = ''
+        # Join accumulated comments as annotation
+        annotation = ' '.join(pending_comments)
+        pending_comments = []  # Clear for next transition
 
-        # States are already in text format (run-length encoded)
+        # States are in FEN format (or 'start' keyword)
         states.add(from_state)
         states.add(to_state)
         edges.append((from_state, to_state, annotation))
 
     print(f"Parsed {len(states)} unique states and {len(edges)} transitions")
-    return list(states), edges
+    if title:
+        print(f"Title: {title}")
+    return list(states), edges, title
 
 
 def build_graph(states, edges):
@@ -334,34 +299,16 @@ def compute_layout(G, algorithm='dot'):
         return pos
 
 
-def update_file_with_positions(input_file, positions, evaluations, output_file):
+def update_file_with_positions(input_file, positions, evaluations, output_file, title='', edges=None):
     """Update the input file with position definitions and evaluations."""
-    # Read original file
-    with open(input_file, 'r', encoding='utf-8') as f:
-        lines = f.readlines()
-
-    if not lines or not lines[0].strip().startswith('v'):
-        print(f"Error: Invalid file format. Expected version header.")
-        sys.exit(1)
-
-    version = lines[0].strip()
+    if not edges:
+        edges = []
 
     # Find max Y to flip the coordinate system
     # Graphviz: Y increases upward (math coordinates)
     # Browser canvas: Y increases downward (screen coordinates)
     y_values = [y for x, y in positions.values()]
     max_y = max(y_values)
-
-    # Separate transitions from old position definitions
-    transitions = []
-    for i, line in enumerate(lines[1:], start=2):
-        line_stripped = line.strip()
-        if not line_stripped:
-            continue
-
-        # Check if this is a transition (contains ->)
-        if '->' in line_stripped:
-            transitions.append(line_stripped)
 
     # Build new position definitions
     position_lines = []
@@ -375,14 +322,25 @@ def update_file_with_positions(input_file, positions, evaluations, output_file):
         else:
             position_lines.append(f"{state} : {x}, {flipped_y}")
 
+    # Build transition lines with annotations as # comments
+    transition_lines = []
+    for from_state, to_state, annotation in edges:
+        # Add annotation as # comment if present
+        if annotation:
+            transition_lines.append(f"# {annotation}")
+        # Add transition
+        transition_lines.append(f"{from_state} -> {to_state}")
+
     # Write updated file
     with open(output_file, 'w', encoding='utf-8') as f:
-        f.write(version + '\n')
+        f.write('v4.0\n')
+        if title:
+            f.write(f'= {title}\n')
         # Write positions first
         for pos_line in position_lines:
             f.write(pos_line + '\n')
-        # Write transitions
-        for trans_line in transitions:
+        # Write transitions with annotations
+        for trans_line in transition_lines:
             f.write(trans_line + '\n')
 
     print(f"File updated with {len(position_lines)} positions (Y-axis flipped for canvas)")
@@ -397,7 +355,7 @@ def main():
     )
     parser.add_argument(
         'input',
-        help='Input v2.0 chess openings file (.txt)'
+        help='Input v4.0 chess openings file (.txt)'
     )
     parser.add_argument(
         '--algorithm', '-a',
@@ -441,7 +399,7 @@ def main():
     print()
 
     # Parse input file
-    states, edges = parse_v2_file(args.input)
+    states, edges, title = parse_v4_file(args.input)
 
     # Build graph
     G = build_graph(states, edges)
@@ -462,7 +420,7 @@ def main():
         print("Skipping position evaluation (--no-eval flag set)")
 
     # Update file with positions and evaluations
-    update_file_with_positions(args.input, positions, evaluations, output_file)
+    update_file_with_positions(args.input, positions, evaluations, output_file, title, edges)
 
     print()
     print("Done! To use these positions:")
