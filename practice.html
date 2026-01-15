@@ -93,21 +93,12 @@
             opacity: 0.9;
         }
 
-        #startBtn {
-            background-color: #27ae60;
-            color: white;
-        }
-
-        #startBtn:hover {
-            background-color: #229954;
-        }
-
-        #startBtn.stop-mode {
+        #resetBtn {
             background-color: #e74c3c;
             color: white;
         }
 
-        #startBtn.stop-mode:hover {
+        #resetBtn:hover {
             background-color: #c0392b;
         }
 
@@ -191,10 +182,14 @@
                             <option value="black">Black</option>
                         </select>
                     </div>
-                    <button id="startBtn" disabled>Start</button>
+                    <button id="resetBtn" disabled>Reset</button>
                     <div style="display: flex; align-items: center; gap: 5px;">
                         <label for="scoreField" style="font-weight: bold;">Score:</label>
                         <input type="text" id="scoreField" value="0 / 0" readonly style="width: 80px; text-align: center; padding: 5px; border: 1px solid #ccc; border-radius: 4px; background-color: #f9f9f9;">
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 5px;">
+                        <label for="remainingField" style="font-weight: bold;">Remaining:</label>
+                        <input type="text" id="remainingField" value="0" readonly style="width: 50px; text-align: center; padding: 5px; border: 1px solid #ccc; border-radius: 4px; background-color: #f9f9f9;">
                     </div>
                 </div>
                 <div style="margin-bottom: 10px; width: 600px;">
@@ -252,6 +247,7 @@
         var currentPathIndex = 0;  // Which path we're currently on
         var currentStepIndex = 0;  // Where in the current path we are
         var pathsCompleted = 0;  // How many paths done correctly
+        var pathsRemaining = 0;  // How many paths left to complete
         var mistakeOnCurrentPath = false;  // Track if user made mistake on current path
 
         // Shuffle an array using Fisher-Yates algorithm
@@ -336,16 +332,22 @@
             return paths;
         }
 
-        // Update score display
+        // Update score and remaining display
         function updateScore() {
             document.getElementById('scoreField').value = pathsCompleted + ' / ' + allPathsOriginal.length;
+            document.getElementById('remainingField').value = pathsRemaining;
         }
 
         // Make computer move following the current path
         function makeComputerMove() {
+            if (!practiceActive) {
+                // Practice has been stopped
+                return;
+            }
+
             if (currentPathIndex >= allPaths.length) {
-                // All paths completed - auto stop
-                document.getElementById('startBtn').click();
+                // All paths completed - stop practice
+                practiceActive = false;
                 return;
             }
 
@@ -368,18 +370,19 @@
                 // Computer has completed the path - only count if no mistakes
                 if (!mistakeOnCurrentPath) {
                     pathsCompleted++;
-                    updateScore();
                 }
+
+                // Decrement remaining
+                pathsRemaining--;
+                updateScore();
 
                 // Move to next path
                 currentPathIndex++;
 
                 // Check if all paths are done
                 if (currentPathIndex >= allPaths.length) {
-                    // All paths completed - auto stop after showing final state
-                    setTimeout(function() {
-                        document.getElementById('startBtn').click();
-                    }, 2000);
+                    // All paths completed - stop practice but stay on final state
+                    practiceActive = false;
                     return;
                 }
 
@@ -459,18 +462,19 @@
                 // Path completed - only count if no mistakes were made
                 if (!mistakeOnCurrentPath) {
                     pathsCompleted++;
-                    updateScore();
                 }
+
+                // Decrement remaining
+                pathsRemaining--;
+                updateScore();
 
                 // Move to next path
                 currentPathIndex++;
 
                 // Check if all paths are done
                 if (currentPathIndex >= allPaths.length) {
-                    // All paths completed - auto stop after showing final state
-                    setTimeout(function() {
-                        document.getElementById('startBtn').click();
-                    }, 2000);
+                    // All paths completed - stop practice but stay on final state
+                    practiceActive = false;
                     return;
                 }
 
@@ -531,12 +535,12 @@
 
                         // Compute all paths immediately after loading
                         allPathsOriginal = findAllPaths();
-                        allPaths = [];
-                        pathsCompleted = 0;
-                        updateScore();
 
                         hideLoading();
                         showSuccess('Loaded: ' + file.name + ' (' + allPathsOriginal.length + ' paths)');
+
+                        // Auto-start practice
+                        startPractice();
                     } catch (error) {
                         hideLoading();
                         showError(
@@ -558,83 +562,61 @@
             event.target.value = '';
         });
 
-        // Start/Stop button handler
-        document.getElementById('startBtn').addEventListener('click', function() {
-            var startBtn = document.getElementById('startBtn');
+        // Start practice mode
+        function startPractice() {
+            userColor = document.getElementById('playAsSelect').value;
 
-            if (practiceActive) {
-                // Stop practice mode
-                practiceActive = false;
-
-                // Recreate board as non-draggable
-                board.destroy();
-                board = Chessboard('board', {
-                    draggable: false,
-                    position: 'start',
-                    orientation: 'white',
-                    pieceTheme: 'https://lichess1.org/assets/piece/staunty/{piece}.svg'
-                });
-
-                startBtn.innerText = 'Start';
-                startBtn.classList.remove('stop-mode');
-
-                // Reset game
-                game.reset();
-                board.position('start');
-                currentBoardState = 'start';
-                drawGraph();
-            } else {
-                // Start practice mode
-                userColor = document.getElementById('playAsSelect').value;
-
-                // Check if paths are loaded
-                if (allPathsOriginal.length === 0) {
-                    alert('No complete paths found. Please load an opening file first.');
-                    return;
-                }
-
-                // Shuffle a copy of the paths for random order (for this practice session)
-                allPaths = shuffleArray(allPathsOriginal.slice());
-
-                // Initialize path tracking
-                currentPathIndex = 0;
-                currentStepIndex = 0;
-                pathsCompleted = 0;
-                mistakeOnCurrentPath = false;
-                updateScore();
-
-                // Reset game
-                game.reset();
-                currentBoardState = 'start';
-
-                // Recreate board as draggable
-                board.destroy();
-                board = Chessboard('board', {
-                    draggable: true,
-                    position: 'start',
-                    orientation: userColor,
-                    pieceTheme: 'https://lichess1.org/assets/piece/staunty/{piece}.svg',
-                    onDragStart: onDragStart,
-                    onDrop: onDrop,
-                    onSnapEnd: onSnapEnd
-                });
-
-                // Enable practice mode
-                practiceActive = true;
-
-                // Change button to Stop with red background
-                startBtn.innerText = 'Stop';
-                startBtn.classList.add('stop-mode');
-
-                // Hide evaluation label at start
-                updateEvaluationLabel();
-                drawGraph();
-
-                // If playing as black, computer makes first move
-                if (userColor === 'black') {
-                    setTimeout(makeComputerMove, 500);
-                }
+            // Check if paths are loaded
+            if (allPathsOriginal.length === 0) {
+                return;
             }
+
+            // Enable reset button
+            document.getElementById('resetBtn').disabled = false;
+
+            // Shuffle a copy of the paths for random order (for this practice session)
+            allPaths = shuffleArray(allPathsOriginal.slice());
+
+            // Initialize path tracking
+            currentPathIndex = 0;
+            currentStepIndex = 0;
+            pathsCompleted = 0;
+            pathsRemaining = allPathsOriginal.length;
+            mistakeOnCurrentPath = false;
+            updateScore();
+
+            // Reset game
+            game.reset();
+            currentBoardState = 'start';
+
+            // Recreate board as draggable
+            board.destroy();
+            board = Chessboard('board', {
+                draggable: true,
+                position: 'start',
+                orientation: userColor,
+                pieceTheme: 'https://lichess1.org/assets/piece/staunty/{piece}.svg',
+                onDragStart: onDragStart,
+                onDrop: onDrop,
+                onSnapEnd: onSnapEnd
+            });
+
+            // Enable practice mode
+            practiceActive = true;
+
+            // Hide evaluation label at start
+            updateEvaluationLabel();
+            drawGraph();
+
+            // If playing as black, computer makes first move
+            if (userColor === 'black') {
+                setTimeout(makeComputerMove, 500);
+            }
+        }
+
+        // Reset button handler
+        document.getElementById('resetBtn').addEventListener('click', function() {
+            startPractice();
         });
 
         // Initialize canvas
