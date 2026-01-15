@@ -125,14 +125,6 @@
             color: #999;
         }
 
-        #saveAnnotationBtn {
-            background-color: #27ae60;
-        }
-
-        #saveAnnotationBtn:hover {
-            background-color: #229954;
-        }
-
         #exportBtn {
             background-color: #3498db;
         }
@@ -210,8 +202,7 @@
                     </div>
                 </div>
                 <div style="margin-bottom: 10px; display: flex; align-items: center; width: 600px;">
-                    <input type="text" id="annotationInput" placeholder="Add annotation for last move..." style="flex: 1;">
-                    <button id="saveAnnotationBtn" style="margin-left: 10px;">Save</button>
+                    <input type="text" id="annotationInput" placeholder="Add annotation for next move..." style="flex: 1;">
                 </div>
                 <div id="board" style="width: 600px;"></div>
                 <div id="evaluationLabel"></div>
@@ -274,6 +265,15 @@
 
         // On piece drop
         function onDrop(source, target) {
+            // Get annotation text for this move (before making the move)
+            var annotationText = document.getElementById('annotationInput').value.trim();
+
+            // Strip out returns and quotes
+            if (annotationText) {
+                annotationText = annotationText.replace(/[\r\n]/g, ' ');
+                annotationText = annotationText.replace(/["']/g, '');
+            }
+
             // Get state before move
             var stateBefore = currentBoardState;
 
@@ -290,8 +290,8 @@
             var stateAfter = boardToFEN();
             console.log('Move made - From:', stateBefore, 'To:', stateAfter);
 
-            // Add edge to graph
-            addEdgeToGraph(stateBefore, stateAfter);
+            // Add edge to graph with annotation
+            addEdgeToGraph(stateBefore, stateAfter, annotationText);
             currentBoardState = stateAfter;
 
             // Add to history
@@ -302,10 +302,8 @@
                 updateHistoryButtons();
             }
 
-            // Update annotation input with any existing annotation
-            if (lastEdgeIndex !== -1 && lastEdgeIndex < graphEdges.length) {
-                document.getElementById('annotationInput').value = graphEdges[lastEdgeIndex].annotation || '';
-            }
+            // Clear annotation input after move
+            document.getElementById('annotationInput').value = '';
 
             updateTurnLabel();
             updateEvaluationLabel();
@@ -431,29 +429,6 @@
             drawGraph();
         }
 
-        // Save annotation for last edge
-        function saveAnnotation() {
-            var text = document.getElementById('annotationInput').value.trim();
-            if (!text) {
-                alert('Please enter an annotation first.');
-                return;
-            }
-
-            if (lastEdgeIndex === -1 || lastEdgeIndex >= graphEdges.length) {
-                alert('No move to annotate. Make a move first.');
-                return;
-            }
-
-            // Strip out returns and quotes
-            text = text.replace(/[\r\n]/g, ' ');
-            text = text.replace(/["']/g, '');
-
-            // Save annotation to the last edge
-            graphEdges[lastEdgeIndex].annotation = text;
-
-            drawGraph();
-        }
-
         // Initialize the chessboard (draggable in edit mode)
         var config = {
             draggable: true,
@@ -474,7 +449,6 @@
         document.getElementById('resetGraphBtn').addEventListener('click', resetBoardAndGraph);
         document.getElementById('undoBtn').addEventListener('click', undo);
         document.getElementById('redoBtn').addEventListener('click', redo);
-        document.getElementById('saveAnnotationBtn').addEventListener('click', saveAnnotation);
 
         // Load button triggers file input
         document.getElementById('loadBtn').addEventListener('click', function() {

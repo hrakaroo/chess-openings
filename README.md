@@ -29,7 +29,7 @@ exists, it doesn't care so much how to get there.
 - **Interactive chessboard** with drag-and-drop piece movement and legal move validation
 - **Automatic state tracking** - each move is captured as a transition between board states
 - **Move annotations** - add notes and comments to specific moves:
-  - Text input field under the buttons for adding annotations
+  - Type annotation before making a move, it's automatically applied
   - Annotations are saved with transitions and displayed in tooltips
   - Hover over nodes to see both the move notation and your annotation
 - **Tree graph visualization** showing all explored positions as an opening tree with:
@@ -86,6 +86,7 @@ The application now has three separate pages, each optimized for a specific work
 - **Features**:
   - Load route files (with embedded positions)
   - Click nodes in the graph to navigate through positions
+  - View move annotations in read-only text field above the board
   - Export to PGN format
   - Read-only board (pieces cannot be moved)
 - **Available buttons**: Load Routes, Export PGN, Fit View
@@ -125,13 +126,14 @@ The application now has three separate pages, each optimized for a specific work
 
 ### Adding Annotations (Build Mode)
 
-1. After making a move, the annotation text box will show any existing annotation for that move
-2. Type your note or comment in the text box (e.g., "Main line", "Tricky trap!", "Best for White")
-3. Click the **Save** button to save the annotation
-4. Annotations appear in the tooltip when you hover over nodes in the graph
-5. Returns and quotes are automatically stripped from annotations
+1. Type your note or comment in the annotation text box **before** making a move (e.g., "Main line", "Tricky trap!", "Best for White")
+2. Make the move by dragging a piece
+3. The annotation is automatically applied to the move you just made
+4. The annotation text box clears automatically, ready for the next move
+5. Annotations appear in the tooltip when you hover over nodes in the graph
+6. Returns and quotes are automatically stripped from annotations
 
-**Note**: Annotations are saved with the transition between two positions, so they're associated with the move that was just made.
+**Note**: Annotations are saved with the transition between two positions, so they're associated with the move. Type the annotation first, then make the move - no save button needed!
 
 ### Managing Routes
 

@@ -187,7 +187,32 @@ function loadState(state, addToHistoryFlag) {
         }
     }
 
-    // Update annotation input if present
+    // Update annotation display (for explore mode - read-only)
+    var annotationDisplay = document.getElementById('annotationDisplay');
+    if (annotationDisplay) {
+        // Find the edge that led to this state
+        var annotation = '';
+        if (historyIndex > 0) {
+            var fromState = normalizeFEN(moveHistory[historyIndex - 1]);
+            var toState = normalizedState;
+
+            // Find the edge from previous state to current state
+            for (var i = 0; i < graphEdges.length; i++) {
+                var edge = graphEdges[i];
+                // edge.from and edge.to are indices, need to look up the actual states
+                var edgeFromState = graphNodes[edge.from];
+                var edgeToState = graphNodes[edge.to];
+
+                if (edgeFromState === fromState && edgeToState === toState) {
+                    annotation = edge.annotation || '';
+                    break;
+                }
+            }
+        }
+        annotationDisplay.value = annotation;
+    }
+
+    // Update annotation input if present (for build mode)
     var annotationInput = document.getElementById('annotationInput');
     if (annotationInput && lastEdgeIndex !== -1 && lastEdgeIndex < graphEdges.length) {
         annotationInput.value = graphEdges[lastEdgeIndex].annotation || '';
