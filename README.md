@@ -4,25 +4,20 @@ A static web application for practicing chess openings.
 
 ## Motivation
 
-I was using chessreps.com to try to learn the variations of the London
-and started to notice that several of the variations seemed to share
-some common board setups.  Like a pawn move by black to e6, followed
-by a move by white to b3, followed by a move by black to f6 VS f6, b3
-and then e6.  The ordering is different, but they both end up with the
-same end result.
+While using a chess openings training site to try to learn the
+variations of the London I noticed that several of the variations
+shared a common board setups.  (Like a pawn move by black to e6,
+followed by a move by white to b3, followed by a move by black to f6
+VS f6, b3 and then e6.)  The path they took to get there may be
+differnt, but they both end up at the same result.
 
-I was having a hard time visualizing what I was learning. and it
+I was having a hard time visualizing what I was learning and it
 bothered me that some variations seemed to be strict on how the common
-board setup was achieved.  
+board setup was achieved.
 
-So my first step was just to see if I could render each of these in a
-graph to *see* the overlaps. From there it wasn't hard to expand it to
-a system that supported practice.
-
-Also, of note, the practice for this is different than the drills on
-chessreps.com The ones on chessreps.com are testing for specific
-variations, this one tests for specific results. So long as a path
-exists, it doesn't care so much how to get there.
+So my initial motivation was just to see if I could render each of
+these variations as paths in a graph to *see* the overlaps. From there
+it wasn't hard to expand it to a system that supported practice.
 
 ## Features
 
