@@ -95,6 +95,7 @@
 
         #startBtn {
             background-color: #27ae60;
+            color: white;
         }
 
         #startBtn:hover {
@@ -103,6 +104,7 @@
 
         #startBtn.stop-mode {
             background-color: #e74c3c;
+            color: white;
         }
 
         #startBtn.stop-mode:hover {
@@ -191,12 +193,8 @@
                     </div>
                     <button id="startBtn" disabled>Start</button>
                     <div style="display: flex; align-items: center; gap: 5px;">
-                        <label for="correctField" style="font-weight: bold;">Correct:</label>
-                        <input type="text" id="correctField" value="0" readonly style="width: 50px; text-align: center; padding: 5px; border: 1px solid #ccc; border-radius: 4px; background-color: #f9f9f9;">
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 5px;">
-                        <label for="bestField" style="font-weight: bold;">Best:</label>
-                        <input type="text" id="bestField" value="0" readonly style="width: 50px; text-align: center; padding: 5px; border: 1px solid #ccc; border-radius: 4px; background-color: #f9f9f9;">
+                        <label for="scoreField" style="font-weight: bold;">Score:</label>
+                        <input type="text" id="scoreField" value="0 / 0" readonly style="width: 80px; text-align: center; padding: 5px; border: 1px solid #ccc; border-radius: 4px; background-color: #f9f9f9;">
                     </div>
                 </div>
                 <div style="margin-bottom: 10px; width: 600px;">
@@ -249,11 +247,12 @@
         // Practice mode state
         var practiceActive = false;
         var userColor = 'white';  // 'white' or 'black'
-        var correctCount = 0;
-        var bestCount = 0;
-        var currentStreak = 0;
-        var mistakeInCurrentRun = false;
-        var childQueues = {};  // Map from state to shuffled queue of children
+        var allPathsOriginal = [];  // Original paths from file (never modified)
+        var allPaths = [];  // Shuffled paths for current practice session
+        var currentPathIndex = 0;  // Which path we're currently on
+        var currentStepIndex = 0;  // Where in the current path we are
+        var pathsCompleted = 0;  // How many paths done correctly
+        var mistakeOnCurrentPath = false;  // Track if user made mistake on current path
 
         // Shuffle an array using Fisher-Yates algorithm
         function shuffleArray(array) {
@@ -267,64 +266,130 @@
             return shuffled;
         }
 
-        // Get all valid child states from current state
-        function getValidChildren(state) {
-            var children = [];
-            var stateIndex = stateToIndex.get(state);
-            if (stateIndex === undefined) return children;
-
-            for (var i = 0; i < graphEdges.length; i++) {
-                if (graphEdges[i].from === stateIndex) {
-                    children.push(graphNodes[graphEdges[i].to]);
-                }
-            }
-            return children;
-        }
-
-        // Get next child from shuffled queue (refills when empty)
-        function getNextChild(state) {
-            // Check if we have a queue for this state
-            if (!childQueues[state] || childQueues[state].length === 0) {
-                // Get all children and shuffle them
-                var children = getValidChildren(state);
-                if (children.length === 0) return null;
-                childQueues[state] = shuffleArray(children);
-            }
-
-            // Pop and return the next child from the queue
-            return childQueues[state].shift();
-        }
-
-        // Check if a state is terminal (no outgoing edges)
-        function isTerminalState(state) {
-            return getValidChildren(state).length === 0;
-        }
-
-        // Make computer move
-        function makeComputerMove() {
-            var targetState = getNextChild(currentBoardState);
-
-            if (targetState === null) {
-                // Terminal state - only increment if no mistakes in this run
-                if (!mistakeInCurrentRun) {
-                    correctCount++;
-                    currentStreak++;
-                    if (currentStreak > bestCount) {
-                        bestCount = currentStreak;
-                        document.getElementById('bestField').value = bestCount;
+        // Find all terminal states (leaf nodes with no outgoing edges)
+        function findTerminalStates() {
+            var terminals = [];
+            for (var i = 0; i < graphNodes.length; i++) {
+                var hasOutgoing = false;
+                for (var j = 0; j < graphEdges.length; j++) {
+                    if (graphEdges[j].from === i) {
+                        hasOutgoing = true;
+                        break;
                     }
-                    document.getElementById('correctField').value = correctCount;
+                }
+                if (!hasOutgoing && graphNodes[i] !== 'start') {
+                    terminals.push(graphNodes[i]);
+                }
+            }
+            return terminals;
+        }
+
+        // DFS to find all paths from startState to targetState
+        function findPathsToState(startState, targetState) {
+            var paths = [];
+            var visited = new Set();
+            var currentPath = [normalizeFEN(startState)];
+
+            function dfs(state) {
+                var normalizedState = normalizeFEN(state);
+
+                if (normalizedState === normalizeFEN(targetState)) {
+                    paths.push(currentPath.slice());
+                    return;
                 }
 
-                // Show evaluation for terminal state
-                updateEvaluationLabel();
+                var stateIndex = stateToIndex.get(normalizedState);
+                if (stateIndex === undefined) return;
 
-                // Reset for next practice round
+                visited.add(normalizedState);
+
+                // Find all children
+                for (var i = 0; i < graphEdges.length; i++) {
+                    if (graphEdges[i].from === stateIndex) {
+                        var childState = graphNodes[graphEdges[i].to];
+                        if (!visited.has(childState)) {
+                            currentPath.push(childState);
+                            dfs(childState);
+                            currentPath.pop();
+                        }
+                    }
+                }
+
+                visited.delete(normalizedState);
+            }
+
+            dfs(startState);
+            return paths;
+        }
+
+        // Find all complete paths from start to all terminals
+        function findAllPaths() {
+            var paths = [];
+            var terminals = findTerminalStates();
+
+            for (var i = 0; i < terminals.length; i++) {
+                var terminalState = terminals[i];
+                var pathsToTerminal = findPathsToState('start', terminalState);
+                paths = paths.concat(pathsToTerminal);
+            }
+
+            return paths;
+        }
+
+        // Update score display
+        function updateScore() {
+            document.getElementById('scoreField').value = pathsCompleted + ' / ' + allPathsOriginal.length;
+        }
+
+        // Make computer move following the current path
+        function makeComputerMove() {
+            if (currentPathIndex >= allPaths.length) {
+                // All paths completed - auto stop
+                document.getElementById('startBtn').click();
+                return;
+            }
+
+            var currentPath = allPaths[currentPathIndex];
+            currentStepIndex++;
+
+            if (currentStepIndex >= currentPath.length) {
+                // Trying to go beyond path - shouldn't happen
+                console.error('currentStepIndex exceeded path length');
+                return;
+            }
+
+            // Make the next move in the path
+            var targetState = currentPath[currentStepIndex];
+            loadState(targetState, false);
+            updateEvaluationLabel();
+
+            // Check if we've reached the terminal (last position in path)
+            if (currentStepIndex >= currentPath.length - 1) {
+                // Computer has completed the path - only count if no mistakes
+                if (!mistakeOnCurrentPath) {
+                    pathsCompleted++;
+                    updateScore();
+                }
+
+                // Move to next path
+                currentPathIndex++;
+
+                // Check if all paths are done
+                if (currentPathIndex >= allPaths.length) {
+                    // All paths completed - auto stop after showing final state
+                    setTimeout(function() {
+                        document.getElementById('startBtn').click();
+                    }, 2000);
+                    return;
+                }
+
+                // Move to next path after a short delay
                 setTimeout(function() {
+                    currentStepIndex = 0;
+                    mistakeOnCurrentPath = false;  // Reset mistake flag for new path
                     game.reset();
                     board.position('start');
                     currentBoardState = 'start';
-                    mistakeInCurrentRun = false;  // Reset mistake flag for new run
                     updateEvaluationLabel();
                     drawGraph();
 
@@ -333,12 +398,7 @@
                         setTimeout(makeComputerMove, 500);
                     }
                 }, 2000);
-                return;
             }
-
-            // Load the target state (already selected from shuffled queue)
-            loadState(targetState, false);
-            updateEvaluationLabel();
         }
 
         // Prevent picking up pieces if not user's turn or wrong color
@@ -359,7 +419,7 @@
             }
         }
 
-        // On piece drop - validate against graph
+        // On piece drop - validate against current path
         function onDrop(source, target) {
             if (!practiceActive) return 'snapback';
 
@@ -377,44 +437,49 @@
             // Get state after move
             var stateAfter = boardToFEN();
 
-            // Check if this state is a valid child in the graph
-            var validChildren = getValidChildren(stateBefore);
-            var isValid = validChildren.indexOf(stateAfter) !== -1;
+            // Check if this move matches the next state in the current path
+            var currentPath = allPaths[currentPathIndex];
+            var expectedNextState = currentPath[currentStepIndex + 1];
 
-            if (!isValid) {
-                // Invalid move - mark mistake and reset counters
+            if (normalizeFEN(stateAfter) !== normalizeFEN(expectedNextState)) {
+                // Wrong move - mark mistake on this path
                 game.undo();
-                mistakeInCurrentRun = true;  // Mark that mistake was made in this run
-                currentStreak = 0;  // Reset streak on mistake
-                correctCount = 0;  // Reset correct count on mistake
-                document.getElementById('correctField').value = correctCount;
+                mistakeOnCurrentPath = true;
                 return 'snapback';
             }
 
-            // Valid move - update state
+            // Correct move - advance in path
+            currentStepIndex++;
             currentBoardState = stateAfter;
             updateEvaluationLabel();
             drawGraph();
 
-            // Check if user reached terminal state
-            if (isTerminalState(stateAfter)) {
-                // Only increment if no mistakes in this run
-                if (!mistakeInCurrentRun) {
-                    correctCount++;
-                    currentStreak++;
-                    if (currentStreak > bestCount) {
-                        bestCount = currentStreak;
-                        document.getElementById('bestField').value = bestCount;
-                    }
-                    document.getElementById('correctField').value = correctCount;
+            // Check if we've reached the end of the current path
+            if (currentStepIndex >= currentPath.length - 1) {
+                // Path completed - only count if no mistakes were made
+                if (!mistakeOnCurrentPath) {
+                    pathsCompleted++;
+                    updateScore();
                 }
 
-                // Reset for next round
+                // Move to next path
+                currentPathIndex++;
+
+                // Check if all paths are done
+                if (currentPathIndex >= allPaths.length) {
+                    // All paths completed - auto stop after showing final state
+                    setTimeout(function() {
+                        document.getElementById('startBtn').click();
+                    }, 2000);
+                    return;
+                }
+
                 setTimeout(function() {
+                    currentStepIndex = 0;
+                    mistakeOnCurrentPath = false;  // Reset mistake flag for new path
                     game.reset();
                     board.position('start');
                     currentBoardState = 'start';
-                    mistakeInCurrentRun = false;  // Reset mistake flag for new run
                     updateEvaluationLabel();
                     drawGraph();
 
@@ -463,8 +528,15 @@
                 reader.onload = function(e) {
                     try {
                         loadRoutesFromFile(e.target.result, file.name);
+
+                        // Compute all paths immediately after loading
+                        allPathsOriginal = findAllPaths();
+                        allPaths = [];
+                        pathsCompleted = 0;
+                        updateScore();
+
                         hideLoading();
-                        showSuccess('Loaded: ' + file.name);
+                        showSuccess('Loaded: ' + file.name + ' (' + allPathsOriginal.length + ' paths)');
                     } catch (error) {
                         hideLoading();
                         showError(
@@ -510,18 +582,30 @@
                 game.reset();
                 board.position('start');
                 currentBoardState = 'start';
-                currentStreak = 0;
                 drawGraph();
             } else {
                 // Start practice mode
                 userColor = document.getElementById('playAsSelect').value;
 
+                // Check if paths are loaded
+                if (allPathsOriginal.length === 0) {
+                    alert('No complete paths found. Please load an opening file first.');
+                    return;
+                }
+
+                // Shuffle a copy of the paths for random order (for this practice session)
+                allPaths = shuffleArray(allPathsOriginal.slice());
+
+                // Initialize path tracking
+                currentPathIndex = 0;
+                currentStepIndex = 0;
+                pathsCompleted = 0;
+                mistakeOnCurrentPath = false;
+                updateScore();
+
                 // Reset game
                 game.reset();
                 currentBoardState = 'start';
-                currentStreak = 0;
-                mistakeInCurrentRun = false;
-                childQueues = {};  // Clear shuffled queues for fresh start
 
                 // Recreate board as draggable
                 board.destroy();

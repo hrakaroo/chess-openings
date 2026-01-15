@@ -747,8 +747,8 @@ var lastGraphStructure = null;    // Track graph changes
 // Node colors
 var NODE_COLORS = {
     START: '#4A90E2',        // Blue
-    WHITE_TO_MOVE: '#9E9E9E', // Dark grey (white's turn)
-    BLACK_TO_MOVE: '#BDBDBD', // Light grey (black's turn)
+    WHITE_TO_MOVE: '#616161', // Dark grey (white's turn)
+    BLACK_TO_MOVE: '#E0E0E0', // Light grey (black's turn)
     CURRENT: '#4CAF50',      // Green
     EVALUATED: '#E53935'     // Red (positions with Stockfish evaluation)
 };
