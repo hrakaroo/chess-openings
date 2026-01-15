@@ -4,24 +4,24 @@ A static web application for practicing chess openings.
 
 ## Motivation
 
-While using a chess openings training site to try to learn the
-variations of the London I noticed that several of the variations
-shared a common board setups.  (Like a pawn move by black to e6,
-followed by a move by white to b3, followed by a move by black to f6
-VS f6, b3 and then e6.)  The path they took to get there may be
-differnt, but they both end up at the same result.
+While learning the London System opening, I noticed that many variations shared common board positions but arrived there through different move orders (transpositions). For example, reaching the same position via e6→b3→f6 versus f6→b3→e6.
 
-I was having a hard time visualizing what I was learning and it
-bothered me that some variations seemed to be strict on how the common
-board setup was achieved.
+I had difficulty visualizing these relationships, and it bothered me that traditional training tools treated each variation as a strict sequence rather than highlighting the common positions.
 
-So my initial motivation was just to see if I could render each of
-these variations as paths in a graph to *see* the overlaps. From there
-it wasn't hard to expand it to a system that supported practice.
+My initial goal was to render opening variations as a graph to clearly see where different paths converge. Visualizing transpositions made it much easier to understand and remember opening theory. From there, it was natural to extend the tool to support building custom repertoires and practicing them interactively.
+
+## Caveat
+
+Board states are saved without en passant information. This is a deliberate simplification because:
+- En passant opportunities are rare in general play
+- They're even rarer in opening theory
+- They're extremely rare in cases where they would meaningfully distinguish between variations
+
+However, this does mean there's a very narrow possibility that the system may incorrectly merge two positions that should be distinct due to differing en passant rights.
 
 ## Features
 
-- **Interactive chessboard** with drag-and-drop piece movement and legal move validation
+- **Interactive chessboard** with drag-and-drop piece movement, legal move validation, and Staunty piece theme (Staunton-style pieces with depth and shading from Lichess)
 - **Automatic state tracking** - each move is captured as a transition between board states
 - **Move annotations** - add notes and comments to specific moves:
   - Type annotation before making a move, it's automatically applied
@@ -55,7 +55,7 @@ The application now has three separate pages, each optimized for a specific work
   ├── index.html          - Welcome page with mode selection
   ├── explore.html        - Explore Mode: Browse and explore routes
   ├── build.html          - Build Mode: Build and modify repertoires
-  ├── practice.html       - Practice Mode: Coming soon
+  ├── practice.html       - Practice Mode: Interactive opening practice
   ├── evaluate.py         - Python script for layout optimization
   ├── README.md           - Main documentation
   ├── js/                 - JavaScript modules
@@ -83,7 +83,7 @@ The application now has three separate pages, each optimized for a specific work
   - Click nodes in the graph to navigate through positions
   - View move annotations in read-only text field above the board
   - Export to PGN format
-  - Read-only board (pieces cannot be moved)
+  - Board pieces are moved through the graph only.
 - **Available buttons**: Load Routes, Export PGN, Fit View
 - **URL**: `explore.html`
 
@@ -99,7 +99,19 @@ The application now has three separate pages, each optimized for a specific work
 - **URL**: `build.html`
 
 #### Practice Mode (`practice.html`)
-- **Purpose**: Coming soon...
+- **Purpose**: Test your knowledge of loaded opening repertoires through interactive practice
+- **Features**:
+  - Load route files to practice
+  - Choose to play as White or Black
+  - Computer automatically plays the opposite side through the repertoire
+  - Validates your moves against loaded variations
+  - Tracks "Correct" count (successful completions without mistakes) and "Best" streak
+  - Resets streak on incorrect moves
+  - Automatically cycles through positions on completion
+  - View move annotations during practice
+  - Graph visualization with current position highlighted
+  - Shuffled move order - each practice run explores variations in random order
+- **Available buttons**: Load Routes, Start/Stop, Fit View
 - **URL**: `practice.html`
 
 **Switching Modes**: Click the "← Back to Home" link at the top of any mode page to return to the welcome page and select a different mode.
@@ -129,6 +141,25 @@ The application now has three separate pages, each optimized for a specific work
 6. Returns and quotes are automatically stripped from annotations
 
 **Note**: Annotations are saved with the transition between two positions, so they're associated with the move. Type the annotation first, then make the move - no save button needed!
+
+### Practicing Openings (Practice Mode)
+
+1. Navigate to `practice.html` or click **Practice** from the welcome page
+2. Click **Load Routes** and select a `.txt` file containing your opening repertoire
+3. Choose whether to play as **White** or **Black** using the dropdown
+4. Click **Start** to begin practice
+5. The computer will play the opposite side, and you must respond with moves from your loaded repertoire
+6. **Correct** count tracks successful completions (reaching the end without mistakes)
+7. **Best** tracks your longest streak of correct completions
+8. Making an incorrect move resets both counters and the position
+9. The practice session cycles through variations in random order (shuffled)
+10. Click **Stop** to end the practice session
+11. Annotations from your repertoire are displayed above the board during practice
+
+**Tips**:
+- Practice mode validates your moves against ALL loaded variations, so any valid move from your repertoire is accepted
+- The random order ensures you're truly learning the positions, not just memorizing a fixed sequence
+- Your Best streak persists across multiple practice runs until you make a mistake
 
 ### Managing Routes
 
