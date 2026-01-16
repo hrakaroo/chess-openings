@@ -56,8 +56,10 @@ The application now has three separate pages, each optimized for a specific work
   ├── explore.html        - Explore Mode: Browse and explore routes
   ├── build.html          - Build Mode: Build and modify repertoires
   ├── practice.html       - Practice Mode: Interactive opening practice
-  ├── evaluate.py         - Python script for layout optimization
   ├── README.md           - Main documentation
+  ├── bin/                - Python utility scripts
+  │   ├── evaluate.py     - Layout optimization and Stockfish evaluation
+  │   └── merge.py        - Merge multiple opening files
   ├── js/                 - JavaScript modules
   │   ├── chess-common.js - Shared chess logic
   │   ├── fen-utils.js    - FEN normalization utilities
@@ -201,25 +203,25 @@ For complex opening trees with many variations, you can use the Python script to
 
 3. **Generate positions and evaluations**:
    ```bash
-   python evaluate.py your-openings.txt
+   python bin/evaluate.py your-openings.txt
    ```
    This modifies your file in place, adding optimal position coordinates and Stockfish evaluations for leaf nodes (terminal positions).
 
    To skip evaluation:
    ```bash
-   python evaluate.py your-openings.txt --no-eval
+   python bin/evaluate.py your-openings.txt --no-eval
    ```
 
    To specify Stockfish location:
    ```bash
-   python evaluate.py your-openings.txt --stockfish-path /path/to/stockfish
+   python bin/evaluate.py your-openings.txt --stockfish-path /path/to/stockfish
    ```
 
 4. **Try different algorithms** if you see edge crossings:
    ```bash
-   python evaluate.py your-openings.txt --algorithm dot
-   python evaluate.py your-openings.txt --algorithm neato
-   python evaluate.py your-openings.txt --algorithm fdp
+   python bin/evaluate.py your-openings.txt --algorithm dot
+   python bin/evaluate.py your-openings.txt --algorithm neato
+   python bin/evaluate.py your-openings.txt --algorithm fdp
    ```
    Available algorithms:
    - `dot` - hierarchical/layered (best for DAGs, minimizes crossings) - **default**
@@ -229,7 +231,7 @@ For complex opening trees with many variations, you can use the Python script to
 
 5. **Save to a different file** (optional):
    ```bash
-   python evaluate.py your-openings.txt --output optimized-openings.txt
+   python bin/evaluate.py your-openings.txt --output optimized-openings.txt
    ```
 
 6. **Load in browser**:
@@ -244,6 +246,38 @@ For complex opening trees with many variations, you can use the Python script to
 - Positions and evaluations embedded in the same file (no separate files to manage)
 - Can be regenerated with different algorithms to find the best one
 - Optional - tool works fine without positions (uses Dagre layout)
+
+### Merging Opening Files
+
+If you have multiple opening files that you want to combine into a single repertoire, use the `merge.py` script:
+
+```bash
+python bin/merge.py file1.txt file2.txt file3.txt --output merged.txt
+```
+
+**What it does**:
+- Combines all unique transitions from multiple files
+- Merges annotations when the same transition appears in multiple files (separated by ` | `)
+- Combines titles from all input files (e.g., "London System + Queen's Gambit")
+- Removes position coordinates and evaluations (clean output)
+- Outputs a standard v4.0 format file ready to use
+
+**Example**:
+```bash
+# Merge multiple London System variations
+python bin/merge.py openings/london-1-5.txt openings/london-6-10.txt --output openings/london-complete.txt
+
+# Merge different openings into a repertoire
+python bin/merge.py openings/london.txt openings/queens-gambit.txt openings/kings-indian.txt --output my-repertoire.txt
+```
+
+**Use cases**:
+- Combining separate files for the same opening (e.g., different variations learned at different times)
+- Building a complete repertoire from multiple opening systems
+- Consolidating similar lines with different annotations
+- Creating a master file from themed subsets
+
+**Note**: If you want optimal graph layout after merging, run `bin/evaluate.py` on the merged file.
 
 ### Navigation
 

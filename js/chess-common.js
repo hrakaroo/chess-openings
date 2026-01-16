@@ -117,6 +117,13 @@ function removeOrphanedNodes() {
             if (graphEdges[n].to > removeIndex) graphEdges[n].to--;
         }
     }
+
+    // Rebuild edgeMap since edge indices changed
+    edgeMap = new Map();
+    for (var i = 0; i < graphEdges.length; i++) {
+        var edgeKey = graphEdges[i].from + '-' + graphEdges[i].to;
+        edgeMap.set(edgeKey, i);
+    }
 }
 
 // Remove all edges and nodes in the "future" from a given state
@@ -151,6 +158,13 @@ function removeFutureFromGraph(fromStateIndex) {
     graphEdges = graphEdges.filter(function(edge) {
         return edge.from !== fromStateIndex;
     });
+
+    // Rebuild edgeMap since edges were removed
+    edgeMap = new Map();
+    for (var i = 0; i < graphEdges.length; i++) {
+        var edgeKey = graphEdges[i].from + '-' + graphEdges[i].to;
+        edgeMap.set(edgeKey, i);
+    }
 
     // Remove orphaned nodes
     removeOrphanedNodes();
