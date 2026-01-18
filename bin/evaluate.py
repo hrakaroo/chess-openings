@@ -19,15 +19,41 @@ from collections import defaultdict
 
 try:
     import networkx as nx
-    import pygraphviz as pgv
-except ImportError:
-    print("Error: Required libraries not found.")
-    print("Please install with: pip install networkx pygraphviz")
-    print("Note: pygraphviz requires graphviz to be installed on your system:")
-    print("  macOS: brew install graphviz")
-    print("  Ubuntu/Debian: sudo apt-get install graphviz graphviz-dev")
-    print("  Windows: Download from https://graphviz.org/download/")
+except ImportError as e:
+    print("Error: NetworkX is required.")
+    if "numpy" in str(e).lower():
+        print("Please install with: pip install numpy networkx")
+        print("(NetworkX requires numpy)")
+    else:
+        print("Please install with: pip install networkx")
     sys.exit(1)
+
+# Try to import graphviz libraries (optional, for better layouts)
+PYGRAPHVIZ_AVAILABLE = False
+PYDOT_AVAILABLE = False
+
+try:
+    import pygraphviz as pgv
+    PYGRAPHVIZ_AVAILABLE = True
+    LAYOUT_BACKEND = "pygraphviz"
+except ImportError:
+    try:
+        import pydot
+        from networkx.drawing.nx_pydot import graphviz_layout
+        PYDOT_AVAILABLE = True
+        LAYOUT_BACKEND = "pydot"
+    except ImportError:
+        LAYOUT_BACKEND = "networkx"
+
+if LAYOUT_BACKEND == "networkx":
+    print("Note: Using NetworkX built-in layouts (pygraphviz not found)")
+    print("For optimal layouts, install pygraphviz - see INSTALL_PYGRAPHVIZ.md")
+elif LAYOUT_BACKEND == "pydot":
+    print("Warning: Using pydot for graph layouts")
+    print("Note: pydot layouts may not be optimal. Consider installing pygraphviz instead.")
+    print("See INSTALL_PYGRAPHVIZ.md for installation instructions.")
+else:
+    print("Using pygraphviz for graph layouts (optimal)")
 
 # chess library is required for parsing move notation
 try:
@@ -313,9 +339,9 @@ def build_graph(states, edges):
 
 def compute_layout(G, algorithm='dot'):
     """
-    Compute node positions using graphviz layout algorithm.
+    Compute node positions using the best available layout backend.
 
-    Available algorithms:
+    Available algorithms (for graphviz backends):
     - dot: hierarchical/layered (best for DAGs, minimizes crossings)
     - neato: spring model (force-directed)
     - fdp: force-directed with smart edge handling
@@ -323,43 +349,90 @@ def compute_layout(G, algorithm='dot'):
     - twopi: radial layout
     - circo: circular layout
     """
+
+    # Try pygraphviz first (best quality)
+    if LAYOUT_BACKEND == "pygraphviz":
+        try:
+            # Convert NetworkX graph to pygraphviz for better control
+            A = pgv.AGraph(directed=True)
+
+            # Set graph attributes for top-to-bottom layout
+            A.graph_attr['rankdir'] = 'TB'  # Top to Bottom
+            A.graph_attr['ranksep'] = '1.5'  # Vertical spacing between ranks
+            A.graph_attr['nodesep'] = '0.8'  # Horizontal spacing between nodes at same rank
+            A.node_attr['shape'] = 'circle'  # Circle nodes (matches browser visualization)
+            A.node_attr['width'] = '0.3'  # Node width in inches
+            A.node_attr['height'] = '0.3'  # Node height in inches
+            A.node_attr['fixedsize'] = 'true'  # Keep nodes same size
+
+            # Add nodes and edges
+            for node in G.nodes():
+                A.add_node(node, label='')  # Empty label to avoid size warnings
+            for edge in G.edges():
+                A.add_edge(edge[0], edge[1])
+
+            # Compute layout
+            A.layout(prog=algorithm)
+
+            # Extract positions
+            pos = {}
+            for node in A.nodes():
+                x, y = node.attr['pos'].split(',')
+                pos[str(node)] = (float(x), float(y))
+
+            print(f"Layout computed successfully using pygraphviz '{algorithm}' algorithm")
+            return pos
+        except Exception as e:
+            print(f"Error computing layout with pygraphviz: {e}")
+            print("Falling back to alternative layout...")
+
+    # Try pydot (good quality, easier to install)
+    if LAYOUT_BACKEND == "pydot" or (LAYOUT_BACKEND == "pygraphviz" and PYDOT_AVAILABLE):
+        try:
+            # Use pydot through networkx
+            pos = graphviz_layout(G, prog=algorithm)
+            print(f"Layout computed successfully using pydot '{algorithm}' algorithm")
+            return pos
+        except Exception as e:
+            print(f"Error computing layout with pydot: {e}")
+            print("Falling back to NetworkX layout...")
+
+    # Fallback to NetworkX built-in layouts
+    print("Using NetworkX built-in layout algorithms...")
+
+    # Try hierarchical layout for DAGs
+    if nx.is_directed_acyclic_graph(G):
+        try:
+            # Use multipartite layout for hierarchical structure
+            # Assign layers based on topological sort
+            layers = {}
+            for i, layer_nodes in enumerate(nx.topological_generations(G)):
+                for node in layer_nodes:
+                    layers[node] = i
+
+            # Create subset structure for multipartite layout
+            pos = nx.multipartite_layout(G, subset_key=lambda node: layers[node], scale=200)
+
+            # Scale and offset to match graphviz-style coordinates
+            pos = {node: (x * 3 + 400, y * 150) for node, (x, y) in pos.items()}
+            print("Layout computed using NetworkX multipartite_layout (hierarchical)")
+            return pos
+        except Exception as e:
+            print(f"Could not use hierarchical layout: {e}")
+
+    # Final fallback: spring layout
     try:
-        # Convert NetworkX graph to pygraphviz for better control
-        A = pgv.AGraph(directed=True)
-
-        # Set graph attributes for top-to-bottom layout
-        A.graph_attr['rankdir'] = 'TB'  # Top to Bottom
-        A.graph_attr['ranksep'] = '1.5'  # Vertical spacing between ranks
-        A.graph_attr['nodesep'] = '0.8'  # Horizontal spacing between nodes at same rank
-        A.node_attr['shape'] = 'circle'  # Circle nodes (matches browser visualization)
-        A.node_attr['width'] = '0.3'  # Node width in inches
-        A.node_attr['height'] = '0.3'  # Node height in inches
-        A.node_attr['fixedsize'] = 'true'  # Keep nodes same size
-
-        # Add nodes and edges
-        for node in G.nodes():
-            A.add_node(node, label='')  # Empty label to avoid size warnings
-        for edge in G.edges():
-            A.add_edge(edge[0], edge[1])
-
-        # Compute layout
-        A.layout(prog=algorithm)
-
-        # Extract positions
-        pos = {}
-        for node in A.nodes():
-            x, y = node.attr['pos'].split(',')
-            pos[str(node)] = (float(x), float(y))
-
-        print(f"Layout computed successfully using '{algorithm}' algorithm (TB orientation)")
+        pos = nx.spring_layout(G, k=2, iterations=100, seed=42)
+        # Scale up the positions to match graphviz coordinate system
+        pos = {node: (x * 500 + 400, y * 500 + 300) for node, (x, y) in pos.items()}
+        print("Layout computed using NetworkX spring_layout (force-directed)")
         return pos
     except Exception as e:
-        print(f"Error computing layout with {algorithm}: {e}")
-        print("Trying fallback spring layout...")
-        pos = nx.spring_layout(G, k=2, iterations=50)
-        # Scale up the positions
+        print(f"Error with spring layout: {e}")
+        # Last resort: random layout
+        pos = nx.random_layout(G, seed=42)
         pos = {node: (x * 500 + 400, y * 500 + 300) for node, (x, y) in pos.items()}
-        print("Fallback layout computed (spring_layout)")
+        print("Warning: Using random layout (consider installing pydot for better results)")
         return pos
 
 
@@ -451,7 +524,8 @@ def update_file_with_positions(input_file, positions, evaluations, output_file, 
 
 def main():
     parser = argparse.ArgumentParser(
-        description='Generate optimal node positions for chess opening graphs and update the file'
+        description='Generate optimal node positions for chess opening graphs and update the file',
+        epilog='Note: Requires networkx. For best results, install pydot or pygraphviz for graphviz layouts.'
     )
     parser.add_argument(
         'input',
@@ -461,7 +535,7 @@ def main():
         '--algorithm', '-a',
         default='dot',
         choices=['dot', 'neato', 'fdp', 'sfdp', 'twopi', 'circo'],
-        help='Graphviz layout algorithm (default: dot, best for hierarchical graphs)'
+        help='Graphviz layout algorithm (default: dot). Only used if pydot or pygraphviz is installed.'
     )
     parser.add_argument(
         '--output', '-o',
@@ -527,10 +601,21 @@ def main():
     print(f"1. Load {output_file} in the browser (View or Edit mode)")
     print("2. The file now contains routes, positions, and evaluations (if available)")
     print()
-    print("Tip: Try different algorithms if you see edge crossings:")
-    for algo in ['dot', 'neato', 'fdp', 'sfdp']:
-        print(f"  python evaluate.py {args.input} --algorithm {algo}")
-    print()
+
+    if LAYOUT_BACKEND == "pygraphviz":
+        print("Tip: Try different algorithms if you see edge crossings:")
+        for algo in ['dot', 'neato', 'fdp', 'sfdp']:
+            print(f"  python bin/evaluate.py {args.input} --algorithm {algo}")
+        print()
+    elif LAYOUT_BACKEND == "pydot":
+        print("Warning: pydot layouts may not be optimal.")
+        print("For best results, install pygraphviz - see INSTALL_PYGRAPHVIZ.md")
+        print()
+    elif LAYOUT_BACKEND == "networkx":
+        print("Note: Using NetworkX built-in layouts.")
+        print("For optimal layouts, install pygraphviz - see INSTALL_PYGRAPHVIZ.md")
+        print()
+
     print("Options:")
     print(f"  --no-eval              Skip Stockfish evaluation")
     print(f"  --stockfish-path PATH  Specify Stockfish location")

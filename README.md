@@ -12,12 +12,14 @@ My initial goal was to render opening variations as a graph to clearly see where
 
 ## Caveat
 
-Board states are saved without en passant information. This is a deliberate simplification because:
+Graph nodes are rendered without en passant information. This is a deliberate simplification because:
 - En passant opportunities are rare in general play
 - They're even rarer in opening theory
 - They're extremely rare in cases where they would meaningfully distinguish between variations
 
-However, this does mean there's a very narrow possibility that the system may incorrectly merge two positions that should be distinct due to differing en passant rights.
+However, this does mean there's a very narrow possibility that the
+system may incorrectly merge two positions that should be distinct due
+to differing en passant rights.
 
 ## Features
 
@@ -181,18 +183,90 @@ The application now has three separate pages, each optimized for a specific work
 
 ### Optimizing Graph Layout (Advanced)
 
-For complex opening trees with many variations, you can use the Python script to generate optimal node positions with minimal edge crossings:
+For complex opening trees with many variations, you can use the Python script to generate optimal node positions with minimal edge crossings.
 
-1. **Install dependencies** (one-time setup):
+**Quick Start** (recommended setup):
+```bash
+# Create and activate virtual environment
+python3 -m venv venv
+source venv/bin/activate  # macOS/Linux (on Windows: venv\Scripts\activate)
+
+# Install dependencies
+pip install numpy networkx chess
+
+# Install graphviz (system package)
+brew install graphviz  # macOS (Ubuntu: sudo apt-get install graphviz graphviz-dev)
+
+# Install pygraphviz with environment variables (macOS)
+export CFLAGS="-I$(brew --prefix graphviz)/include"
+export LDFLAGS="-L$(brew --prefix graphviz)/lib"
+pip install pygraphviz
+
+# Run the script
+python bin/evaluate.py your-openings.txt
+```
+
+**Detailed Setup Instructions:**
+
+1. **Set up Python virtual environment** (recommended, one-time setup):
    ```bash
-   pip install networkx pygraphviz
-   ```
-   Note: `pygraphviz` requires graphviz to be installed on your system:
-   - macOS: `brew install graphviz`
-   - Ubuntu/Debian: `sudo apt-get install graphviz graphviz-dev`
-   - Windows: Download from https://graphviz.org/download/
+   # Create a virtual environment in the project directory
+   python3 -m venv venv
 
-2. **Optional: Install evaluation support** (for position scoring):
+   # Activate the virtual environment
+   # On macOS/Linux:
+   source venv/bin/activate
+   # On Windows:
+   # venv\Scripts\activate
+   ```
+
+   Note: You'll need to activate the virtual environment each time you want to use the Python scripts:
+   ```bash
+   source venv/bin/activate  # macOS/Linux
+   ```
+
+   When you're done, you can deactivate the virtual environment:
+   ```bash
+   deactivate
+   ```
+
+2. **Install required Python dependencies** (with virtual environment activated):
+   ```bash
+   pip install numpy networkx
+   ```
+   Note: NetworkX requires numpy, which is used for numerical computations in layout algorithms.
+
+3. **Install pygraphviz for optimal graph layouts** (recommended):
+
+   First install graphviz system package:
+   - **macOS:** `brew install graphviz`
+   - **Ubuntu/Debian:** `sudo apt-get install graphviz graphviz-dev`
+   - **Windows:** Download from https://graphviz.org/download/
+
+   Then install pygraphviz with explicit paths to help pip find the graphviz libraries:
+
+   **macOS:**
+   ```bash
+   export CFLAGS="-I$(brew --prefix graphviz)/include"
+   export LDFLAGS="-L$(brew --prefix graphviz)/lib"
+   pip install pygraphviz
+   ```
+
+   **Linux:**
+   ```bash
+   pip install pygraphviz
+   ```
+
+   **Windows:** See [INSTALL_PYGRAPHVIZ.md](INSTALL_PYGRAPHVIZ.md)
+
+   **If installation fails:** See [INSTALL_PYGRAPHVIZ.md](INSTALL_PYGRAPHVIZ.md) for detailed troubleshooting, or skip to step 4 and use built-in layouts (they work well, just not as optimal).
+
+   **Verify installation:**
+   ```bash
+   python -c "import pygraphviz; print('Success!')"
+   ```
+
+4. **Optional: Install evaluation support** (for position scoring):
    ```bash
    pip install chess
    ```
@@ -201,11 +275,15 @@ For complex opening trees with many variations, you can use the Python script to
    - Ubuntu/Debian: `sudo apt-get install stockfish`
    - Windows: Download from https://stockfishchess.org/download/
 
-3. **Generate positions and evaluations**:
+5. **Generate positions and evaluations** (with virtual environment activated):
    ```bash
    python bin/evaluate.py your-openings.txt
    ```
    This modifies your file in place, adding optimal position coordinates and Stockfish evaluations for leaf nodes (terminal positions).
+
+   **The script will automatically use the best available layout backend:**
+   - If you installed pygraphviz: Uses pygraphviz for optimal layouts (recommended)
+   - If you only have networkx: Uses built-in hierarchical layout (good for most cases)
 
    To skip evaluation:
    ```bash
@@ -217,41 +295,48 @@ For complex opening trees with many variations, you can use the Python script to
    python bin/evaluate.py your-openings.txt --stockfish-path /path/to/stockfish
    ```
 
-4. **Try different algorithms** if you see edge crossings:
+6. **Try different algorithms** if you have pygraphviz installed:
    ```bash
    python bin/evaluate.py your-openings.txt --algorithm dot
    python bin/evaluate.py your-openings.txt --algorithm neato
    python bin/evaluate.py your-openings.txt --algorithm fdp
+   python bin/evaluate.py your-openings.txt --algorithm sfdp
    ```
-   Available algorithms:
-   - `dot` - hierarchical/layered (best for DAGs, minimizes crossings) - **default**
+   Available algorithms (requires pygraphviz):
+   - `dot` - hierarchical/layered (best for DAGs, minimizes crossings) - **default and recommended**
    - `neato` - spring model (force-directed)
    - `fdp` - force-directed with smart edge handling
-   - `sfdp` - scalable force-directed (for large graphs)
+   - `sfdp` - scalable force-directed (best for very large graphs)
 
-5. **Save to a different file** (optional):
+   **Note:** Without pygraphviz, the `--algorithm` parameter is ignored and a built-in hierarchical layout is used automatically.
+
+7. **Save to a different file** (optional):
    ```bash
    python bin/evaluate.py your-openings.txt --output optimized-openings.txt
    ```
 
-6. **Load in browser**:
+8. **Load in browser**:
    - Open View or Edit mode
    - Click "Load Routes" and select your `.txt` file
    - The graph will automatically use the embedded positions and evaluations
 
 **Benefits of pre-computed positions and evaluations**:
-- Eliminates or minimizes edge crossings
-- More powerful layout algorithms than browser-based Dagre
-- Stockfish evaluations for leaf positions (terminal nodes)
-- Positions and evaluations embedded in the same file (no separate files to manage)
-- Can be regenerated with different algorithms to find the best one
-- Optional - tool works fine without positions (uses Dagre layout)
+- **Eliminates or minimizes edge crossings** - pygraphviz produces significantly better layouts than browser-based Dagre
+- **More powerful layout algorithms** - access to graphviz's sophisticated layout engines (dot, neato, fdp, sfdp)
+- **Stockfish evaluations for leaf positions** - see which terminal positions are favorable
+- **Everything in one file** - positions and evaluations embedded in the same file (no separate files to manage)
+- **Reproducible layouts** - can regenerate with different algorithms to find the best one
+- **Optional** - tool works fine without positions (uses Dagre layout in browser)
 
 ### Merging Opening Files
 
-If you have multiple opening files that you want to combine into a single repertoire, use the `merge.py` script:
+If you have multiple opening files that you want to combine into a single repertoire, use the `merge.py` script (with virtual environment activated if you set one up):
 
 ```bash
+# Activate virtual environment first (if using one)
+source venv/bin/activate  # macOS/Linux
+
+# Run merge script
 python bin/merge.py file1.txt file2.txt file3.txt --output merged.txt
 ```
 
