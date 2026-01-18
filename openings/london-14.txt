@@ -1,0 +1,33 @@
+v4.0
+= London 14
+rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 -> d4
+rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq d3 0 1 -> d5
+rnbqkbnr/ppp1pppp/8/3p4/3P4/8/PPP1PPPP/RNBQKBNR w KQkq d6 0 2 -> Bf4
+rnbqkbnr/ppp1pppp/8/3p4/3P1B2/8/PPP1PPPP/RN1QKBNR b KQkq - 1 2 -> Nf6
+rnbqkb1r/ppp1pppp/5n2/3p4/3P1B2/8/PPP1PPPP/RN1QKBNR w KQkq - 2 3 -> e3
+rnbqkb1r/ppp1pppp/5n2/3p4/3P1B2/4P3/PPP2PPP/RN1QKBNR b KQkq - 0 3 -> e6
+rnbqkb1r/ppp2ppp/4pn2/3p4/3P1B2/4P3/PPP2PPP/RN1QKBNR w KQkq - 0 4 -> Nf3
+rnbqkb1r/ppp2ppp/4pn2/3p4/3P1B2/4PN2/PPP2PPP/RN1QKB1R b KQkq - 1 4 -> Bd6
+rnbqk2r/ppp2ppp/3bpn2/3p4/3P1B2/4PN2/PPP2PPP/RN1QKB1R w KQkq - 2 5 -> Ne5
+rnbqk2r/ppp2ppp/3bpn2/3pN3/3P1B2/4P3/PPP2PPP/RN1QKB1R b KQkq - 3 5 -> O-O
+rnbq1rk1/ppp2ppp/3bpn2/3pN3/3P1B2/4P3/PPP2PPP/RN1QKB1R w KQ - 4 6 -> Nd2
+rnbq1rk1/ppp2ppp/3bpn2/3pN3/3P1B2/4P3/PPPN1PPP/R2QKB1R b KQ - 5 6 -> c5
+rnbq1rk1/pp3ppp/3bpn2/2ppN3/3P1B2/4P3/PPPN1PPP/R2QKB1R w KQ c6 0 7 -> c3
+rnbq1rk1/pp3ppp/3bpn2/2ppN3/3P1B2/2P1P3/PP1N1PPP/R2QKB1R b KQ - 0 7 -> Nc6
+r1bq1rk1/pp3ppp/2nbpn2/2ppN3/3P1B2/2P1P3/PP1N1PPP/R2QKB1R w KQ - 1 8 -> Bd3
+r1bq1rk1/pp3ppp/2nbpn2/2ppN3/3P1B2/2PBP3/PP1N1PPP/R2QK2R b KQ - 2 8 -> Bxe5
+r1bq1rk1/pp3ppp/2n1pn2/2ppb3/3P1B2/2PBP3/PP1N1PPP/R2QK2R w KQ - 0 9 -> dxe5
+r1bq1rk1/pp3ppp/2n1pn2/2ppP3/5B2/2PBP3/PP1N1PPP/R2QK2R b KQ - 0 9 -> Nd7
+r1bq1rk1/pp1n1ppp/2n1p3/2ppP3/5B2/2PBP3/PP1N1PPP/R2QK2R w KQ - 1 10 -> Nf3
+r1bq1rk1/pp1n1ppp/2n1p3/2ppP3/5B2/2PBPN2/PP3PPP/R2QK2R b KQ - 2 10 -> Qc7
+r1b2rk1/ppqn1ppp/2n1p3/2ppP3/5B2/2PBPN2/PP3PPP/R2QK2R w KQ - 3 11 -> Bxh7+
+r1b2rk1/ppqn1ppB/2n1p3/2ppP3/5B2/2P1PN2/PP3PPP/R2QK2R b KQ - 0 11 -> Kxh7
+r1b2r2/ppqn1ppk/2n1p3/2ppP3/5B2/2P1PN2/PP3PPP/R2QK2R w KQ - 0 12 -> Ng5+
+r1b2r2/ppqn1ppk/2n1p3/2ppP1N1/5B2/2P1P3/PP3PPP/R2QK2R b KQ - 1 12 -> Kg6
+r1b2r2/ppqn1pp1/2n1p1k1/2ppP1N1/5B2/2P1P3/PP3PPP/R2QK2R w KQ - 2 13 -> Qc2+
+r1b2r2/ppqn1pp1/2n1p1k1/2ppP1N1/5B2/2P1P3/PPQ2PPP/R3K2R b KQ - 3 13 -> f5
+r1b2r2/ppqn2p1/2n1p1k1/2ppPpN1/5B2/2P1P3/PPQ2PPP/R3K2R w KQ f6 0 14 -> exf6+
+r1b2r2/ppqn2p1/2n1pPk1/2pp2N1/5B2/2P1P3/PPQ2PPP/R3K2R b KQ - 0 14 -> Kxf6
+r1b2r2/ppqn2p1/2n1pk2/2pp2N1/5B2/2P1P3/PPQ2PPP/R3K2R w KQ - 0 15 -> Nh7+
+r1b2r2/ppqn2pN/2n1pk2/2pp4/5B2/2P1P3/PPQ2PPP/R3K2R b KQ - 1 15 -> Kf7
+r1b2r2/ppqn1kpN/2n1p3/2pp4/5B2/2P1P3/PPQ2PPP/R3K2R w KQ - 2 16 -> Bxc7

@@ -1,0 +1,85 @@
+v4.0
+= London 1-5
+# Standard London Starting
+start -> d4
+rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq - 0 1 -> d5
+# Standard London Starting
+rnbqkbnr/ppp1pppp/8/3p4/3P4/8/PPP1PPPP/RNBQKBNR w KQkq - 0 1 -> Bf4
+rnbqkbnr/ppp1pppp/8/3p4/3P1B2/8/PPP1PPPP/RN1QKBNR b KQkq - 0 1 -> e6
+# Standard London Starting
+rnbqkbnr/ppp2ppp/4p3/3p4/3P1B2/8/PPP1PPPP/RN1QKBNR w KQkq - 0 1 -> e3
+rnbqkbnr/ppp2ppp/4p3/3p4/3P1B2/4P3/PPP2PPP/RN1QKBNR b KQkq - 0 1 -> Bd6
+# G7 is unprotected
+rnbqk1nr/ppp2ppp/3bp3/3p4/3P1B2/4P3/PPP2PPP/RN1QKBNR w KQkq - 0 1 -> Qg4
+rnbqk1nr/ppp2ppp/3bp3/3p4/3P1BQ1/4P3/PPP2PPP/RN2KBNR b KQkq - 0 1 -> Bxf4
+# Take G7
+rnbqk1nr/ppp2ppp/4p3/3p4/3P1bQ1/4P3/PPP2PPP/RN2KBNR w KQkq - 0 1 -> Qxg7
+rnbqk1nr/ppp2pQp/4p3/3p4/3P1b2/4P3/PPP2PPP/RN2KBNR b KQkq - 0 1 -> Qf6
+rnb1k1nr/ppp2pQp/4pq2/3p4/3P1b2/4P3/PPP2PPP/RN2KBNR w KQkq - 0 1 -> Qxf6
+rnb1k1nr/ppp2p1p/4pQ2/3p4/3P1b2/4P3/PPP2PPP/RN2KBNR b KQkq - 0 1 -> Nxf6
+rnb1k2r/ppp2p1p/4pn2/3p4/3P1b2/4P3/PPP2PPP/RN2KBNR w KQkq - 0 1 -> exf4
+rnbqkbnr/ppp1pppp/8/3p4/3P1B2/8/PPP1PPPP/RN1QKBNR b KQkq - 0 1 -> f6
+# Standard London Starting
+rnbqkbnr/ppp1p1pp/5p2/3p4/3P1B2/8/PPP1PPPP/RN1QKBNR w KQkq - 0 1 -> e3
+rnbqkbnr/ppp1p1pp/5p2/3p4/3P1B2/4P3/PPP2PPP/RN1QKBNR b KQkq - 0 1 -> e5
+# Simplify
+rnbqkbnr/ppp3pp/5p2/3pp3/3P1B2/4P3/PPP2PPP/RN1QKBNR w KQkq - 0 1 -> dxe5
+rnbqkbnr/ppp3pp/5p2/3pP3/5B2/4P3/PPP2PPP/RN1QKBNR b KQkq - 0 1 -> fxe5
+# Go for the fork
+rnbqkbnr/ppp3pp/8/3pp3/5B2/4P3/PPP2PPP/RN1QKBNR w KQkq - 0 1 -> Qh5+
+rnbqkbnr/ppp3pp/8/3pp2Q/5B2/4P3/PPP2PPP/RN2KBNR b KQkq - 0 1 -> g6
+rnbqkbnr/ppp4p/6p1/3pp2Q/5B2/4P3/PPP2PPP/RN2KBNR w KQkq - 0 1 -> Qxe5+
+rnbqkbnr/ppp1pppp/8/3p4/3P1B2/8/PPP1PPPP/RN1QKBNR b KQkq - 0 1 -> Bf5
+# B7 is unprotected
+rn1qkbnr/ppp1pppp/8/3p1b2/3P1B2/8/PPP1PPPP/RN1QKBNR w KQkq - 0 1 -> c4
+rn1qkbnr/ppp1pppp/8/3p1b2/2PP1B2/8/PP2PPPP/RN1QKBNR b KQkq - 0 1 -> dxc4
+# Open bishop to recapture
+rn1qkbnr/ppp1pppp/8/5b2/2pP1B2/8/PP2PPPP/RN1QKBNR w KQkq - 0 1 -> e3
+rn1qkbnr/ppp1pppp/8/5b2/2pP1B2/4P3/PP3PPP/RN1QKBNR b KQkq - 0 1 -> b5
+# A8 rook is open
+rn1qkbnr/p1p1pppp/8/1p3b2/2pP1B2/4P3/PP3PPP/RN1QKBNR w KQkq - 0 1 -> Qf3
+rn1qkbnr/p1p1pppp/8/1p3b2/2pP1B2/4PQ2/PP3PPP/RN2KBNR b KQkq - 0 1 -> c6
+# C6 is a fork, but knight is protecting, so remove knight and clear path from queen to bishop
+rn1qkbnr/p3pppp/2p5/1p3b2/2pP1B2/4PQ2/PP3PPP/RN2KBNR w KQkq - 0 1 -> Bxb8
+rB1qkbnr/p3pppp/2p5/1p3b2/2pP4/4PQ2/PP3PPP/RN2KBNR b KQkq - 0 1 -> Rxb8
+# Take the bishop
+1r1qkbnr/p3pppp/2p5/1p3b2/2pP4/4PQ2/PP3PPP/RN2KBNR w KQk - 0 1 -> Qxf5
+rnbqkbnr/ppp1pppp/8/3p4/3P1B2/8/PPP1PPPP/RN1QKBNR b KQkq - 0 1 -> Nf6
+# Standard London Starting
+rnbqkb1r/ppp1pppp/5n2/3p4/3P1B2/8/PPP1PPPP/RN1QKBNR w KQkq - 0 1 -> e3
+rnbqkb1r/ppp1pppp/5n2/3p4/3P1B2/4P3/PPP2PPP/RN1QKBNR b KQkq - 0 1 -> c5
+# For at C7 is a possibility
+rnbqkb1r/pp2pppp/5n2/2pp4/3P1B2/4P3/PPP2PPP/RN1QKBNR w KQkq - 0 1 -> Nc3
+rnbqkb1r/pp2pppp/5n2/2pp4/3P1B2/2N1P3/PPP2PPP/R2QKBNR b KQkq - 0 1 -> Nc6
+# Go for the fork
+r1bqkb1r/pp2pppp/2n2n2/2pp4/3P1B2/2N1P3/PPP2PPP/R2QKBNR w KQkq - 0 1 -> Nb5
+r1bqkb1r/pp2pppp/2n2n2/1Npp4/3P1B2/4P3/PPP2PPP/R2QKBNR b KQkq - 0 1 -> e5
+# They blocked the bishop, so simplify
+r1bqkb1r/pp3ppp/2n2n2/1Nppp3/3P1B2/4P3/PPP2PPP/R2QKBNR w KQkq - 0 1 -> Bxe5
+r1bqkb1r/pp3ppp/2n2n2/1NppB3/3P4/4P3/PPP2PPP/R2QKBNR b KQkq - 0 1 -> Nxe5
+r1bqkb1r/pp3ppp/5n2/1Nppn3/3P4/4P3/PPP2PPP/R2QKBNR w KQkq - 0 1 -> dxe5
+r1bqkb1r/pp3ppp/5n2/1NppP3/8/4P3/PPP2PPP/R2QKBNR b KQkq - 0 1 -> Ne4
+# Lure the queen out
+r1bqkb1r/pp3ppp/8/1NppP3/4n3/4P3/PPP2PPP/R2QKBNR w KQkq - 0 1 -> Qxd5
+r1bqkb1r/pp3ppp/8/1NpQP3/4n3/4P3/PPP2PPP/R3KBNR b KQkq - 0 1 -> Qxd5
+# Now go for the fork
+r1b1kb1r/pp3ppp/8/1NpqP3/4n3/4P3/PPP2PPP/R3KBNR w KQkq - 0 1 -> Nc7+
+r1b1kb1r/ppN2ppp/8/2pqP3/4n3/4P3/PPP2PPP/R3KBNR b KQkq - 0 1 -> Kd8
+r1bk1b1r/ppN2ppp/8/2pqP3/4n3/4P3/PPP2PPP/R3KBNR w KQ - 0 1 -> Nxd5
+rnbqkbnr/ppp1pppp/8/3p4/3P1B2/8/PPP1PPPP/RN1QKBNR b KQkq - 0 1 -> c5
+# Standard London Starting
+rnbqkbnr/pp2pppp/8/2pp4/3P1B2/8/PPP1PPPP/RN1QKBNR w KQkq - 0 1 -> e3
+rnbqkbnr/pp2pppp/8/2pp4/3P1B2/4P3/PPP2PPP/RN1QKBNR b KQkq - 0 1 -> Nc6
+# Fork at C7 may be possible
+r1bqkbnr/pp2pppp/2n5/2pp4/3P1B2/4P3/PPP2PPP/RN1QKBNR w KQkq - 0 1 -> Nc3
+r1bqkbnr/pp2pppp/2n5/2pp4/3P1B2/2N1P3/PPP2PPP/R2QKBNR b KQkq - 0 1 -> Nf6
+r1bqkb1r/pp2pppp/2n2n2/1Npp4/3P1B2/4P3/PPP2PPP/R2QKBNR b KQkq - 0 1 -> Qa5+
+r1b1kb1r/pp2pppp/2n2n2/qNpp4/3P1B2/4P3/PPP2PPP/R2QKBNR w KQkq - 0 1 -> c3
+r1b1kb1r/pp2pppp/2n2n2/qNpp4/3P1B2/2P1P3/PP3PPP/R2QKBNR b KQkq - 0 1 -> e5
+# Bishop is blocked, so simplify
+r1b1kb1r/pp3ppp/2n2n2/qNppp3/3P1B2/2P1P3/PP3PPP/R2QKBNR w KQkq - 0 1 -> Bxe5
+r1b1kb1r/pp3ppp/2n2n2/qNppB3/3P4/2P1P3/PP3PPP/R2QKBNR b KQkq - 0 1 -> Nxe5
+r1b1kb1r/pp3ppp/5n2/qNppn3/3P4/2P1P3/PP3PPP/R2QKBNR w KQkq - 0 1 -> dxe5
+r1b1kb1r/pp3ppp/5n2/qNppP3/8/2P1P3/PP3PPP/R2QKBNR b KQkq - 0 1 -> Nd7
+# Free pawn at D5
+r1b1kb1r/pp1n1ppp/8/qNppP3/8/2P1P3/PP3PPP/R2QKBNR w KQkq - 0 1 -> Qxd5

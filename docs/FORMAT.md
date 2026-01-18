@@ -70,7 +70,7 @@ Format:
 ```
 
 **Fields:**
-- `<from_FEN>`: Starting position (normalized FEN or `start`)
+- `<from_FEN>`: Starting position (FEN string or `start`)
 - `->`: Separator (space-arrow-space)
 - `<move>`: Standard Algebraic Notation (SAN) move
 
@@ -79,6 +79,12 @@ Format:
 - Associated with the next transition
 - Multiple comment lines are concatenated
 
+**FEN in Transitions:**
+- Can be **full FEN** (with en passant square) or **normalized FEN** (en passant = `-`)
+- **Full FEN required for en passant moves** - the en passant square must be present for moves like `exd6`
+- For other moves, normalized FEN works fine
+- Files exported from Build mode include full FEN when needed
+
 **Example:**
 ```
 start -> d4
@@ -86,6 +92,12 @@ rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq - 0 1 -> d5
 # London System main line
 rnbqkbnr/ppp1pppp/8/3p4/3P4/8/PPP1PPPP/RNBQKBNR w KQkq - 0 1 -> Bf4
 rnbqkbnr/ppp1pppp/8/3p4/3P1B2/8/PPP1PPPP/RN1QKBNR b KQkq - 0 1 -> Nf6
+```
+
+**En Passant Example:**
+```
+# After Black plays f7-f5, en passant square is f6
+r1b2r2/ppqn2p1/2n1p1k1/2ppPpN1/5B2/2P1P3/PPQ2PPP/R3K2R w KQ f6 0 1 -> exf6+
 ```
 
 ## Complete Example

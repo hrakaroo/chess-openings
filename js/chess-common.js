@@ -41,7 +41,7 @@ function addNodeToGraph(state) {
 }
 
 // Add an edge to the graph if it doesn't exist
-function addEdgeToGraph(fromState, toState, annotation, skipDraw) {
+function addEdgeToGraph(fromState, toState, annotation, skipDraw, move, fullFEN) {
     var fromIndex = addNodeToGraph(fromState);
     var toIndex = addNodeToGraph(toState);
 
@@ -54,6 +54,8 @@ function addEdgeToGraph(fromState, toState, annotation, skipDraw) {
         var newEdge = {
             from: fromIndex,
             to: toIndex,
+            move: move || '',  // Store the actual move in SAN notation
+            fullFEN: fullFEN || '',  // Store full FEN (with en passant) for move validation
             annotation: annotation || ''
         };
         var newIndex = graphEdges.length;
@@ -61,9 +63,15 @@ function addEdgeToGraph(fromState, toState, annotation, skipDraw) {
         edgeMap.set(edgeKey, newIndex);
         lastEdgeIndex = newIndex;
     } else {
-        // Update existing edge annotation if provided
+        // Update existing edge annotation, move, and fullFEN if provided
         if (annotation !== undefined && annotation !== '') {
             graphEdges[existingEdgeIndex].annotation = annotation;
+        }
+        if (move !== undefined && move !== '') {
+            graphEdges[existingEdgeIndex].move = move;
+        }
+        if (fullFEN !== undefined && fullFEN !== '') {
+            graphEdges[existingEdgeIndex].fullFEN = fullFEN;
         }
         lastEdgeIndex = existingEdgeIndex;
     }
@@ -331,11 +339,20 @@ async function exportAllStates() {
             transitionLines.push('# ' + edge.annotation);
         }
 
-        // Get move notation instead of full target FEN
-        var moveNotation = getMoveNotation(fromState, toState);
+        // Use stored move if available, otherwise reconstruct it
+        var moveNotation;
+        if (edge.move && edge.move.length > 0) {
+            moveNotation = edge.move;
+        } else {
+            // Fall back to reconstruction for backward compatibility
+            moveNotation = getMoveNotation(fromState, toState);
+        }
+
+        // Use full FEN (with en passant) if available, otherwise use normalized state
+        var fromStateForExport = (edge.fullFEN && edge.fullFEN.length > 0) ? edge.fullFEN : fromState;
 
         // Add transition as: from_state -> move
-        transitionLines.push(fromState + ' -> ' + moveNotation);
+        transitionLines.push(fromStateForExport + ' -> ' + moveNotation);
     }
 
     // Add version header, title, and combine positions + transitions
@@ -607,7 +624,7 @@ function loadRoutesFromFile(fileContent, filename) {
                         var toState = toPart;
                         var toValid = validateState(toState);
                         if (toValid.valid) {
-                            addEdgeToGraph(fromState, toState, annotation, true);
+                            addEdgeToGraph(fromState, toState, annotation, true, '', '');
                         } else {
                             invalidCount++;
                             console.warn('Line ' + (i + 1) + ': Invalid to state - ' + toValid.error);
@@ -627,7 +644,10 @@ function loadRoutesFromFile(fileContent, filename) {
                                 // Get resulting FEN, normalize, and convert to 'start' if needed
                                 var resultFen = tempGame.fen();
                                 var toState = (resultFen === START_FEN) ? 'start' : normalizeFEN(resultFen);
-                                addEdgeToGraph(fromState, toState, annotation, true);
+                                // Normalize fromState for node matching, but store fromFen (with en passant) for validation
+                                var normalizedFromState = normalizeFEN(fromFen);
+                                // Store the move notation and full FEN from the file
+                                addEdgeToGraph(normalizedFromState, toState, annotation, true, moveNotation, fromFen);
                             }
                         } catch (e) {
                             invalidCount++;

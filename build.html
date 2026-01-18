@@ -274,7 +274,10 @@
                 annotationText = annotationText.replace(/["']/g, '');
             }
 
-            // Get state before move
+            // Get FULL FEN before move (with en passant info for move validation)
+            var fullFENBefore = (currentBoardState === 'start') ? START_FEN : game.fen();
+
+            // Get normalized state for node matching
             var stateBefore = currentBoardState;
 
             // Try to make the move
@@ -286,12 +289,13 @@
 
             if (move === null) return 'snapback';
 
-            // Get state after move
+            // Get state after move and the move in SAN notation
             var stateAfter = boardToFEN();
-            console.log('Move made - From:', stateBefore, 'To:', stateAfter);
+            var moveSAN = move.san;  // Standard Algebraic Notation (e.g., "e4", "Nf3", "exd6")
+            console.log('Move made - From:', stateBefore, 'To:', stateAfter, 'Move:', moveSAN);
 
-            // Add edge to graph with annotation
-            addEdgeToGraph(stateBefore, stateAfter, annotationText);
+            // Add edge to graph with annotation, move, and full FEN for validation
+            addEdgeToGraph(stateBefore, stateAfter, annotationText, false, moveSAN, fullFENBefore);
             currentBoardState = stateAfter;
 
             // Add to history
@@ -361,7 +365,9 @@
             if (historyIndex > 0) {
                 var fromState = moveHistory[historyIndex - 1];
                 var toState = moveHistory[historyIndex];
-                addEdgeToGraph(fromState, toState);
+                // Note: move and fullFEN are not stored in history, so pass empty strings
+                // Export will fall back to reconstruction for redone moves
+                addEdgeToGraph(fromState, toState, '', false, '', '');
             }
 
             var state = moveHistory[historyIndex];
