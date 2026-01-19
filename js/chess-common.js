@@ -943,6 +943,25 @@ function drawGraph() {
 
     // Helper function to find precomputed position with fuzzy FEN matching
     function findPrecomputedPosition(state) {
+        // Handle 'start' keyword
+        if (state === 'start') {
+            // Try to find starting position FEN
+            if (precomputedPositions['start']) {
+                return precomputedPositions['start'];
+            }
+            // Try the full starting FEN
+            if (precomputedPositions[START_FEN]) {
+                return precomputedPositions[START_FEN];
+            }
+            // Try fuzzy match for starting position
+            var startKey = getFENKey(START_FEN);
+            for (var precompState in precomputedPositions) {
+                if (getFENKey(precompState) === startKey) {
+                    return precomputedPositions[precompState];
+                }
+            }
+        }
+
         // Try exact match first
         if (precomputedPositions[state]) {
             return precomputedPositions[state];
@@ -961,15 +980,25 @@ function drawGraph() {
     // Use pre-computed positions if available
     if (precomputedPositions && Object.keys(precomputedPositions).length > 0) {
         nodePositions = [];
+        // Build indexed array - must match graphNodes indices for edge drawing
         for (var k = 0; k < graphNodes.length; k++) {
             var state = graphNodes[k];
             var pos = findPrecomputedPosition(state);
             if (pos) {
-                nodePositions.push({
+                nodePositions[k] = {
                     x: pos.x,
                     y: pos.y,
                     state: state
-                });
+                };
+            } else {
+                // If position not found, log warning but don't crash
+                console.warn('No precomputed position found for node ' + k + ': ' + state.substring(0, 30) + '...');
+                // Use a default position to prevent crashes
+                nodePositions[k] = {
+                    x: 100,
+                    y: 100 + k * 50,
+                    state: state
+                };
             }
         }
     } else {
@@ -1034,6 +1063,12 @@ function drawGraph() {
         var fromPos = nodePositions[edge.from];
         var toPos = nodePositions[edge.to];
 
+        // Skip edges if positions are missing (shouldn't happen with fix above)
+        if (!fromPos || !toPos) {
+            console.warn('Skipping edge from', edge.from, 'to', edge.to, '- missing position data');
+            return;
+        }
+
         // Calculate control point for quadratic curve
         var controlX = (fromPos.x + toPos.x) / 2;
         var controlY = fromPos.y + (toPos.y - fromPos.y) * 0.3;
@@ -1047,6 +1082,12 @@ function drawGraph() {
     // Draw nodes
     for (var n = 0; n < nodePositions.length; n++) {
         var pos = nodePositions[n];
+
+        // Skip if position is undefined (shouldn't happen with fix above)
+        if (!pos) {
+            continue;
+        }
+
         var state = pos.state;
 
         // Determine color (priority: current > start > evaluated > default)
