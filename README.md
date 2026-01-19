@@ -115,8 +115,40 @@ The application now has three separate pages, each optimized for a specific work
   - View move annotations during practice
   - Graph visualization with current position highlighted
   - Shuffled move order - each practice run explores variations in random order
+  - **Debug console** - enable transition logging from browser console
 - **Available buttons**: Load Routes, Start/Stop, Fit View
 - **URL**: `practice.html`
+
+##### Debug Console (Practice Mode)
+
+You can enable detailed transition logging to the browser console to see exactly what moves are being played:
+
+1. Open your browser's developer console (F12 or Cmd+Option+I)
+2. Type: `DEBUG_TRANSITIONS = true`
+3. Press Enter
+
+Now you'll see detailed logs for every transition:
+- **[Practice Start]**: When practice begins, shows total paths and shuffled order
+- **[New Path]**: When starting a new path through the opening
+- **[User Move]**: Your moves with CORRECT/INCORRECT status and FEN transitions
+- **[Computer Move]**: Computer's moves with FEN transitions
+- **[Path Complete]**: When a path finishes (with or without mistakes)
+- **[Score]**: Updated score after each path completion
+
+Example output:
+```
+[Practice Start] Playing as white
+[Practice Start] Total paths: 8
+[New Path] Starting path 1/8
+[User Move] CORRECT - Path 1/8, Step 1/5
+  From: start
+  To:   rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq - 0 1
+[Computer Move] Path 1/8, Step 2/5
+  From: rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq - 0 1
+  To:   rnbqkbnr/ppp1pppp/8/3p4/3P4/8/PPP1PPPP/RNBQKBNR w KQkq - 0 2
+```
+
+To disable logging, type: `DEBUG_TRANSITIONS = false`
 
 **Switching Modes**: Click the "← Back to Home" link at the top of any mode page to return to the welcome page and select a different mode.
 

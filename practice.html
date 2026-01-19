@@ -242,6 +242,9 @@
     <script src="js/chess-common.js"></script>
 
     <script>
+        // Debug flag - can be toggled from console with: DEBUG_TRANSITIONS = true
+        window.DEBUG_TRANSITIONS = false;
+
         // Practice mode state
         var practiceActive = false;
         var userColor = 'white';  // 'white' or 'black'
@@ -351,6 +354,9 @@
             if (currentPathIndex >= allPaths.length) {
                 // All paths completed - stop practice
                 practiceActive = false;
+                if (DEBUG_TRANSITIONS) {
+                    console.log('[Practice] All paths completed!');
+                }
                 return;
             }
 
@@ -363,8 +369,17 @@
                 return;
             }
 
-            // Make the next move in the path
+            var fromState = currentPath[currentStepIndex - 1];
             var targetState = currentPath[currentStepIndex];
+
+            if (DEBUG_TRANSITIONS) {
+                console.log('[Computer Move] Path ' + (currentPathIndex + 1) + '/' + allPaths.length +
+                           ', Step ' + (currentStepIndex + 1) + '/' + currentPath.length);
+                console.log('  From: ' + fromState);
+                console.log('  To:   ' + targetState);
+            }
+
+            // Make the next move in the path
             loadState(targetState, false);
 
             // Play move sound
@@ -377,11 +392,22 @@
                 // Computer has completed the path - only count if no mistakes
                 if (!mistakeOnCurrentPath) {
                     pathsCompleted++;
+                    if (DEBUG_TRANSITIONS) {
+                        console.log('[Path Complete] Path ' + (currentPathIndex + 1) + ' completed successfully');
+                    }
+                } else {
+                    if (DEBUG_TRANSITIONS) {
+                        console.log('[Path Complete] Path ' + (currentPathIndex + 1) + ' completed with mistakes (not scored)');
+                    }
                 }
 
                 // Decrement remaining
                 pathsRemaining--;
                 updateScore();
+
+                if (DEBUG_TRANSITIONS) {
+                    console.log('[Score] ' + pathsCompleted + '/' + allPathsOriginal.length + ', Remaining: ' + pathsRemaining);
+                }
 
                 // Move to next path
                 currentPathIndex++;
@@ -390,11 +416,17 @@
                 if (currentPathIndex >= allPaths.length) {
                     // All paths completed - stop practice but stay on final state
                     practiceActive = false;
+                    if (DEBUG_TRANSITIONS) {
+                        console.log('[Practice] All paths completed!');
+                    }
                     return;
                 }
 
                 // Move to next path after a short delay
                 setTimeout(function() {
+                    if (DEBUG_TRANSITIONS) {
+                        console.log('[New Path] Starting path ' + (currentPathIndex + 1) + '/' + allPaths.length);
+                    }
                     currentStepIndex = 0;
                     mistakeOnCurrentPath = false;  // Reset mistake flag for new path
                     game.reset();
@@ -455,7 +487,21 @@
                 // Wrong move - mark mistake on this path
                 game.undo();
                 mistakeOnCurrentPath = true;
+                if (DEBUG_TRANSITIONS) {
+                    console.log('[User Move] INCORRECT - Path ' + (currentPathIndex + 1) + '/' + allPaths.length +
+                               ', Step ' + (currentStepIndex + 1) + '/' + currentPath.length);
+                    console.log('  From: ' + stateBefore);
+                    console.log('  Attempted: ' + stateAfter);
+                    console.log('  Expected:  ' + expectedNextState);
+                }
                 return 'snapback';
+            }
+
+            if (DEBUG_TRANSITIONS) {
+                console.log('[User Move] CORRECT - Path ' + (currentPathIndex + 1) + '/' + allPaths.length +
+                           ', Step ' + (currentStepIndex + 1) + '/' + currentPath.length);
+                console.log('  From: ' + stateBefore);
+                console.log('  To:   ' + stateAfter);
             }
 
             // Correct move - advance in path
@@ -473,11 +519,22 @@
                 // Path completed - only count if no mistakes were made
                 if (!mistakeOnCurrentPath) {
                     pathsCompleted++;
+                    if (DEBUG_TRANSITIONS) {
+                        console.log('[Path Complete] Path ' + (currentPathIndex + 1) + ' completed successfully');
+                    }
+                } else {
+                    if (DEBUG_TRANSITIONS) {
+                        console.log('[Path Complete] Path ' + (currentPathIndex + 1) + ' completed with mistakes (not scored)');
+                    }
                 }
 
                 // Decrement remaining
                 pathsRemaining--;
                 updateScore();
+
+                if (DEBUG_TRANSITIONS) {
+                    console.log('[Score] ' + pathsCompleted + '/' + allPathsOriginal.length + ', Remaining: ' + pathsRemaining);
+                }
 
                 // Move to next path
                 currentPathIndex++;
@@ -486,10 +543,16 @@
                 if (currentPathIndex >= allPaths.length) {
                     // All paths completed - stop practice but stay on final state
                     practiceActive = false;
+                    if (DEBUG_TRANSITIONS) {
+                        console.log('[Practice] All paths completed!');
+                    }
                     return;
                 }
 
                 setTimeout(function() {
+                    if (DEBUG_TRANSITIONS) {
+                        console.log('[New Path] Starting path ' + (currentPathIndex + 1) + '/' + allPaths.length);
+                    }
                     currentStepIndex = 0;
                     mistakeOnCurrentPath = false;  // Reset mistake flag for new path
                     game.reset();
@@ -608,6 +671,22 @@
                 return;
             }
 
+            if (DEBUG_TRANSITIONS) {
+                console.log('='.repeat(60));
+                console.log('[Practice Start] Playing as ' + userColor);
+                console.log('[Practice Start] Total paths: ' + allPathsOriginal.length);
+                console.log('[Practice Start] Paths shuffled for random order');
+
+                // Optionally list all paths
+                if (allPathsOriginal.length <= 20) {
+                    console.log('[Practice Start] Path list:');
+                    for (var i = 0; i < allPathsOriginal.length; i++) {
+                        console.log('  Path ' + (i + 1) + ': ' + allPathsOriginal[i].length + ' positions');
+                    }
+                }
+                console.log('='.repeat(60));
+            }
+
             // Enable reset button
             document.getElementById('resetBtn').disabled = false;
 
@@ -640,6 +719,10 @@
 
             // Enable practice mode
             practiceActive = true;
+
+            if (DEBUG_TRANSITIONS) {
+                console.log('[New Path] Starting path 1/' + allPaths.length);
+            }
 
             // Hide evaluation label at start
             updateEvaluationLabel();
