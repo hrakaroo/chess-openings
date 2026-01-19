@@ -15,24 +15,37 @@ function playMoveSound() {
             audioContext = new (window.AudioContext || window.webkitAudioContext)();
         }
 
-        // Create a simple, pleasant "thud" sound (like piece on wooden board)
-        var oscillator = audioContext.createOscillator();
-        var gainNode = audioContext.createGain();
-
-        oscillator.connect(gainNode);
-        gainNode.connect(audioContext.destination);
-
-        // Low-pitched thud (sounds like piece placed on wooden board)
-        oscillator.frequency.value = 220;  // Lower frequency for wooden knock sound
-        oscillator.type = 'sine';
-
-        // Quick fade out for natural sound
+        // Create a clean knock sound similar to Lichess standard sound
         var now = audioContext.currentTime;
-        gainNode.gain.setValueAtTime(0.3, now);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
 
-        oscillator.start(now);
-        oscillator.stop(now + 0.12);
+        // Use two oscillators for a balanced, crisp wood sound
+        // Low-mid frequency for body/depth
+        var lowOsc = audioContext.createOscillator();
+        var lowGain = audioContext.createGain();
+        lowOsc.connect(lowGain);
+        lowGain.connect(audioContext.destination);
+        lowOsc.frequency.value = 200;  // Balanced mid-low for wood body
+        lowOsc.type = 'sine';  // Clean sine wave like Lichess
+
+        // Higher frequency for the crisp "tap"
+        var highOsc = audioContext.createOscillator();
+        var highGain = audioContext.createGain();
+        highOsc.connect(highGain);
+        highGain.connect(audioContext.destination);
+        highOsc.frequency.value = 450;  // Crisp tap component
+        highOsc.type = 'sine';  // Clean sine wave
+
+        // Quick, sharp envelope like Lichess - very short and crisp
+        lowGain.gain.setValueAtTime(0.2, now);
+        lowGain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+
+        highGain.gain.setValueAtTime(0.12, now);
+        highGain.gain.exponentialRampToValueAtTime(0.01, now + 0.025);  // Tap fades very fast
+
+        lowOsc.start(now);
+        lowOsc.stop(now + 0.05);
+        highOsc.start(now);
+        highOsc.stop(now + 0.025);
     } catch (e) {
         // Silently fail if audio context not supported
         console.warn('Audio playback not supported:', e);
