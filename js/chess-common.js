@@ -4,6 +4,41 @@
 // Initialize the chess game logic
 var game = new Chess();
 
+// Audio context for sound effects
+var audioContext = null;
+
+// Play a move sound effect
+function playMoveSound() {
+    try {
+        // Lazy initialization of audio context (required for some browsers)
+        if (!audioContext) {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        }
+
+        // Create a simple, pleasant "thud" sound (like piece on wooden board)
+        var oscillator = audioContext.createOscillator();
+        var gainNode = audioContext.createGain();
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+
+        // Low-pitched thud (sounds like piece placed on wooden board)
+        oscillator.frequency.value = 220;  // Lower frequency for wooden knock sound
+        oscillator.type = 'sine';
+
+        // Quick fade out for natural sound
+        var now = audioContext.currentTime;
+        gainNode.gain.setValueAtTime(0.3, now);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
+
+        oscillator.start(now);
+        oscillator.stop(now + 0.12);
+    } catch (e) {
+        // Silently fail if audio context not supported
+        console.warn('Audio playback not supported:', e);
+    }
+}
+
 // Graph data structures
 var graphNodes = [];  // Array of unique states
 var graphEdges = [];  // Array of {from: stateIndex, to: stateIndex, annotation: string}
@@ -30,6 +65,11 @@ var board = null;
 function addNodeToGraph(state) {
     // Normalize state to ensure consistent comparison
     var normalizedState = normalizeFEN(state);
+
+    // Convert starting position FEN to 'start' keyword for special coloring
+    if (normalizedState === START_FEN) {
+        normalizedState = 'start';
+    }
 
     if (!stateToIndex.has(normalizedState)) {
         var index = graphNodes.length;
@@ -621,10 +661,13 @@ function loadRoutesFromFile(fileContent, filename) {
                     // Check if toPart is a FEN string (contains '/') or move notation
                     if (toPart.indexOf('/') !== -1 || toPart === 'start') {
                         // Old format: toPart is a full FEN state
-                        var toState = toPart;
-                        var toValid = validateState(toState);
+                        // Normalize both states for graph topology (transposition detection)
+                        var normalizedFrom = normalizeFEN(fromState);
+                        var normalizedTo = normalizeFEN(toPart);
+                        var toValid = validateState(normalizedTo);
                         if (toValid.valid) {
-                            addEdgeToGraph(fromState, toState, annotation, true, '', '');
+                            // Pass normalized states for graph nodes, store fromState as fullFEN for export
+                            addEdgeToGraph(normalizedFrom, normalizedTo, annotation, true, '', fromState);
                         } else {
                             invalidCount++;
                             console.warn('Line ' + (i + 1) + ': Invalid to state - ' + toValid.error);
@@ -780,10 +823,10 @@ var lastGraphStructure = null;    // Track graph changes
 
 // Node colors
 var NODE_COLORS = {
-    START: '#4A90E2',        // Blue
+    START: '#4CAF50',        // Green (starting position)
     WHITE_TO_MOVE: '#616161', // Dark grey (white's turn)
     BLACK_TO_MOVE: '#E0E0E0', // Light grey (black's turn)
-    CURRENT: '#4CAF50',      // Green
+    CURRENT: '#2196F3',      // Blue (current position being viewed)
     EVALUATED: '#E53935'     // Red (positions with Stockfish evaluation)
 };
 
@@ -1069,6 +1112,7 @@ function setupCanvasEventListeners() {
 
             if (distance <= nodeRadius) {
                 loadState(pos.state, true);
+                playMoveSound();
                 return;
             }
         }
@@ -1232,6 +1276,7 @@ function navigateDown() {
     // Move to first child and reset child index
     currentChildIndex = 0;
     loadState(children[0], true);
+    playMoveSound();
 }
 
 // Navigate to parent (UP arrow)
@@ -1240,6 +1285,7 @@ function navigateUp() {
     if (parent) {
         currentChildIndex = 0;
         loadState(parent, true);
+        playMoveSound();
     }
 }
 
@@ -1266,6 +1312,7 @@ function navigateRight() {
     var nextIndex = (currentIndex + 1) % siblings.length;
     currentChildIndex = nextIndex;
     loadState(siblings[nextIndex], true);
+    playMoveSound();
 }
 
 // Cycle to previous sibling (LEFT arrow)
@@ -1291,6 +1338,7 @@ function navigateLeft() {
     var prevIndex = (currentIndex - 1 + siblings.length) % siblings.length;
     currentChildIndex = prevIndex;
     loadState(siblings[prevIndex], true);
+    playMoveSound();
 }
 
 // Setup keyboard navigation

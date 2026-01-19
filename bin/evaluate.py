@@ -112,7 +112,11 @@ def find_leaf_nodes(edges):
     nodes_with_children = set()
     all_nodes = set()
 
-    for from_state, to_state, _ in edges:
+    for edge_tuple in edges:
+        # Handle both 3-tuple (old) and 4-tuple (new with full_from_fen)
+        from_state = edge_tuple[0]
+        to_state = edge_tuple[1]
+
         nodes_with_children.add(from_state)
         all_nodes.add(from_state)
         all_nodes.add(to_state)
@@ -216,7 +220,15 @@ def evaluate_positions(leaf_nodes, stockfish_path=None):
 
 
 def parse_v4_file(filename):
-    """Parse a v4.0 format chess openings file and extract transitions."""
+    """Parse a v4.0 format chess openings file and extract transitions.
+
+    Returns:
+        states: set of normalized FEN strings (for graph nodes)
+        edges: list of tuples (normalized_from, normalized_to, annotation, full_from_fen)
+               - normalized states for graph topology
+               - full_from_fen preserves en passant for export
+        title: opening title
+    """
     with open(filename, 'r', encoding='utf-8') as f:
         lines = f.readlines()
 
@@ -237,8 +249,8 @@ def parse_v4_file(filename):
     title = lines[1].strip()[1:].strip()
     start_line = 2
 
-    edges = []
-    states = set()
+    edges = []  # List of (normalized_from, normalized_to, annotation, full_from_fen)
+    states = set()  # Set of normalized FEN strings
     pending_comments = []  # Accumulate # comment lines before transitions
 
     for i, line in enumerate(lines[start_line:], start=start_line+1):
@@ -289,10 +301,13 @@ def parse_v4_file(filename):
         # Check if to_part is a FEN string (contains '/') or move notation
         if '/' in to_part or to_part == 'start':
             # Old format: to_part is a full FEN state
-            to_state = to_part
-            states.add(from_state)
-            states.add(to_state)
-            edges.append((from_state, to_state, annotation))
+            # Normalize both states for graph topology (transposition detection)
+            normalized_from = normalize_fen(from_state)
+            normalized_to = normalize_fen(to_part)
+            states.add(normalized_from)
+            states.add(normalized_to)
+            # Store normalized states for graph, preserve full from_state for export
+            edges.append((normalized_from, normalized_to, annotation, from_state))
         else:
             # New format: to_part is move notation - apply the move to get to_state
             move_notation = to_part
@@ -308,10 +323,14 @@ def parse_v4_file(filename):
                 else:
                     to_state = normalize_fen(to_fen)
 
-                # States are in FEN format (or 'start' keyword)
-                states.add(from_state)
+                # Normalize from_state for graph topology (transposition detection)
+                normalized_from = normalize_fen(from_state)
+
+                # Add normalized states to graph nodes
+                states.add(normalized_from)
                 states.add(to_state)
-                edges.append((from_state, to_state, annotation))
+                # Store normalized states for graph, preserve full from_state for export
+                edges.append((normalized_from, to_state, annotation, from_state))
             except Exception as e:
                 print(f"Warning: Line {i}: Could not apply move '{move_notation}' from state '{from_state[:30]}...' - {e}")
                 continue
@@ -323,16 +342,28 @@ def parse_v4_file(filename):
 
 
 def build_graph(states, edges):
-    """Build a NetworkX directed graph from states and edges."""
+    """Build a NetworkX directed graph from states and edges.
+
+    Args:
+        states: set of normalized FEN strings
+        edges: list of tuples (normalized_from, normalized_to, annotation, full_from_fen)
+    """
     G = nx.DiGraph()
 
-    # Add all nodes
+    # Add all nodes (states are already normalized)
     for state in states:
         G.add_node(state)
 
-    # Add all edges
-    for from_state, to_state, annotation in edges:
-        G.add_edge(from_state, to_state, annotation=annotation)
+    # Add all edges (use normalized states for graph topology)
+    for edge_tuple in edges:
+        # Handle both 3-tuple (old) and 4-tuple (new with full_from_fen)
+        if len(edge_tuple) == 4:
+            from_state, to_state, annotation, full_from_fen = edge_tuple
+        else:
+            from_state, to_state, annotation = edge_tuple
+            full_from_fen = from_state  # Fallback for old format
+
+        G.add_edge(from_state, to_state, annotation=annotation, full_from_fen=full_from_fen)
 
     return G
 
@@ -464,14 +495,22 @@ def update_file_with_positions(input_file, positions, evaluations, output_file, 
 
     # Build transition lines with annotations as # comments
     transition_lines = []
-    for from_state, to_state, annotation in edges:
+    for edge_tuple in edges:
+        # Handle both 3-tuple (old) and 4-tuple (new with full_from_fen)
+        if len(edge_tuple) == 4:
+            from_state, to_state, annotation, full_from_fen = edge_tuple
+        else:
+            from_state, to_state, annotation = edge_tuple
+            full_from_fen = from_state  # Fallback for old format
+
         # Add annotation as # comment if present
         if annotation:
             transition_lines.append(f"# {annotation}")
 
         # Find the move that leads from from_state to to_state
+        # Use full_from_fen (with en passant) for move reconstruction
         try:
-            from_fen = state_to_fen(from_state)
+            from_fen = state_to_fen(full_from_fen)
             to_fen = state_to_fen(to_state)
             board = chess.Board(from_fen)
 
@@ -488,21 +527,16 @@ def update_file_with_positions(input_file, positions, evaluations, output_file, 
                 board.pop()
 
             if move_notation:
-                # Normalize from_state before writing
-                normalized_from = normalize_fen(from_state)
-                transition_lines.append(f"{normalized_from} -> {move_notation}")
+                # Write transition with full FEN (preserves en passant)
+                transition_lines.append(f"{full_from_fen} -> {move_notation}")
             else:
                 # Fallback to old format if move not found
                 print(f"Warning: Could not find move from {from_state[:30]}... to {to_state[:30]}...")
-                normalized_from = normalize_fen(from_state)
-                normalized_to = normalize_fen(to_state)
-                transition_lines.append(f"{normalized_from} -> {normalized_to}")
+                transition_lines.append(f"{from_state} -> {to_state}")
         except Exception as e:
             print(f"Warning: Error converting transition: {e}")
             # Fallback to old format
-            normalized_from = normalize_fen(from_state)
-            normalized_to = normalize_fen(to_state)
-            transition_lines.append(f"{normalized_from} -> {normalized_to}")
+            transition_lines.append(f"{from_state} -> {to_state}")
 
     # Write updated file
     with open(output_file, 'w', encoding='utf-8') as f:

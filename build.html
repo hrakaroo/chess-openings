@@ -294,6 +294,9 @@
             var moveSAN = move.san;  // Standard Algebraic Notation (e.g., "e4", "Nf3", "exd6")
             console.log('Move made - From:', stateBefore, 'To:', stateAfter, 'Move:', moveSAN);
 
+            // Play move sound
+            playMoveSound();
+
             // Add edge to graph with annotation, move, and full FEN for validation
             addEdgeToGraph(stateBefore, stateAfter, annotationText, false, moveSAN, fullFENBefore);
             currentBoardState = stateAfter;

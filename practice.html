@@ -363,6 +363,10 @@
             // Make the next move in the path
             var targetState = currentPath[currentStepIndex];
             loadState(targetState, false);
+
+            // Play move sound
+            playMoveSound();
+
             updateEvaluationLabel();
 
             // Check if we've reached the terminal (last position in path)
@@ -454,6 +458,10 @@
             // Correct move - advance in path
             currentStepIndex++;
             currentBoardState = stateAfter;
+
+            // Play move sound
+            playMoveSound();
+
             updateEvaluationLabel();
             drawGraph();
 

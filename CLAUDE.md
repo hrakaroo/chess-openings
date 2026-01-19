@@ -164,11 +164,11 @@ FEN : x, y, evaluation
 ### Graph Rendering
 
 **Node Colors**:
-- Blue (`#4A90E2`) - Start position
+- Green (`#4CAF50`) - Starting position (always green)
 - Dark grey (`#616161`) - White to move
 - Light grey (`#E0E0E0`) - Black to move
-- Green (`#4CAF50`) - Current position
-- Red (`#E53935`) - Terminal with Stockfish evaluation
+- Blue (`#2196F3`) - Current position being viewed
+- Red (`#E53935`) - Terminal positions with Stockfish evaluation
 
 **Layout**:
 - Uses Dagre algorithm if no pre-computed positions
