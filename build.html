@@ -208,16 +208,13 @@
                 <div id="evaluationLabel"></div>
             </td>
             <td style="vertical-align: top;">
-                <div style="margin-bottom: 10px; display: flex; justify-content: space-between; align-items: flex-start;">
-                    <div>
-                        <button id="exportBtn" style="margin-right: 10px;">Export Routes</button>
-                        <button id="loadBtn">Load Routes</button>
-                        <input type="file" id="fileInput" accept=".txt" style="display: none;">
-                    </div>
-                    <div>
-                        <button id="resetGraphBtn" style="margin-right: 10px;">Reset Graph</button>
-                        <button id="fitViewBtn">Fit View</button>
-                    </div>
+                <div style="margin-bottom: 10px; display: flex; align-items: center; gap: 10px;">
+                    <button id="loadBtn">Load File</button>
+                    <input type="file" id="fileInput" accept=".txt" style="display: none;">
+                    <button id="exportBtn">Export Routes</button>
+                    <div style="flex-grow: 1;"></div>
+                    <button id="resetGraphBtn">Reset Graph</button>
+                    <button id="fitViewBtn">Fit View</button>
                 </div>
                 <div class="graph-container">
                     <canvas id="graphCanvas" width="567" height="600" style="cursor: default;"></canvas>
