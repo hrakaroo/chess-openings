@@ -164,6 +164,15 @@
         .board-b72b1 .highlight-black {
             background-color: #baca44;
         }
+
+        /* Error highlights (for wrong piece dragging) */
+        .board-b72b1 .error-highlight-white {
+            background-color: #ff6b6b;  /* Light red for light squares */
+        }
+
+        .board-b72b1 .error-highlight-black {
+            background-color: #d63031;  /* Darker red for dark squares */
+        }
     </style>
 </head>
 <body>
@@ -316,6 +325,23 @@
                     toSquareEl.addClass('highlight-black');
                 }
             }
+        }
+
+        // Helper function to briefly show error highlight on a square
+        function showErrorHighlight(square) {
+            var squareEl = $('#board .square-' + square);
+
+            // Add error highlight based on square color
+            if (squareEl.hasClass('white-1e1d7')) {
+                squareEl.addClass('error-highlight-white');
+            } else {
+                squareEl.addClass('error-highlight-black');
+            }
+
+            // Remove highlight after 300ms
+            setTimeout(function() {
+                squareEl.removeClass('error-highlight-white error-highlight-black');
+            }, 300);
         }
 
         // Shuffle an array using Fisher-Yates algorithm
@@ -586,12 +612,14 @@
             // Only allow moving user's color
             if ((userColor === 'white' && piece.search(/^b/) !== -1) ||
                 (userColor === 'black' && piece.search(/^w/) !== -1)) {
+                showErrorHighlight(source);
                 return false;
             }
 
             // Check if it's user's turn
             if ((userColor === 'white' && game.turn() === 'b') ||
                 (userColor === 'black' && game.turn() === 'w')) {
+                showErrorHighlight(source);
                 return false;
             }
         }
@@ -626,6 +654,10 @@
 
                 // Play error sound
                 playErrorSound();
+
+                // Show red error highlight on both squares
+                showErrorHighlight(source);
+                showErrorHighlight(target);
 
                 if (DEBUG_TRANSITIONS) {
                     console.log('[User Move] INCORRECT - Path ' + (currentPathIndex + 1) + '/' + allPaths.length +
