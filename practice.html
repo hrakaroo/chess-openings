@@ -256,6 +256,36 @@
         var pathsRemaining = 0;  // How many paths left to complete
         var mistakeOnCurrentPath = false;  // Track if user made mistake on current path
 
+        // Helper function to clear move highlights
+        function clearMoveHighlights() {
+            // Remove highlight classes from all squares
+            $('#board .square-55d63').removeClass('highlight-white highlight-black');
+        }
+
+        // Helper function to highlight a move
+        function highlightMove(fromSquare, toSquare) {
+            clearMoveHighlights();
+
+            if (fromSquare && toSquare) {
+                // Determine if squares are light or dark for appropriate highlight color
+                var fromSquareEl = $('#board .square-' + fromSquare);
+                var toSquareEl = $('#board .square-' + toSquare);
+
+                // Add highlight based on square color
+                if (fromSquareEl.hasClass('white-1e1d7')) {
+                    fromSquareEl.addClass('highlight-white');
+                } else {
+                    fromSquareEl.addClass('highlight-black');
+                }
+
+                if (toSquareEl.hasClass('white-1e1d7')) {
+                    toSquareEl.addClass('highlight-white');
+                } else {
+                    toSquareEl.addClass('highlight-black');
+                }
+            }
+        }
+
         // Shuffle an array using Fisher-Yates algorithm
         function shuffleArray(array) {
             var shuffled = array.slice(); // Create a copy
@@ -379,8 +409,36 @@
                 console.log('  To:   ' + targetState);
             }
 
+            // Find the edge to get the move notation
+            var fromIndex = stateToIndex.get(normalizeFEN(fromState));
+            var toIndex = stateToIndex.get(normalizeFEN(targetState));
+            var moveSquares = null;
+
+            if (fromIndex !== undefined && toIndex !== undefined) {
+                // Find edge from fromIndex to toIndex
+                for (var i = 0; i < graphEdges.length; i++) {
+                    if (graphEdges[i].from === fromIndex && graphEdges[i].to === toIndex) {
+                        var moveSAN = graphEdges[i].move;
+                        if (moveSAN) {
+                            // Use chess.js to parse the move and get from/to squares
+                            var tempGame = new Chess(fromState === 'start' ? undefined : fromState);
+                            var moveObj = tempGame.move(moveSAN);
+                            if (moveObj) {
+                                moveSquares = { from: moveObj.from, to: moveObj.to };
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+
             // Make the next move in the path
             loadState(targetState, false);
+
+            // Highlight the move
+            if (moveSquares) {
+                highlightMove(moveSquares.from, moveSquares.to);
+            }
 
             // Play move sound
             playMoveSound();
@@ -432,6 +490,7 @@
                     game.reset();
                     board.position('start');
                     currentBoardState = 'start';
+                    clearMoveHighlights();
                     updateEvaluationLabel();
                     drawGraph();
 
@@ -508,6 +567,9 @@
             currentStepIndex++;
             currentBoardState = stateAfter;
 
+            // Highlight the user's move
+            highlightMove(source, target);
+
             // Play move sound
             playMoveSound();
 
@@ -558,6 +620,7 @@
                     game.reset();
                     board.position('start');
                     currentBoardState = 'start';
+                    clearMoveHighlights();
                     updateEvaluationLabel();
                     drawGraph();
 
@@ -731,6 +794,9 @@
             if (DEBUG_TRANSITIONS) {
                 console.log('[New Path] Starting path 1/' + allPaths.length);
             }
+
+            // Clear any existing highlights
+            clearMoveHighlights();
 
             // Hide evaluation label at start
             updateEvaluationLabel();
