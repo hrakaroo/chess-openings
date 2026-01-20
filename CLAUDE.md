@@ -51,12 +51,17 @@ A static web application for building, exploring, and practicing chess opening r
 - Export to v4.0 format with title
 
 **3. Practice Mode** (`practice.html`)
-- Interactive practice with move validation
+- Interactive practice with move validation (including en passant)
 - Path-based practice (cycles through all unique paths once)
+- Quick-load dropdown for pre-built openings
 - Score tracking (correct paths / total paths)
 - Remaining counter (counts down to zero)
 - Auto-start on file load, Reset button to restart
 - Randomized path order each session
+- Last move highlighting (from/to squares)
+- Audio feedback (move sound + error sound)
+- Graph visualization (view-only, clicking disabled)
+- Debug console flag: `DEBUG_TRANSITIONS = true`
 
 ## Technical Architecture
 
@@ -202,7 +207,34 @@ FEN : x, y, evaluation
 
 **Critical bug fix**: `edgeMap` must be rebuilt after any edge or node modifications to prevent stale cache lookups.
 
-### Practice Mode Implementation
+### Practice Mode Path Structure
+
+**Path data structure** (critical for en passant):
+- Paths are arrays of objects: `[{ state, fullFEN }, ...]`
+- `state`: Normalized FEN (for graph lookups and transposition detection)
+- `fullFEN`: Complete FEN with en passant (for loading into chess.js)
+
+**Path building** (`findPathsToState()`):
+1. Start with initial state: `{ state: 'start', fullFEN: 'start' }`
+2. For each child edge:
+   - Get `edge.move` (SAN notation) and `edge.fullFEN` (FROM state)
+   - Create temporary chess.js game with `edge.fullFEN`
+   - Apply `edge.move` to get resulting FEN
+   - Store as child: `{ state: normalizedFEN, fullFEN: resultingFEN }`
+3. This **reconstructs** the correct full FEN for each position by replaying moves
+
+**Why this works**:
+- Edge stores full FEN of FROM state (with en passant)
+- Applying the move produces TO state with correct en passant
+- User can make en passant captures because game object has full FEN
+
+**Practice flow**:
+1. User makes move → validate against path's normalized state
+2. Sync game object with path's full FEN (`game.load(expectedNextFullFEN)`)
+3. Computer loads next full FEN → board updates visually
+4. En passant information preserved throughout
+
+### Practice Mode Features
 
 **Path generation**:
 1. Find all terminal states (leaf nodes with no outgoing edges)
@@ -213,18 +245,32 @@ FEN : x, y, evaluation
 **Practice loop**:
 1. User makes move
 2. Validate move matches next state in current path
-3. If correct, computer plays next move from path
-4. If incorrect, snapback (no score penalty, but must retry)
+3. If correct:
+   - Play move sound
+   - Highlight from/to squares
+   - Computer plays next move from path
+4. If incorrect:
+   - Play error sound (gentle ding)
+   - Snapback (no score penalty, but must retry)
+   - Mark mistake on current path
 5. On path completion:
    - Increment score if no mistakes
    - Decrement remaining
-   - Move to next path
+   - Move to next path after 2 second delay
 6. When all paths done, auto-stop
 
 **Score tracking**:
 - `pathsCompleted` / `allPathsOriginal.length`
 - `pathsRemaining` counts down to 0
 - Mistakes prevent scoring but don't end practice
+
+**UI Features**:
+- **Last move highlighting**: Yellow highlight on from/to squares (uses board's highlight CSS classes)
+- **Audio feedback**:
+  - Move sound: Dual oscillators (200Hz + 450Hz) for wooden knock
+  - Error sound: Triangle wave (800Hz) for gentle ding
+- **Graph interaction**: View-only (no clicking), tooltips still work
+- **Debug mode**: `window.DEBUG_TRANSITIONS = true` for detailed console logging
 
 ## Python Utilities
 
@@ -315,15 +361,37 @@ python bin/merge.py file1.txt file2.txt --output merged.txt
 - Updated all README references to use `bin/` prefix
 - Cleaned up old `__pycache__` directory
 
+### 7. Practice Mode En Passant Fix (January 2026)
+**Problem**: En passant moves didn't work in practice mode; computer moves didn't show visually
+**Root cause**: Path structure stored edge's `fullFEN` (FROM state) as if it were TO state
+**Solution**: Reconstruct full FEN for each path step by applying moves:
+1. Modified `findPathsToState()` to replay moves and capture resulting FENs
+2. Path structure: `[{ state: normalizedFEN, fullFEN: reconstructedFEN }, ...]`
+3. User move validation syncs game object with path's full FEN
+4. Computer moves load full FEN to preserve en passant info
+**Files changed**: `practice.html`
+
+### 8. UI/UX Enhancements (January 2026)
+- **Quick-load dropdown**: Added to Explore and Practice modes for pre-built openings
+- **Last move highlighting**: Always-on visual feedback for from/to squares
+- **Audio feedback**: Move sound (wooden knock) + error sound (gentle ding)
+- **Graph clicking**: Disabled in practice mode, enabled in build/explore
+- **Canvas resize fix**: Fixed growing height issue with fixed 600x600px container
+- **Debug console**: `DEBUG_TRANSITIONS` flag for detailed logging
+- **Rebuild script**: `bin/rebuild_openings_list.py` to auto-update dropdowns
+**Files changed**: `practice.html`, `explore.html`, `build.html`, `js/chess-common.js`
+
 ## Known Limitations
 
-1. **En passant caveat**: Board states don't preserve en passant info in nodes (only in edges), which could theoretically cause incorrect transposition merging in extremely rare cases. See README Caveat section.
+1. **En passant caveat**: Graph nodes don't preserve en passant info (only edges do) for transposition detection purposes. En passant moves work correctly in all modes. There's a very narrow theoretical possibility of incorrect transposition merging in extremely rare cases. See README Caveat section.
 
 2. **Promotion**: Always promotes to Queen (no UI for choosing piece)
 
 3. **Draw detection**: Not implemented (no 50-move rule, threefold repetition)
 
 4. **Stockfish**: Requires separate installation for evaluate.py evaluation feature
+
+5. **Mobile**: Drag-and-drop may not work well on touch devices (no click-to-move implemented)
 
 ## Development Guidelines
 

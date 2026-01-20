@@ -4,6 +4,34 @@ All notable changes to the Chess Openings project.
 
 ## [Unreleased]
 
+### Added - 2026-01-20
+
+#### Practice Mode En Passant Support
+- **Feature**: En passant captures now work correctly in practice mode
+- **Implementation**: Path structure reconstructs full FENs by replaying moves during path building
+- **Technical**: Paths store both normalized state (for graph) and full FEN (for chess.js)
+- **Result**: All special moves (castling, en passant, promotion) validated correctly
+
+#### UI/UX Enhancements
+- **Quick-load dropdown**: Pre-built openings available in Explore and Practice modes
+- **Last move highlighting**: Visual feedback showing from/to squares (always enabled)
+- **Audio feedback**:
+  - Move sound: Wooden knock (dual 200Hz/450Hz oscillators)
+  - Error sound: Gentle ding (800Hz triangle wave) for incorrect moves
+- **Graph interaction**: Disabled clicking in practice mode (view-only with tooltips)
+- **Debug console**: `DEBUG_TRANSITIONS = true` for detailed move logging
+
+#### Canvas Resize Fix
+- **Bug Fix**: Graph canvas no longer grows uncontrollably when resizing window
+- **Solution**: Fixed container dimensions (600x600px) prevent circular dependency
+- **Affected**: All three modes (Explore, Build, Practice)
+
+#### Rebuild Script
+- **Tool**: `bin/rebuild_openings_list.py` automatically updates dropdown options
+- **Usage**: Scans openings/ directory and regenerates HTML `<option>` elements
+- **Validation**: Detects duplicate titles and provides clear error messages
+- **Flags**: `--update-html` to update files directly, or print to stdout
+
 ### Added - 2026-01-14
 
 #### Welcome Page

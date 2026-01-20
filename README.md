@@ -86,12 +86,13 @@ The application now has three separate pages, each optimized for a specific work
 #### Explore Mode (`explore.html`)
 - **Purpose**: Load and view opening routes without making changes
 - **Features**:
-  - Load route files (with embedded positions)
+  - Quick-load dropdown for pre-built openings or custom file upload
   - Click nodes in the graph to navigate through positions
+  - Keyboard navigation (arrow keys: Down=next move, Up=previous, Right/Left=alternate variations)
   - View move annotations in read-only text field above the board
   - Export to PGN format
-  - Board pieces are moved through the graph only.
-- **Available buttons**: Load Routes, Export PGN, Fit View
+  - Board pieces are moved through the graph only
+- **Available buttons**: Load dropdown, Custom File, Export PGN, Fit View
 - **URL**: `explore.html`
 
 #### Build Mode (`build.html`)
@@ -108,20 +109,18 @@ The application now has three separate pages, each optimized for a specific work
 #### Practice Mode (`practice.html`)
 - **Purpose**: Test your knowledge of loaded opening repertoires through interactive practice
 - **Features**:
-  - Load route files to practice
+  - Quick-load dropdown for pre-built openings or custom file upload
   - Choose to play as White or Black
   - Computer automatically plays the opposite side through the repertoire
-  - Validates your moves against loaded variations
-  - Tracks "Correct" count (successful completions without mistakes) and "Best" streak
-  - Resets streak on incorrect moves
-  - Automatically cycles through positions on completion
+  - Validates your moves against loaded variations (including en passant captures)
+  - Tracks "Correct" count (successful completions without mistakes) and "Remaining" paths
+  - Automatically cycles through all unique paths in random order
   - View move annotations during practice
-  - Graph visualization with current position highlighted
-  - Shuffled move order - each practice run explores variations in random order
+  - Graph visualization with current position highlighted (view-only, clicking disabled)
   - **Last move highlighting** - squares are highlighted to show the most recent move (from and to squares)
   - **Audio feedback** - move sounds for correct moves, gentle error tone for incorrect moves
   - **Debug console** - enable transition logging from browser console
-- **Available buttons**: Load Routes, Start/Stop, Fit View
+- **Available buttons**: Load dropdown, Custom File, Reset, Fit View
 - **URL**: `practice.html`
 
 ##### Debug Console (Practice Mode)

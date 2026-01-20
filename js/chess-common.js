@@ -1144,7 +1144,7 @@ function setupCanvasEventListeners() {
     // Click handler - navigate to node
     canvas.addEventListener('click', function(event) {
         // Disable node clicking in practice mode
-        var isPracticeMode = document.getElementById('correctField') !== null;
+        var isPracticeMode = document.getElementById('playAsSelect') !== null;
         if (isPracticeMode) {
             return;
         }
@@ -1229,6 +1229,9 @@ function setupCanvasEventListeners() {
             var oldHovered = hoveredNodeIndex;
             hoveredNodeIndex = -1;
 
+            // Check if we're in practice mode
+            var isPracticeMode = document.getElementById('playAsSelect') !== null;
+
             for (var i = 0; i < nodePositions.length; i++) {
                 var pos = nodePositions[i];
                 var dx = graphX - pos.x;
@@ -1237,7 +1240,8 @@ function setupCanvasEventListeners() {
 
                 if (distance <= nodeRadius) {
                     hoveredNodeIndex = i;
-                    canvas.style.cursor = 'pointer';
+                    // Only show pointer cursor if not in practice mode
+                    canvas.style.cursor = isPracticeMode ? 'default' : 'pointer';
                     canvas.title = getMoveTooltip(pos.state);
                     break;
                 }
