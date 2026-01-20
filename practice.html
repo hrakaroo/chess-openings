@@ -356,7 +356,7 @@
             var visited = new Set();
             var currentPath = [{ state: normalizeFEN(startState), fullFEN: startState }];
 
-            function dfs(state) {
+            function dfs(state, currentFullFEN) {
                 var normalizedState = normalizeFEN(state);
 
                 if (normalizedState === normalizeFEN(targetState)) {
@@ -373,11 +373,24 @@
                 for (var i = 0; i < graphEdges.length; i++) {
                     if (graphEdges[i].from === stateIndex) {
                         var childState = graphNodes[graphEdges[i].to];
-                        var childFullFEN = graphEdges[i].fullFEN || childState;
+                        var edgeMove = graphEdges[i].move;
+                        var edgeFromFEN = graphEdges[i].fullFEN;
 
                         if (!visited.has(childState)) {
+                            // Reconstruct the full FEN for the child by applying the move
+                            var childFullFEN = childState;  // fallback to normalized
+                            if (edgeMove && edgeFromFEN) {
+                                try {
+                                    var tempGame = new Chess(edgeFromFEN === 'start' ? undefined : edgeFromFEN);
+                                    tempGame.move(edgeMove);
+                                    childFullFEN = tempGame.fen();
+                                } catch (e) {
+                                    console.warn('Failed to reconstruct FEN:', e);
+                                }
+                            }
+
                             currentPath.push({ state: childState, fullFEN: childFullFEN });
-                            dfs(childState);
+                            dfs(childState, childFullFEN);
                             currentPath.pop();
                         }
                     }
@@ -386,7 +399,7 @@
                 visited.delete(normalizedState);
             }
 
-            dfs(startState);
+            dfs(startState, startState);
             return paths;
         }
 
@@ -472,7 +485,15 @@
             }
 
             // Make the next move in the path - use full FEN to preserve en passant
-            loadState(targetFullFEN, false);
+            // Don't use loadState() because it normalizes the FEN (strips en passant)
+            if (targetFullFEN === 'start') {
+                game.reset();
+                board.position('start');
+            } else {
+                game.load(targetFullFEN);
+                board.position(game.fen());
+            }
+            currentBoardState = targetState;  // Store normalized state for graph lookups
 
             // Highlight the move
             if (moveSquares) {
@@ -530,13 +551,17 @@
                     // Get the starting state for the new path
                     var newPath = allPaths[currentPathIndex];
                     var startFullFEN = newPath[0].fullFEN;
+                    var startState = newPath[0].state;
 
                     if (startFullFEN === 'start') {
                         game.reset();
                         board.position('start');
                         currentBoardState = 'start';
                     } else {
-                        loadState(startFullFEN, false);
+                        // Load full FEN to preserve en passant
+                        game.load(startFullFEN);
+                        board.position(game.fen());  // Update board from game object
+                        currentBoardState = startState;  // Store normalized state for graph lookups
                     }
 
                     clearMoveHighlights();
@@ -619,8 +644,11 @@
 
             // Correct move - advance in path
             currentStepIndex++;
-            // Update current board state to the full FEN to preserve en passant info
-            currentBoardState = expectedNextFullFEN;
+
+            // Sync the game object with the path's full FEN
+            // This ensures we're at exactly the right state with correct en passant info
+            game.load(expectedNextFullFEN);
+            currentBoardState = expectedNextState;  // Store normalized state for graph lookups
 
             // Highlight the user's move
             highlightMove(source, target);
@@ -676,13 +704,17 @@
                     // Get the starting state for the new path
                     var newPath = allPaths[currentPathIndex];
                     var startFullFEN = newPath[0].fullFEN;
+                    var startState = newPath[0].state;
 
                     if (startFullFEN === 'start') {
                         game.reset();
                         board.position('start');
                         currentBoardState = 'start';
                     } else {
-                        loadState(startFullFEN, false);
+                        // Load full FEN to preserve en passant
+                        game.load(startFullFEN);
+                        board.position(game.fen());  // Update board from game object
+                        currentBoardState = startState;  // Store normalized state for graph lookups
                     }
 
                     clearMoveHighlights();
@@ -840,6 +872,7 @@
             // Get the starting state for the first path
             var firstPath = allPaths[0];
             var startFullFEN = firstPath[0].fullFEN;
+            var startState = firstPath[0].state;
 
             // Reset game
             if (startFullFEN === 'start') {
@@ -848,14 +881,14 @@
             } else {
                 // Load the starting FEN with full en passant info
                 game.load(startFullFEN);
-                currentBoardState = startFullFEN;
+                currentBoardState = startState;  // Store normalized state for graph lookups
             }
 
             // Recreate board as draggable
             board.destroy();
             board = Chessboard('board', {
                 draggable: true,
-                position: startFullFEN === 'start' ? 'start' : startFullFEN,
+                position: startFullFEN === 'start' ? 'start' : game.fen(),
                 orientation: userColor,
                 pieceTheme: 'https://lichess1.org/assets/piece/staunty/{piece}.svg',
                 onDragStart: onDragStart,
