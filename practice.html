@@ -607,7 +607,15 @@
                     .then(content => {
                         var filename = filePath.split('/').pop();
                         loadRoutesFromFile(content, filename);
+
+                        // Compute all paths immediately after loading
+                        allPathsOriginal = findAllPaths();
+
                         hideLoading();
+                        showSuccess('Loaded: ' + filename + ' (' + allPathsOriginal.length + ' paths)');
+
+                        // Auto-start practice
+                        startPractice();
                     })
                     .catch(error => {
                         hideLoading();
