@@ -116,6 +116,7 @@ The application now has three separate pages, each optimized for a specific work
   - Graph visualization with current position highlighted
   - Shuffled move order - each practice run explores variations in random order
   - **Last move highlighting** - squares are highlighted to show the most recent move (from and to squares)
+  - **Audio feedback** - move sounds for correct moves, gentle error tone for incorrect moves
   - **Debug console** - enable transition logging from browser console
 - **Available buttons**: Load Routes, Start/Stop, Fit View
 - **URL**: `practice.html`

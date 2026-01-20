@@ -256,6 +256,36 @@
         var pathsRemaining = 0;  // How many paths left to complete
         var mistakeOnCurrentPath = false;  // Track if user made mistake on current path
 
+        // Play an error sound for incorrect moves
+        function playErrorSound() {
+            try {
+                if (!audioContext) {
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                }
+
+                var now = audioContext.currentTime;
+
+                // Create a gentle "ding" sound - higher pitched but not harsh
+                var osc = audioContext.createOscillator();
+                var gain = audioContext.createGain();
+                osc.connect(gain);
+                gain.connect(audioContext.destination);
+
+                // Use a triangle wave for a softer, bell-like tone
+                osc.type = 'triangle';
+                osc.frequency.value = 800;  // Higher pitch for error indication
+
+                // Quick fade out
+                gain.gain.setValueAtTime(0.15, now);  // Lower volume than move sound
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+
+                osc.start(now);
+                osc.stop(now + 0.2);
+            } catch (e) {
+                console.warn('Audio playback not supported:', e);
+            }
+        }
+
         // Helper function to clear move highlights
         function clearMoveHighlights() {
             // Remove highlight classes from all squares
@@ -546,6 +576,10 @@
                 // Wrong move - mark mistake on this path
                 game.undo();
                 mistakeOnCurrentPath = true;
+
+                // Play error sound
+                playErrorSound();
+
                 if (DEBUG_TRANSITIONS) {
                     console.log('[User Move] INCORRECT - Path ' + (currentPathIndex + 1) + '/' + allPaths.length +
                                ', Step ' + (currentStepIndex + 1) + '/' + currentPath.length);
