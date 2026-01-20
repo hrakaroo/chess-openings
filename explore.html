@@ -120,15 +120,22 @@
         }
 
         #evaluationLabel {
-            display: none;
             padding: 12px 20px;
-            background-color: #E53935;
-            color: white;
+            background-color: transparent;
+            color: transparent;
             border-radius: 4px;
             font-size: 18px;
             font-weight: bold;
             text-align: center;
             margin-top: 10px;
+            visibility: hidden;  /* Hide but maintain layout space */
+            /* Always maintain same dimensions to prevent layout shift */
+        }
+
+        #evaluationLabel.visible {
+            visibility: visible;
+            background-color: #E53935;
+            color: white;
             box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
 

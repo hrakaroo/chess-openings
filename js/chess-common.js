@@ -329,9 +329,10 @@ function updateEvaluationLabel() {
     var evaluation = findEvaluation(currentBoardState);
     if (evaluation) {
         evalLabel.textContent = evaluation;
-        evalLabel.style.display = 'block';
+        evalLabel.classList.add('visible');
     } else {
-        evalLabel.style.display = 'none';
+        evalLabel.textContent = '\u00A0';  // Non-breaking space to maintain height
+        evalLabel.classList.remove('visible');
     }
 }
 

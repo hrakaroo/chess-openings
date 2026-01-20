@@ -135,15 +135,22 @@
         }
 
         #evaluationLabel {
-            display: none;
             padding: 12px 20px;
-            background-color: #E53935;
-            color: white;
+            background-color: transparent;
+            color: transparent;
             border-radius: 4px;
             font-size: 18px;
             font-weight: bold;
             text-align: center;
             margin-top: 10px;
+            visibility: hidden;  /* Hide but maintain layout space */
+            /* Always maintain same dimensions to prevent layout shift */
+        }
+
+        #evaluationLabel.visible {
+            visibility: visible;
+            background-color: #E53935;
+            color: white;
             box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
 
@@ -295,6 +302,114 @@
             } catch (e) {
                 console.warn('Audio playback not supported:', e);
             }
+        }
+
+        // Play a completion celebration sound - three ascending notes (C-E-G major chord)
+        function playCompletionSound() {
+            try {
+                if (!audioContext) {
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                }
+
+                var now = audioContext.currentTime;
+
+                // Three ascending notes: C5, E5, G5 (major chord)
+                var notes = [523.25, 659.25, 783.99];  // Frequencies in Hz
+                var noteDuration = 0.2;
+                var noteGap = 0.15;
+
+                for (var i = 0; i < notes.length; i++) {
+                    var startTime = now + (i * noteGap);
+
+                    var osc = audioContext.createOscillator();
+                    var gain = audioContext.createGain();
+                    osc.connect(gain);
+                    gain.connect(audioContext.destination);
+
+                    // Use sine wave for a pleasant, clean tone
+                    osc.type = 'sine';
+                    osc.frequency.value = notes[i];
+
+                    // Envelope: quick attack, sustain, then fade
+                    gain.gain.setValueAtTime(0, startTime);
+                    gain.gain.linearRampToValueAtTime(0.2, startTime + 0.05);
+                    gain.gain.linearRampToValueAtTime(0.15, startTime + noteDuration - 0.05);
+                    gain.gain.exponentialRampToValueAtTime(0.01, startTime + noteDuration);
+
+                    osc.start(startTime);
+                    osc.stop(startTime + noteDuration);
+                }
+            } catch (e) {
+                console.warn('Audio playback not supported:', e);
+            }
+        }
+
+        // Show completion celebration modal
+        function showCompletionModal() {
+            var totalPaths = allPathsOriginal.length;
+            var percentage = totalPaths > 0 ? Math.round((pathsCompleted / totalPaths) * 100) : 0;
+
+            // Create modal overlay
+            var overlay = document.createElement('div');
+            overlay.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; ' +
+                                   'background: rgba(0,0,0,0.5); display: flex; align-items: center; ' +
+                                   'justify-content: center; z-index: 10000;';
+
+            // Create modal content
+            var modal = document.createElement('div');
+            modal.style.cssText = 'background: white; border-radius: 12px; padding: 40px; ' +
+                                 'box-shadow: 0 20px 60px rgba(0,0,0,0.3); max-width: 400px; text-align: center;';
+
+            // Create content
+            var heading = document.createElement('h2');
+            heading.textContent = 'Practice Complete!';
+            heading.style.cssText = 'margin: 0 0 20px 0; color: #2c3e50; font-size: 32px;';
+
+            var scoreText = document.createElement('p');
+            scoreText.textContent = pathsCompleted + ' / ' + totalPaths + ' paths completed correctly';
+            scoreText.style.cssText = 'margin: 15px 0; font-size: 18px; color: #555;';
+
+            var percentageText = document.createElement('p');
+            percentageText.textContent = percentage + '% accuracy';
+            percentageText.style.cssText = 'margin: 15px 0; font-size: 24px; font-weight: bold; color: #667eea;';
+
+            var closeButton = document.createElement('button');
+            closeButton.textContent = 'Close';
+            closeButton.style.cssText = 'margin-top: 20px; padding: 12px 30px; font-size: 16px; ' +
+                                       'background-color: #667eea; color: white; border: none; ' +
+                                       'border-radius: 4px; cursor: pointer;';
+
+            closeButton.addEventListener('click', function() {
+                document.body.removeChild(overlay);
+            });
+
+            closeButton.addEventListener('mouseenter', function() {
+                this.style.backgroundColor = '#764ba2';
+            });
+
+            closeButton.addEventListener('mouseleave', function() {
+                this.style.backgroundColor = '#667eea';
+            });
+
+            // Assemble modal
+            modal.appendChild(heading);
+            modal.appendChild(scoreText);
+            modal.appendChild(percentageText);
+            modal.appendChild(closeButton);
+            overlay.appendChild(modal);
+
+            // Add to page
+            document.body.appendChild(overlay);
+
+            // Play completion sound
+            playCompletionSound();
+
+            // Allow clicking overlay to close
+            overlay.addEventListener('click', function(e) {
+                if (e.target === overlay) {
+                    document.body.removeChild(overlay);
+                }
+            });
         }
 
         // Helper function to clear move highlights
@@ -459,10 +574,10 @@
             }
 
             if (currentPathIndex >= allPaths.length) {
-                // All paths completed - stop practice
+                // All paths completed - stop practice (defensive check)
                 practiceActive = false;
                 if (DEBUG_TRANSITIONS) {
-                    console.log('[Practice] All paths completed!');
+                    console.log('[Practice] All paths completed (early check)!');
                 }
                 return;
             }
@@ -565,6 +680,8 @@
                     if (DEBUG_TRANSITIONS) {
                         console.log('[Practice] All paths completed!');
                     }
+                    // Show completion celebration
+                    showCompletionModal();
                     return;
                 }
 
@@ -725,6 +842,8 @@
                     if (DEBUG_TRANSITIONS) {
                         console.log('[Practice] All paths completed!');
                     }
+                    // Show completion celebration
+                    showCompletionModal();
                     return;
                 }
 
