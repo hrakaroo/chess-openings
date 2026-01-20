@@ -12,14 +12,17 @@ My initial goal was to render opening variations as a graph to clearly see where
 
 ## Caveat
 
-Graph nodes are rendered without en passant information. This is a deliberate simplification because:
+Graph nodes are rendered without en passant information for transposition detection. This is a deliberate design choice because:
 - En passant opportunities are rare in general play
 - They're even rarer in opening theory
 - They're extremely rare in cases where they would meaningfully distinguish between variations
 
-However, this does mean there's a very narrow possibility that the
-system may incorrectly merge two positions that should be distinct due
-to differing en passant rights.
+The system uses **dual FEN storage** to handle this:
+- **Graph nodes** use normalized FENs (en passant stripped) for transposition detection
+- **Graph edges** preserve full FENs (en passant included) for move validation
+- **Practice mode** uses full FENs for position loading, enabling en passant captures
+
+This means en passant moves work correctly in all modes, while transposition detection remains accurate. There's a very narrow theoretical possibility that the system may incorrectly merge two positions that should be distinct due to differing en passant rights, but this is extremely unlikely in practical opening theory.
 
 ## Features
 

@@ -347,10 +347,14 @@
         }
 
         // DFS to find all paths from startState to targetState
+        // NOTE: Paths are arrays of objects with { state, fullFEN } structure:
+        //   - state: normalized FEN (for graph lookups and transposition detection)
+        //   - fullFEN: complete FEN with en passant info (for loading into game object)
+        // This dual storage preserves en passant move validation while maintaining graph topology
         function findPathsToState(startState, targetState) {
             var paths = [];
             var visited = new Set();
-            var currentPath = [normalizeFEN(startState)];
+            var currentPath = [{ state: normalizeFEN(startState), fullFEN: startState }];
 
             function dfs(state) {
                 var normalizedState = normalizeFEN(state);
@@ -369,8 +373,10 @@
                 for (var i = 0; i < graphEdges.length; i++) {
                     if (graphEdges[i].from === stateIndex) {
                         var childState = graphNodes[graphEdges[i].to];
+                        var childFullFEN = graphEdges[i].fullFEN || childState;
+
                         if (!visited.has(childState)) {
-                            currentPath.push(childState);
+                            currentPath.push({ state: childState, fullFEN: childFullFEN });
                             dfs(childState);
                             currentPath.pop();
                         }
@@ -429,8 +435,10 @@
                 return;
             }
 
-            var fromState = currentPath[currentStepIndex - 1];
-            var targetState = currentPath[currentStepIndex];
+            var fromState = currentPath[currentStepIndex - 1].state;
+            var fromFullFEN = currentPath[currentStepIndex - 1].fullFEN;
+            var targetState = currentPath[currentStepIndex].state;
+            var targetFullFEN = currentPath[currentStepIndex].fullFEN;
 
             if (DEBUG_TRANSITIONS) {
                 console.log('[Computer Move] Path ' + (currentPathIndex + 1) + '/' + allPaths.length +
@@ -451,7 +459,8 @@
                         var moveSAN = graphEdges[i].move;
                         if (moveSAN) {
                             // Use chess.js to parse the move and get from/to squares
-                            var tempGame = new Chess(fromState === 'start' ? undefined : fromState);
+                            // Use full FEN for accurate move parsing
+                            var tempGame = new Chess(fromFullFEN === 'start' ? undefined : fromFullFEN);
                             var moveObj = tempGame.move(moveSAN);
                             if (moveObj) {
                                 moveSquares = { from: moveObj.from, to: moveObj.to };
@@ -462,8 +471,8 @@
                 }
             }
 
-            // Make the next move in the path
-            loadState(targetState, false);
+            // Make the next move in the path - use full FEN to preserve en passant
+            loadState(targetFullFEN, false);
 
             // Highlight the move
             if (moveSquares) {
@@ -517,9 +526,19 @@
                     }
                     currentStepIndex = 0;
                     mistakeOnCurrentPath = false;  // Reset mistake flag for new path
-                    game.reset();
-                    board.position('start');
-                    currentBoardState = 'start';
+
+                    // Get the starting state for the new path
+                    var newPath = allPaths[currentPathIndex];
+                    var startFullFEN = newPath[0].fullFEN;
+
+                    if (startFullFEN === 'start') {
+                        game.reset();
+                        board.position('start');
+                        currentBoardState = 'start';
+                    } else {
+                        loadState(startFullFEN, false);
+                    }
+
                     clearMoveHighlights();
                     updateEvaluationLabel();
                     drawGraph();
@@ -570,7 +589,8 @@
 
             // Check if this move matches the next state in the current path
             var currentPath = allPaths[currentPathIndex];
-            var expectedNextState = currentPath[currentStepIndex + 1];
+            var expectedNextState = currentPath[currentStepIndex + 1].state;
+            var expectedNextFullFEN = currentPath[currentStepIndex + 1].fullFEN;
 
             if (normalizeFEN(stateAfter) !== normalizeFEN(expectedNextState)) {
                 // Wrong move - mark mistake on this path
@@ -599,7 +619,8 @@
 
             // Correct move - advance in path
             currentStepIndex++;
-            currentBoardState = stateAfter;
+            // Update current board state to the full FEN to preserve en passant info
+            currentBoardState = expectedNextFullFEN;
 
             // Highlight the user's move
             highlightMove(source, target);
@@ -651,9 +672,19 @@
                     }
                     currentStepIndex = 0;
                     mistakeOnCurrentPath = false;  // Reset mistake flag for new path
-                    game.reset();
-                    board.position('start');
-                    currentBoardState = 'start';
+
+                    // Get the starting state for the new path
+                    var newPath = allPaths[currentPathIndex];
+                    var startFullFEN = newPath[0].fullFEN;
+
+                    if (startFullFEN === 'start') {
+                        game.reset();
+                        board.position('start');
+                        currentBoardState = 'start';
+                    } else {
+                        loadState(startFullFEN, false);
+                    }
+
                     clearMoveHighlights();
                     updateEvaluationLabel();
                     drawGraph();
@@ -806,15 +837,25 @@
             mistakeOnCurrentPath = false;
             updateScore();
 
+            // Get the starting state for the first path
+            var firstPath = allPaths[0];
+            var startFullFEN = firstPath[0].fullFEN;
+
             // Reset game
-            game.reset();
-            currentBoardState = 'start';
+            if (startFullFEN === 'start') {
+                game.reset();
+                currentBoardState = 'start';
+            } else {
+                // Load the starting FEN with full en passant info
+                game.load(startFullFEN);
+                currentBoardState = startFullFEN;
+            }
 
             // Recreate board as draggable
             board.destroy();
             board = Chessboard('board', {
                 draggable: true,
-                position: 'start',
+                position: startFullFEN === 'start' ? 'start' : startFullFEN,
                 orientation: userColor,
                 pieceTheme: 'https://lichess1.org/assets/piece/staunty/{piece}.svg',
                 onDragStart: onDragStart,
