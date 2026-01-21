@@ -693,6 +693,9 @@
                     currentStepIndex = 0;
                     mistakeOnCurrentPath = false;  // Reset mistake flag for new path
 
+                    // Clear annotation display for new path
+                    document.getElementById('annotationDisplay').value = '';
+
                     // Get the starting state for the new path
                     var newPath = allPaths[currentPathIndex];
                     var startFullFEN = newPath[0].fullFEN;
@@ -776,6 +779,22 @@
                 showErrorHighlight(source);
                 showErrorHighlight(target);
 
+                // Show annotation hint for the expected move
+                var fromIndex = stateToIndex.get(normalizeFEN(stateBefore));
+                var toIndex = stateToIndex.get(normalizeFEN(expectedNextState));
+                if (fromIndex !== undefined && toIndex !== undefined) {
+                    // Find the edge between these states
+                    for (var i = 0; i < graphEdges.length; i++) {
+                        if (graphEdges[i].from === fromIndex && graphEdges[i].to === toIndex) {
+                            var annotation = graphEdges[i].annotation;
+                            if (annotation) {
+                                document.getElementById('annotationDisplay').value = annotation;
+                            }
+                            break;
+                        }
+                    }
+                }
+
                 if (DEBUG_TRANSITIONS) {
                     console.log('[User Move] INCORRECT - Path ' + (currentPathIndex + 1) + '/' + allPaths.length +
                                ', Step ' + (currentStepIndex + 1) + '/' + currentPath.length);
@@ -792,6 +811,9 @@
                 console.log('  From: ' + stateBefore);
                 console.log('  To:   ' + stateAfter);
             }
+
+            // Clear annotation hint on correct move
+            document.getElementById('annotationDisplay').value = '';
 
             // Correct move - advance in path
             currentStepIndex++;
@@ -853,6 +875,9 @@
                     }
                     currentStepIndex = 0;
                     mistakeOnCurrentPath = false;  // Reset mistake flag for new path
+
+                    // Clear annotation display for new path
+                    document.getElementById('annotationDisplay').value = '';
 
                     // Get the starting state for the new path
                     var newPath = allPaths[currentPathIndex];
@@ -1056,8 +1081,9 @@
                 console.log('[New Path] Starting path 1/' + allPaths.length);
             }
 
-            // Clear any existing highlights
+            // Clear any existing highlights and annotations
             clearMoveHighlights();
+            document.getElementById('annotationDisplay').value = '';
 
             // Hide evaluation label at start
             updateEvaluationLabel();
