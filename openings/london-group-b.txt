@@ -1,0 +1,60 @@
+v4.0
+= London Group B
+rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 -> d4
+rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq d3 0 1 -> d5
+rnbqkbnr/ppp1pppp/8/3p4/3P4/8/PPP1PPPP/RNBQKBNR w KQkq d6 0 2 -> Bf4
+rnbqkbnr/ppp1pppp/8/3p4/3P1B2/8/PPP1PPPP/RN1QKBNR b KQkq - 1 2 -> Nc6
+r1bqkbnr/ppp1pppp/2n5/3p4/3P1B2/8/PPP1PPPP/RN1QKBNR w KQkq - 2 3 -> e3
+r1bqkbnr/ppp1pppp/2n5/3p4/3P1B2/4P3/PPP2PPP/RN1QKBNR b KQkq - 0 3 -> f6
+r1bqkbnr/ppp1p1pp/2n2p2/3p4/3P1B2/4P3/PPP2PPP/RN1QKBNR w KQkq - 0 4 -> Nf3
+r1bqkbnr/ppp1p1pp/2n2p2/3p4/3P1B2/4PN2/PPP2PPP/RN1QKB1R b KQkq - 1 4 -> e5
+r1bqkbnr/ppp3pp/2n2p2/3pp3/3P1B2/4PN2/PPP2PPP/RN1QKB1R w KQkq e6 0 5 -> dxe5
+r1bqkbnr/ppp3pp/2n2p2/3pP3/5B2/4PN2/PPP2PPP/RN1QKB1R b KQkq - 0 5 -> fxe5
+r1bqkbnr/ppp3pp/2n5/3pp3/5B2/4PN2/PPP2PPP/RN1QKB1R w KQkq - 0 6 -> Nxe5
+r1bqkbnr/ppp3pp/2n5/3pN3/5B2/4P3/PPP2PPP/RN1QKB1R b KQkq - 0 6 -> Nxe5
+r1bqkbnr/ppp3pp/8/3pn3/5B2/4P3/PPP2PPP/RN1QKB1R w KQkq - 0 7 -> Bxe5
+rnbqkbnr/ppp1pppp/8/3p4/3P1B2/8/PPP1PPPP/RN1QKBNR b KQkq - 1 2 -> Nf6
+rnbqkb1r/ppp1pppp/5n2/3p4/3P1B2/8/PPP1PPPP/RN1QKBNR w KQkq - 2 3 -> e3
+rnbqkb1r/ppp1pppp/5n2/3p4/3P1B2/4P3/PPP2PPP/RN1QKBNR b KQkq - 0 3 -> Bf5
+rn1qkb1r/ppp1pppp/5n2/3p1b2/3P1B2/4P3/PPP2PPP/RN1QKBNR w KQkq - 1 4 -> c4
+rn1qkb1r/ppp1pppp/5n2/3p1b2/2PP1B2/4P3/PP3PPP/RN1QKBNR b KQkq c3 0 4 -> e6
+rn1qkb1r/ppp2ppp/4pn2/3p1b2/2PP1B2/4P3/PP3PPP/RN1QKBNR w KQkq - 0 5 -> Qb3
+rn1qkb1r/ppp2ppp/4pn2/3p1b2/2PP1B2/1Q2P3/PP3PPP/RN2KBNR b KQkq - 1 5 -> b6
+# Move the knight out of the way of the bishop
+rn1qkb1r/p1p2ppp/1p2pn2/3p1b2/2PP1B2/1Q2P3/PP3PPP/RN2KBNR w KQkq - 0 6 -> Nc3
+rn1qkb1r/p1p2ppp/1p2pn2/3p1b2/2PP1B2/1QN1P3/PP3PPP/R3KBNR b KQkq - 1 6 -> Be7
+rn1qk2r/p1p1bppp/1p2pn2/3p1b2/2PP1B2/1QN1P3/PP3PPP/R3KBNR w KQkq - 2 7 -> cxd5
+rn1qk2r/p1p1bppp/1p2pn2/3P1b2/3P1B2/1QN1P3/PP3PPP/R3KBNR b KQkq - 0 7 -> exd5
+rn1qk2r/p1p1bppp/1p3n2/3p1b2/3P1B2/1QN1P3/PP3PPP/R3KBNR w KQkq - 0 8 -> Nb5
+rn1qk2r/p1p1bppp/1p3n2/1N1p1b2/3P1B2/1Q2P3/PP3PPP/R3KBNR b KQkq - 1 8 -> Bd6
+# Remove the bishop blocking us protecting c7
+rn1qk2r/p1p2ppp/1p1b1n2/1N1p1b2/3P1B2/1Q2P3/PP3PPP/R3KBNR w KQkq - 2 9 -> Bxd6
+rn1qk2r/p1p2ppp/1p1B1n2/1N1p1b2/3P4/1Q2P3/PP3PPP/R3KBNR b KQkq - 0 9 -> cxd6
+rn1qk2r/p4ppp/1p1p1n2/1N1p1b2/3P4/1Q2P3/PP3PPP/R3KBNR w KQkq - 0 10 -> Rc1
+rnbqkbnr/ppp1pppp/8/3p4/3P1B2/8/PPP1PPPP/RN1QKBNR b KQkq - 1 2 -> Bf5
+rn1qkbnr/ppp1pppp/8/3p1b2/3P1B2/8/PPP1PPPP/RN1QKBNR w KQkq - 2 3 -> c4
+rn1qkbnr/ppp1pppp/8/3p1b2/2PP1B2/8/PP2PPPP/RN1QKBNR b KQkq c3 0 3 -> dxc4
+rn1qkbnr/ppp1pppp/8/5b2/2pP1B2/8/PP2PPPP/RN1QKBNR w KQkq - 0 4 -> e3
+rn1qkbnr/ppp1pppp/8/5b2/2pP1B2/4P3/PP3PPP/RN1QKBNR b KQkq - 0 4 -> b5
+# Rook is open
+rn1qkbnr/p1p1pppp/8/1p3b2/2pP1B2/4P3/PP3PPP/RN1QKBNR w KQkq b6 0 5 -> Qf3
+rn1qkbnr/p1p1pppp/8/1p3b2/2pP1B2/4PQ2/PP3PPP/RN2KBNR b KQkq - 1 5 -> c6
+# Remove the knight protecting the fork at c6
+rn1qkbnr/p3pppp/2p5/1p3b2/2pP1B2/4PQ2/PP3PPP/RN2KBNR w KQkq - 0 6 -> Bxb8
+rB1qkbnr/p3pppp/2p5/1p3b2/2pP4/4PQ2/PP3PPP/RN2KBNR b KQkq - 0 6 -> Bxb1
+# Go for the fork at c6
+rB1qkbnr/p3pppp/2p5/1p6/2pP4/4PQ2/PP3PPP/Rb2KBNR w KQkq - 0 7 -> Qxc6+
+rB1qkbnr/p3pppp/2Q5/1p6/2pP4/4P3/PP3PPP/Rb2KBNR b KQkq - 0 7 -> Qd7
+rB2kbnr/p2qpppp/2Q5/1p6/2pP4/4P3/PP3PPP/Rb2KBNR w KQkq - 1 8 -> Qxa8
+rnbqkb1r/ppp1pppp/5n2/3p4/3P1B2/4P3/PPP2PPP/RN1QKBNR b KQkq - 0 3 -> e6
+rnbqkb1r/ppp2ppp/4pn2/3p4/3P1B2/4P3/PPP2PPP/RN1QKBNR w KQkq - 0 4 -> Nf3
+rnbqkb1r/ppp2ppp/4pn2/3p4/3P1B2/4PN2/PPP2PPP/RN1QKB1R b KQkq - 1 4 -> Bd6
+rnbqk2r/ppp2ppp/3bpn2/3p4/3P1B2/4PN2/PPP2PPP/RN1QKB1R w KQkq - 2 5 -> Ne5
+rnbqk2r/ppp2ppp/3bpn2/3pN3/3P1B2/4P3/PPP2PPP/RN1QKB1R b KQkq - 3 5 -> c5
+rnbqk2r/pp3ppp/3bpn2/2ppN3/3P1B2/4P3/PPP2PPP/RN1QKB1R w KQkq c6 0 6 -> Bb5+
+rnbqk2r/pp3ppp/3bpn2/1BppN3/3P1B2/4P3/PPP2PPP/RN1QK2R b KQkq - 1 6 -> Bd7
+rn1qk2r/pp1b1ppp/3bpn2/1BppN3/3P1B2/4P3/PPP2PPP/RN1QK2R w KQkq - 2 7 -> Nxd7
+rn1qk2r/pp1N1ppp/3bpn2/1Bpp4/3P1B2/4P3/PPP2PPP/RN1QK2R b KQkq - 0 7 -> Nbxd7
+r2qk2r/pp1n1ppp/3bpn2/1Bpp4/3P1B2/4P3/PPP2PPP/RN1QK2R w KQkq - 0 8 -> Bxd6
+rn1qk2r/pp1N1ppp/3bpn2/1Bpp4/3P1B2/4P3/PPP2PPP/RN1QK2R b KQkq - 0 7 -> Bxf4
+rn1qk2r/pp1N1ppp/4pn2/1Bpp4/3P1b2/4P3/PPP2PPP/RN1QK2R w KQkq - 0 8 -> Nxc5+
