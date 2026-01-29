@@ -1,6 +1,6 @@
 # Chess Opening Practice Tool
 
-A static web application for practicing chess openings.
+A [static web application for practicing chess openings](https://www.hrakaroo.com/chess-openings/).
 
 ## Motivation
 
