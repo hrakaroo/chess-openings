@@ -263,9 +263,6 @@
     <script src="js/chess-common.js"></script>
 
     <script>
-        // Debug flag - can be toggled from console with: DEBUG_TRANSITIONS = true
-        window.DEBUG_TRANSITIONS = false;
-
         // Practice mode state
         var practiceActive = false;
         var userColor = 'white';  // 'white' or 'black'
@@ -578,9 +575,6 @@
             if (currentPathIndex >= allPaths.length) {
                 // All paths completed - stop practice (defensive check)
                 practiceActive = false;
-                if (DEBUG_TRANSITIONS) {
-                    console.log('[Practice] All paths completed (early check)!');
-                }
                 return;
             }
 
@@ -597,13 +591,6 @@
             var fromFullFEN = currentPath[currentStepIndex - 1].fullFEN;
             var targetState = currentPath[currentStepIndex].state;
             var targetFullFEN = currentPath[currentStepIndex].fullFEN;
-
-            if (DEBUG_TRANSITIONS) {
-                console.log('[Computer Move] Path ' + (currentPathIndex + 1) + '/' + allPaths.length +
-                           ', Step ' + (currentStepIndex + 1) + '/' + currentPath.length);
-                console.log('  From: ' + fromState);
-                console.log('  To:   ' + targetState);
-            }
 
             // Find the edge to get the move notation
             var fromIndex = stateToIndex.get(normalizeFEN(fromState));
@@ -653,21 +640,11 @@
             // Check if we've reached the terminal (last position in path)
             if (currentStepIndex >= currentPath.length - 1) {
                 // Computer has completed the path
-                if (DEBUG_TRANSITIONS) {
-                    if (!mistakeOnCurrentPath) {
-                        console.log('[Path Complete] Path ' + (currentPathIndex + 1) + ' completed successfully');
-                    } else {
-                        console.log('[Path Complete] Path ' + (currentPathIndex + 1) + ' completed with mistakes');
-                    }
-                }
 
                 // Decrement remaining
                 pathsRemaining--;
                 updateScore();
 
-                if (DEBUG_TRANSITIONS) {
-                    console.log('[Score] Mistakes: ' + mistakesCount + ', Remaining: ' + pathsRemaining);
-                }
 
                 // Move to next path
                 currentPathIndex++;
@@ -676,9 +653,6 @@
                 if (currentPathIndex >= allPaths.length) {
                     // All paths completed - stop practice but stay on final state
                     practiceActive = false;
-                    if (DEBUG_TRANSITIONS) {
-                        console.log('[Practice] All paths completed!');
-                    }
                     // Show completion celebration
                     showCompletionModal();
                     return;
@@ -686,9 +660,6 @@
 
                 // Move to next path after a short delay
                 setTimeout(function() {
-                    if (DEBUG_TRANSITIONS) {
-                        console.log('[New Path] Starting path ' + (currentPathIndex + 1) + '/' + allPaths.length);
-                    }
                     currentStepIndex = 0;
                     mistakeOnCurrentPath = false;  // Reset mistake flag for new path
 
@@ -796,22 +767,9 @@
                     }
                 }
 
-                if (DEBUG_TRANSITIONS) {
-                    console.log('[User Move] INCORRECT - Path ' + (currentPathIndex + 1) + '/' + allPaths.length +
-                               ', Step ' + (currentStepIndex + 1) + '/' + currentPath.length);
-                    console.log('  From: ' + stateBefore);
-                    console.log('  Attempted: ' + stateAfter);
-                    console.log('  Expected:  ' + expectedNextState);
-                }
                 return 'snapback';
             }
 
-            if (DEBUG_TRANSITIONS) {
-                console.log('[User Move] CORRECT - Path ' + (currentPathIndex + 1) + '/' + allPaths.length +
-                           ', Step ' + (currentStepIndex + 1) + '/' + currentPath.length);
-                console.log('  From: ' + stateBefore);
-                console.log('  To:   ' + stateAfter);
-            }
 
             // Clear annotation hint on correct move
             document.getElementById('annotationDisplay').value = '';
@@ -836,21 +794,11 @@
             // Check if we've reached the end of the current path
             if (currentStepIndex >= currentPath.length - 1) {
                 // Path completed
-                if (DEBUG_TRANSITIONS) {
-                    if (!mistakeOnCurrentPath) {
-                        console.log('[Path Complete] Path ' + (currentPathIndex + 1) + ' completed successfully');
-                    } else {
-                        console.log('[Path Complete] Path ' + (currentPathIndex + 1) + ' completed with mistakes');
-                    }
-                }
 
                 // Decrement remaining
                 pathsRemaining--;
                 updateScore();
 
-                if (DEBUG_TRANSITIONS) {
-                    console.log('[Score] Mistakes: ' + mistakesCount + ', Remaining: ' + pathsRemaining);
-                }
 
                 // Move to next path
                 currentPathIndex++;
@@ -859,18 +807,12 @@
                 if (currentPathIndex >= allPaths.length) {
                     // All paths completed - stop practice but stay on final state
                     practiceActive = false;
-                    if (DEBUG_TRANSITIONS) {
-                        console.log('[Practice] All paths completed!');
-                    }
                     // Show completion celebration
                     showCompletionModal();
                     return;
                 }
 
                 setTimeout(function() {
-                    if (DEBUG_TRANSITIONS) {
-                        console.log('[New Path] Starting path ' + (currentPathIndex + 1) + '/' + allPaths.length);
-                    }
                     currentStepIndex = 0;
                     mistakeOnCurrentPath = false;  // Reset mistake flag for new path
 
@@ -1015,22 +957,6 @@
                 return;
             }
 
-            if (DEBUG_TRANSITIONS) {
-                console.log('='.repeat(60));
-                console.log('[Practice Start] Playing as ' + userColor);
-                console.log('[Practice Start] Total paths: ' + allPathsOriginal.length);
-                console.log('[Practice Start] Paths shuffled for random order');
-
-                // Optionally list all paths
-                if (allPathsOriginal.length <= 20) {
-                    console.log('[Practice Start] Path list:');
-                    for (var i = 0; i < allPathsOriginal.length; i++) {
-                        console.log('  Path ' + (i + 1) + ': ' + allPathsOriginal[i].length + ' positions');
-                    }
-                }
-                console.log('='.repeat(60));
-            }
-
             // Enable reset button
             document.getElementById('resetBtn').disabled = false;
 
@@ -1074,10 +1000,6 @@
 
             // Enable practice mode
             practiceActive = true;
-
-            if (DEBUG_TRANSITIONS) {
-                console.log('[New Path] Starting path 1/' + allPaths.length);
-            }
 
             // Clear any existing highlights and annotations
             clearMoveHighlights();

@@ -1166,6 +1166,34 @@ function setupCanvasEventListeners() {
             var distance = Math.sqrt(dx * dx + dy * dy);
 
             if (distance <= nodeRadius) {
+                // Find all incoming edges to the clicked node (transitions that lead TO this node)
+                var toIndex = i;
+                var incomingTransitions = [];
+
+                for (var j = 0; j < graphEdges.length; j++) {
+                    if (graphEdges[j].to === toIndex) {
+                        var fromState = graphNodes[graphEdges[j].from];
+                        var moveSAN = graphEdges[j].move || '???';
+                        var annotation = graphEdges[j].annotation || '';
+                        var transitionText = fromState + ' -> ' + pos.state + ' (Move: ' + moveSAN;
+                        if (annotation) {
+                            transitionText += ', Annotation: "' + annotation + '"';
+                        }
+                        transitionText += ')';
+                        incomingTransitions.push(transitionText);
+                    }
+                }
+
+                // Log all transitions that lead to this node
+                if (incomingTransitions.length > 0) {
+                    console.log('Transitions leading to clicked node:');
+                    for (var k = 0; k < incomingTransitions.length; k++) {
+                        console.log('  ' + incomingTransitions[k]);
+                    }
+                } else {
+                    console.log('Clicked starting node (no incoming transitions)');
+                }
+
                 loadState(pos.state, true);
                 playMoveSound();
                 return;
