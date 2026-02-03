@@ -1,5 +1,6 @@
 v4.0
 = The London
+
 1r1qkbnr/p3pppp/2p5/1p3Q2/2pP4/4P3/PP3PPP/RN2KBNR b KQk - 0 1 : 650.8, 1684.8000000000002, white +4.17
 r1bqkb1r/ppp1pppp/2n2n2/3p4/3P1B2/4PN2/PPP2PPP/RN1QKB1R b KQkq - 0 1 : 410.8, 907.2000000000003
 r2qkb1r/ppp1pppp/2n2n2/3p4/3P1Bb1/4PN2/PPP2PPP/RN1QKB1R w KQkq - 0 1 : 410.8, 1036.8000000000002
@@ -324,6 +325,7 @@ rnbqkb1r/ppp1pppp/5n2/3p4/3P1B2/4P3/PPP2PPP/RN1QKBNR b KQkq - 0 3 -> Bf5
 rnbqkb1r/ppp1pppp/5n2/3p4/3P1B2/4P3/PPP2PPP/RN1QKBNR b KQkq - 0 3 -> Nc6
 rnbqkb1r/ppp1pppp/5n2/3p4/3P1B2/4P3/PPP2PPP/RN1QKBNR b KQkq - 0 3 -> c5
 rnbqkb1r/ppp1pppp/5n2/3p4/3P1B2/4P3/PPP2PPP/RN1QKBNR b KQkq - 0 3 -> e6
+# Third basic london move, King's pawn to e3
 rnbqkb1r/ppp1pppp/5n2/3p4/3P1B2/8/PPP1PPPP/RN1QKBNR w KQkq - 2 3 -> e3
 rnbqkb1r/ppp2ppp/4pn2/3p4/3P1B2/4P3/PPP2PPP/RN1QKBNR w KQkq - 0 4 -> Nf3
 rnbqkb1r/ppp2ppp/4pn2/3p4/3P1B2/4PN2/PPP2PPP/RN1QKB1R b KQkq - 1 4 -> Bd6
@@ -339,6 +341,7 @@ rnbqkbnr/ppp1pppp/8/3p4/3P1B2/8/PPP1PPPP/RN1QKBNR b KQkq - 1 2 -> Nf6
 rnbqkbnr/ppp1pppp/8/3p4/3P1B2/8/PPP1PPPP/RN1QKBNR b KQkq - 1 2 -> c5
 rnbqkbnr/ppp1pppp/8/3p4/3P1B2/8/PPP1PPPP/RN1QKBNR b KQkq - 1 2 -> e6
 rnbqkbnr/ppp1pppp/8/3p4/3P1B2/8/PPP1PPPP/RN1QKBNR b KQkq - 1 2 -> f6
+# Same second move always, Bishop to f4
 rnbqkbnr/ppp1pppp/8/3p4/3P4/8/PPP1PPPP/RNBQKBNR w KQkq d6 0 2 -> Bf4
 rnbqkbnr/ppp2ppp/4p3/3p4/3P1B2/4P3/PPP2PPP/RN1QKBNR b KQkq - 0 3 -> Bd6
 rnbqkbnr/ppp2ppp/4p3/3p4/3P1B2/4P3/PPP2PPP/RN1QKBNR b KQkq - 0 3 -> c5
@@ -349,4 +352,5 @@ rnbqkbnr/ppp3pp/8/3pp2Q/5B2/4P3/PPP2PPP/RN2KBNR b KQkq - 1 5 -> g6
 rnbqkbnr/ppp3pp/8/3pp3/5B2/4P3/PPP2PPP/RN1QKBNR w KQkq - 0 5 -> Qh5+
 rnbqkbnr/ppp4p/6p1/3pp2Q/5B2/4P3/PPP2PPP/RN2KBNR w KQkq - 0 6 -> Qxe5+
 rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq d3 0 1 -> d5
+# London always starts with the same basic Queen's pawn to d4
 rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 -> d4

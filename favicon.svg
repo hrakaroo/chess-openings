@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Dark purple background matching the gradient theme -->
+  <rect width="100" height="100" fill="#667eea"/>
+
+  <!-- White chess pawn -->
+  <g fill="#ffffff">
+    <!-- Pawn head (circle) -->
+    <circle cx="50" cy="28" r="8"/>
+
+    <!-- Pawn neck -->
+    <path d="M 46 36 L 46 42 L 54 42 L 54 36 Z"/>
+
+    <!-- Pawn body (trapezoid) -->
+    <path d="M 44 42 L 40 60 L 60 60 L 56 42 Z"/>
+
+    <!-- Pawn base (wider trapezoid) -->
+    <path d="M 38 60 L 35 72 L 65 72 L 62 60 Z"/>
+
+    <!-- Base plate (rectangle) -->
+    <rect x="32" y="72" width="36" height="6" rx="1"/>
+  </g>
+</svg>
