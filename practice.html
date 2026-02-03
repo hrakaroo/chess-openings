@@ -203,11 +203,11 @@
                     </div>
                     <button id="resetBtn" disabled>Reset</button>
                     <div style="display: flex; align-items: center; gap: 5px;">
-                        <label for="scoreField" style="font-weight: bold;">Score:</label>
-                        <input type="text" id="scoreField" value="0 / 0" readonly style="width: 80px; text-align: center; padding: 5px; border: 1px solid #ccc; border-radius: 4px; background-color: #f9f9f9;">
+                        <label for="scoreField" style="font-weight: bold;">Mistakes:</label>
+                        <input type="text" id="scoreField" value="0" readonly style="width: 50px; text-align: center; padding: 5px; border: 1px solid #ccc; border-radius: 4px; background-color: #f9f9f9;">
                     </div>
                     <div style="display: flex; align-items: center; gap: 5px;">
-                        <label for="remainingField" style="font-weight: bold;">Remaining:</label>
+                        <label for="remainingField" style="font-weight: bold;">Variations:</label>
                         <input type="text" id="remainingField" value="0" readonly style="width: 50px; text-align: center; padding: 5px; border: 1px solid #ccc; border-radius: 4px; background-color: #f9f9f9;">
                     </div>
                 </div>
@@ -273,7 +273,7 @@
         var allPaths = [];  // Shuffled paths for current practice session
         var currentPathIndex = 0;  // Which path we're currently on
         var currentStepIndex = 0;  // Where in the current path we are
-        var pathsCompleted = 0;  // How many paths done correctly
+        var mistakesCount = 0;  // Total number of mistakes made
         var pathsRemaining = 0;  // How many paths left to complete
         var mistakeOnCurrentPath = false;  // Track if user made mistake on current path
 
@@ -350,7 +350,6 @@
         // Show completion celebration modal
         function showCompletionModal() {
             var totalPaths = allPathsOriginal.length;
-            var percentage = totalPaths > 0 ? Math.round((pathsCompleted / totalPaths) * 100) : 0;
 
             // Create modal overlay
             var overlay = document.createElement('div');
@@ -369,12 +368,12 @@
             heading.style.cssText = 'margin: 0 0 20px 0; color: #2c3e50; font-size: 32px;';
 
             var scoreText = document.createElement('p');
-            scoreText.textContent = pathsCompleted + ' / ' + totalPaths + ' paths completed correctly';
+            scoreText.textContent = 'Completed ' + totalPaths + ' path' + (totalPaths === 1 ? '' : 's');
             scoreText.style.cssText = 'margin: 15px 0; font-size: 18px; color: #555;';
 
-            var percentageText = document.createElement('p');
-            percentageText.textContent = percentage + '% accuracy';
-            percentageText.style.cssText = 'margin: 15px 0; font-size: 24px; font-weight: bold; color: #667eea;';
+            var mistakesText = document.createElement('p');
+            mistakesText.textContent = mistakesCount + ' mistake' + (mistakesCount === 1 ? '' : 's');
+            mistakesText.style.cssText = 'margin: 15px 0; font-size: 24px; font-weight: bold; color: #667eea;';
 
             var closeButton = document.createElement('button');
             closeButton.textContent = 'Close';
@@ -397,7 +396,7 @@
             // Assemble modal
             modal.appendChild(heading);
             modal.appendChild(scoreText);
-            modal.appendChild(percentageText);
+            modal.appendChild(mistakesText);
             modal.appendChild(closeButton);
             overlay.appendChild(modal);
 
@@ -565,7 +564,7 @@
 
         // Update score and remaining display
         function updateScore() {
-            document.getElementById('scoreField').value = pathsCompleted + ' / ' + allPathsOriginal.length;
+            document.getElementById('scoreField').value = mistakesCount;
             document.getElementById('remainingField').value = pathsRemaining;
         }
 
@@ -653,15 +652,12 @@
 
             // Check if we've reached the terminal (last position in path)
             if (currentStepIndex >= currentPath.length - 1) {
-                // Computer has completed the path - only count if no mistakes
-                if (!mistakeOnCurrentPath) {
-                    pathsCompleted++;
-                    if (DEBUG_TRANSITIONS) {
+                // Computer has completed the path
+                if (DEBUG_TRANSITIONS) {
+                    if (!mistakeOnCurrentPath) {
                         console.log('[Path Complete] Path ' + (currentPathIndex + 1) + ' completed successfully');
-                    }
-                } else {
-                    if (DEBUG_TRANSITIONS) {
-                        console.log('[Path Complete] Path ' + (currentPathIndex + 1) + ' completed with mistakes (not scored)');
+                    } else {
+                        console.log('[Path Complete] Path ' + (currentPathIndex + 1) + ' completed with mistakes');
                     }
                 }
 
@@ -670,7 +666,7 @@
                 updateScore();
 
                 if (DEBUG_TRANSITIONS) {
-                    console.log('[Score] ' + pathsCompleted + '/' + allPathsOriginal.length + ', Remaining: ' + pathsRemaining);
+                    console.log('[Score] Mistakes: ' + mistakesCount + ', Remaining: ' + pathsRemaining);
                 }
 
                 // Move to next path
@@ -774,6 +770,8 @@
                 // Wrong move - mark mistake on this path
                 game.undo();
                 mistakeOnCurrentPath = true;
+                mistakesCount++;
+                updateScore();
 
                 // Play error sound
                 playErrorSound();
@@ -837,15 +835,12 @@
 
             // Check if we've reached the end of the current path
             if (currentStepIndex >= currentPath.length - 1) {
-                // Path completed - only count if no mistakes were made
-                if (!mistakeOnCurrentPath) {
-                    pathsCompleted++;
-                    if (DEBUG_TRANSITIONS) {
+                // Path completed
+                if (DEBUG_TRANSITIONS) {
+                    if (!mistakeOnCurrentPath) {
                         console.log('[Path Complete] Path ' + (currentPathIndex + 1) + ' completed successfully');
-                    }
-                } else {
-                    if (DEBUG_TRANSITIONS) {
-                        console.log('[Path Complete] Path ' + (currentPathIndex + 1) + ' completed with mistakes (not scored)');
+                    } else {
+                        console.log('[Path Complete] Path ' + (currentPathIndex + 1) + ' completed with mistakes');
                     }
                 }
 
@@ -854,7 +849,7 @@
                 updateScore();
 
                 if (DEBUG_TRANSITIONS) {
-                    console.log('[Score] ' + pathsCompleted + '/' + allPathsOriginal.length + ', Remaining: ' + pathsRemaining);
+                    console.log('[Score] Mistakes: ' + mistakesCount + ', Remaining: ' + pathsRemaining);
                 }
 
                 // Move to next path
@@ -1045,7 +1040,7 @@
             // Initialize path tracking
             currentPathIndex = 0;
             currentStepIndex = 0;
-            pathsCompleted = 0;
+            mistakesCount = 0;
             pathsRemaining = allPathsOriginal.length;
             mistakeOnCurrentPath = false;
             updateScore();
