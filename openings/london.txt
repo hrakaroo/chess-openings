@@ -167,12 +167,15 @@ rB2kbnr/p2qpppp/2Q5/1p6/2pP4/4P3/PP3PPP/Rb2KBNR w KQkq - 0 1 : 730.8, 1814.4
 r1b1kb1r/pp3ppp/5n2/qNppP3/8/2P1P3/PP3PPP/R2QKBNR b KQkq - 0 1 : 570.8, 1944.0
 rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 : 770.8, 0.0
 r1b1kb1r/pp1n1ppp/8/qNppP3/8/2P1P3/PP3PPP/R2QKBNR w KQkq - 0 1 : 570.8, 2073.6000000000004
-# Fork is gone, but bishop is now free
+
+# Fork is gone, but bishop is now free.
 1r1qkbnr/p3pppp/2p5/1p3b2/2pP4/4PQ2/PP3PPP/RN2KBNR w KQk - 0 7 -> Qxf5
-# Free pawn on d5
+
+# Free pawn on d5.
 r1b1kb1r/pp1n1ppp/8/qNppP3/8/2P1P3/PP3PPP/R2QKBNR w KQkq - 1 9 -> Qxd5
 r1b1kb1r/pp2pppp/2n2n2/qNpp4/3P1B2/2P1P3/PP3PPP/R2QKBNR b KQkq - 0 6 -> e5
-# Block the check
+
+# Block the check.
 r1b1kb1r/pp2pppp/2n2n2/qNpp4/3P1B2/4P3/PPP2PPP/R2QKBNR w KQkq - 5 6 -> c3
 r1b1kb1r/pp3ppp/2n1pn2/qNpp4/3P1B2/2P1PN2/PP3PPP/R2QKB1R b KQkq - 0 7 -> e5
 r1b1kb1r/pp3ppp/2n1pn2/qNpp4/3P1B2/4PN2/PPP2PPP/R2QKB1R w KQkq - 6 7 -> c3
@@ -181,29 +184,37 @@ r1b1kb1r/pp3ppp/2n2n2/qN1pN3/2pP1B2/2P1P3/PP3PPP/R2QKB1R w KQkq - 0 9 -> Nxc4
 r1b1kb1r/pp3ppp/2n2n2/qN6/2pP1B2/2P1P3/PP3PPP/R2QKB1R w KQkq - 0 10 -> Nc7+
 r1b1kb1r/pp3ppp/2n2n2/qNppB3/3P4/2P1P3/PP3PPP/R2QKBNR b KQkq - 0 7 -> Nxe5
 r1b1kb1r/pp3ppp/2n2n2/qNppN3/3P1B2/2P1P3/PP3PPP/R2QKB1R b KQkq - 0 8 -> c4
-# Need to unblock the bishop to protect c7 from queen
+
+# Need to unblock the bishop to protect c7 from queen.
 r1b1kb1r/pp3ppp/2n2n2/qNppp3/3P1B2/2P1P3/PP3PPP/R2QKBNR w KQkq e6 0 7 -> Bxe5
 r1b1kb1r/pp3ppp/2n2n2/qNppp3/3P1B2/2P1PN2/PP3PPP/R2QKB1R w KQkq - 0 8 -> Nxe5
 r1b1kb1r/pp3ppp/5n2/qNppP3/8/2P1P3/PP3PPP/R2QKBNR b KQkq - 0 8 -> Nd7
-# Take the free knight
+
+# Take the free Knight.
 r1b1kb1r/pp3ppp/5n2/qNppn3/3P4/2P1P3/PP3PPP/R2QKBNR w KQkq - 0 8 -> dxe5
-# Go for the fork on c7
+
+# Go for the fork on c7.
 r1b1kb1r/pp3ppp/8/1NpqP3/4n3/4P3/PPP2PPP/R3KBNR w KQkq - 0 9 -> Nc7+
 r1b1kb1r/ppN2ppp/8/2pqP3/4n3/4P3/PPP2PPP/R3KBNR b KQkq - 1 9 -> Kd8
-# Now take the Queen, Bishop to c7
+
+# Now take the Queen.
 r1b2r2/ppqn1kpN/2n1p3/2pp4/5B2/2P1P3/PPQ2PPP/R3K2R w KQ - 2 16 -> Bxc7
 r1b2r2/ppqn1p1k/2nbp1p1/2ppN2Q/3P1B2/2PBP3/PP3PPP/R3K2R b KQ - 1 12 -> Kg8
 r1b2r2/ppqn1p1k/2nbp1p1/2ppN3/3P1B2/2PBP3/PP3PPP/R2QK2R w KQ - 0 12 -> Qh5+
-# Check the King again, Queen to c2
+
+# Check the King again.
 r1b2r2/ppqn1pp1/2n1p1k1/2ppP1N1/5B2/2P1P3/PP3PPP/R2QK2R w KQ - 2 13 -> Qc2+
 r1b2r2/ppqn1pp1/2n1p1k1/2ppP1N1/5B2/2P1P3/PPQ2PPP/R3K2R b KQ - 3 13 -> f5
 r1b2r2/ppqn1ppk/2n1p3/2ppP1N1/5B2/2P1P3/PP3PPP/R2QK2R b KQ - 1 12 -> Kg6
-# Check the King, Knight to g5
+
+# Check the King.
 r1b2r2/ppqn1ppk/2n1p3/2ppP3/5B2/2P1PN2/PP3PPP/R2QK2R w KQ - 0 12 -> Ng5+
-# En passant, Pawn to f6
+
+# En passant.
 r1b2r2/ppqn2p1/2n1p1k1/2ppPpN1/5B2/2P1P3/PPQ2PPP/R3K2R w KQ f6 0 14 -> exf6+
 r1b2r2/ppqn2p1/2n1pPk1/2pp2N1/5B2/2P1P3/PPQ2PPP/R3K2R b KQ - 0 14 -> Kxf6
-# Check the king again, Knight to h7
+
+# Check the King again.
 r1b2r2/ppqn2p1/2n1pk2/2pp2N1/5B2/2P1P3/PPQ2PPP/R3K2R w KQ - 0 15 -> Nh7+
 r1b2r2/ppqn2pN/2n1pk2/2pp4/5B2/2P1P3/PPQ2PPP/R3K2R b KQ - 1 15 -> Kf7
 r1b2rk1/ppq2ppp/2nbpn2/2ppN3/3P1B2/2PBP3/PP1N1PPP/R2QK2R w KQ - 3 9 -> Ndf3
@@ -212,37 +223,47 @@ r1b2rk1/ppqn1p1N/2nbp1p1/2ppN3/3P1B2/2PBP3/PP3PPP/R2QK2R b KQ - 0 11 -> Kxh7
 r1b2rk1/ppqn1p1p/2nbp1p1/2ppN1N1/3P1B2/2PBP3/PP3PPP/R2QK2R w KQ - 0 11 -> Nxh7
 r1b2rk1/ppqn1p2/2nbp1p1/2ppN2Q/3P1B2/2PBP3/PP3PPP/R3K2R w KQ - 2 13 -> Nxg6
 r1b2rk1/ppqn1ppB/2n1p3/2ppP3/5B2/2P1PN2/PP3PPP/R2QK2R b KQ - 0 11 -> Kxh7
-# The bishop and knight are set up for the Greek Gift, Bishop to h7
+
+# The Bishop and Knight are set up for the Greek Gift.
 r1b2rk1/ppqn1ppp/2n1p3/2ppP3/5B2/2PBPN2/PP3PPP/R2QK2R w KQ - 3 11 -> Bxh7+
 r1b2rk1/ppqn1ppp/2nbp3/2ppN1N1/3P1B2/2PBP3/PP3PPP/R2QK2R b KQ - 6 10 -> g6
 r1b2rk1/ppqn1ppp/2nbp3/2ppN3/3P1B2/2PBPN2/PP3PPP/R2QK2R w KQ - 5 10 -> Ng5
 r1bk1b1r/pp3ppp/8/2pNP3/4n3/4P3/PPP2PPP/R3KBNR b KQ - 0 10 -> Be6
 r1bk1b1r/ppN2ppp/8/2pqP3/4n3/4P3/PPP2PPP/R3KBNR w KQ - 2 10 -> Nxd5
-# Black has added a second attacker to the pawn on d5, so defend with your knight
+
+# Black has added a second attacker to the pawn on d5, so defend with your Knight.
 r1bq1rk1/pp1n1ppp/2n1p3/2ppP3/5B2/2PBP3/PP1N1PPP/R2QK2R w KQ - 1 10 -> Nf3
 r1bq1rk1/pp1n1ppp/2n1p3/2ppP3/5B2/2PBPN2/PP3PPP/R2QK2R b KQ - 2 10 -> Qc7
 r1bq1rk1/pp3ppp/2n1pn2/2ppP3/5B2/2PBP3/PP1N1PPP/R2QK2R b KQ - 0 9 -> Nd7
-# Take the knight with your pawn
+
+# Take the Knight with your pawn.
 r1bq1rk1/pp3ppp/2n1pn2/2ppb3/3P1B2/2PBP3/PP1N1PPP/R2QK2R w KQ - 0 9 -> dxe5
-# Last part of pyramid, Bishop to d3
+
+# Last part of pyramid.
 r1bq1rk1/pp3ppp/2nbpn2/2ppN3/3P1B2/2P1P3/PP1N1PPP/R2QKB1R w KQ - 1 8 -> Bd3
 r1bq1rk1/pp3ppp/2nbpn2/2ppN3/3P1B2/2PBP3/PP1N1PPP/R2QK2R b KQ - 2 8 -> Bxe5
 r1bq1rk1/pp3ppp/2nbpn2/2ppN3/3P1B2/2PBP3/PP1N1PPP/R2QK2R b KQ - 2 8 -> Qc7
 r1bqkb1r/pp2pppp/2n2n2/1Npp4/3P1B2/4P3/PPP2PPP/R2QKBNR b KQkq - 3 5 -> e5
 r1bqkb1r/pp2pppp/2n2n2/1Npp4/3P1B2/4P3/PPP2PPP/R2QKBNR b KQkq - 4 5 -> Qa5+
-# Try for fork on c7
+
+# Try for fork on c7.
 r1bqkb1r/pp2pppp/2n2n2/2pp4/3P1B2/2N1P3/PPP2PPP/R2QKBNR w KQkq - 3 5 -> Nb5
 r1bqkb1r/pp3ppp/2n1pn2/1Npp4/3P1B2/4PN2/PPP2PPP/R2QKB1R b KQkq - 5 6 -> Qa5+
 r1bqkb1r/pp3ppp/2n1pn2/2pp4/3P1B2/2N1PN2/PPP2PPP/R2QKB1R w KQkq - 4 6 -> Nb5
 r1bqkb1r/pp3ppp/2n2n2/1NppB3/3P4/4P3/PPP2PPP/R2QKBNR b KQkq - 0 6 -> Nxe5
-# Unblock the bishop to protect c7 from queen
+
+# Unblock the bishop to protect c7 from queen.
 r1bqkb1r/pp3ppp/2n2n2/1Nppp3/3P1B2/4P3/PPP2PPP/R2QKBNR w KQkq e6 0 6 -> Bxe5
 r1bqkb1r/pp3ppp/5n2/1NppP3/8/4P3/PPP2PPP/R2QKBNR b KQkq - 0 7 -> Ne4
-# Take the free knight
+
+# Take the free Knight.
 r1bqkb1r/pp3ppp/5n2/1Nppn3/3P4/4P3/PPP2PPP/R2QKBNR w KQkq - 0 7 -> dxe5
 r1bqkb1r/pp3ppp/8/1NpQP3/4n3/4P3/PPP2PPP/R3KBNR b KQkq - 0 8 -> Qxd5
-# See if we can lure the queen into a fork
+
+# See if we can lure the queen into a fork.
 r1bqkb1r/pp3ppp/8/1NppP3/4n3/4P3/PPP2PPP/R2QKBNR w KQkq - 1 8 -> Qxd5
+
+# Standard fourth move for london.
 r1bqkb1r/ppp1pppp/2n2n2/3p4/3P1B2/4P3/PPP2PPP/RN1QKBNR w KQkq - 1 4 -> Nf3
 r1bqkb1r/ppp1pppp/2n2n2/3p4/3P1B2/4PN2/PPP2PPP/RN1QKB1R b KQkq - 2 4 -> Bg4
 r1bqkbnr/pp2pppp/2n5/2pp4/3P1B2/2N1P3/PPP2PPP/R2QKBNR b KQkq - 2 4 -> Nf6
@@ -267,17 +288,29 @@ r2qk2r/pp1n1ppp/3bpn2/1Bpp4/3P1B2/4P3/PPP2PPP/RN1QK2R w KQkq - 0 8 -> Bxd6
 r2qk2r/ppp2ppp/2Nbpnb1/1B1p4/3P1BP1/4P2P/PPP2P2/RN1QK2R b KQkq - 0 9 -> bxc6
 r2qk2r/ppp2ppp/2nbpnb1/1B1pN3/3P1BP1/4P2P/PPP2P2/RN1QK2R w KQkq - 3 9 -> Nxc6
 r2qkb1r/ppp1pppp/2n2n2/1B1p4/3P1Bb1/4PN2/PPP2PPP/RN1QK2R b KQkq - 4 5 -> e6
+
+# We can either block their pin with our Bishop, or create a pin for them.
+# Creating a pin for them means they would have to move their Bishop twice
+# to block and no one likes that.
 r2qkb1r/ppp1pppp/2n2n2/3p4/3P1Bb1/4PN2/PPP2PPP/RN1QKB1R w KQkq - 3 5 -> Bb5
+
+# Kick the bishop again.
 r2qkb1r/ppp2ppp/2n1pn2/1B1p3b/3P1B2/4PN1P/PPP2PP1/RN1QK2R w KQkq - 1 7 -> g4
 r2qkb1r/ppp2ppp/2n1pn2/1B1p3b/3P1BP1/4PN1P/PPP2P2/RN1QK2R b KQkq g3 0 7 -> Bg6
 r2qkb1r/ppp2ppp/2n1pn2/1B1p4/3P1Bb1/4PN1P/PPP2PP1/RN1QK2R b KQkq - 0 6 -> Bh5
+
+# Their Knight on c6 is pinned so e5 is a great outpost for our Knight, but we
+#  need to first remove their pin on our Knight.
 r2qkb1r/ppp2ppp/2n1pn2/1B1p4/3P1Bb1/4PN2/PPP2PPP/RN1QK2R w KQkq - 0 6 -> h3
+
+# Their Knight on c6 is pinned and ours is free, take the outpost.
 r2qkb1r/ppp2ppp/2n1pnb1/1B1p4/3P1BP1/4PN1P/PPP2P2/RN1QK2R w KQkq - 1 8 -> Ne5
 r2qkb1r/ppp2ppp/2n1pnb1/1B1pN3/3P1BP1/4P2P/PPP2P2/RN1QK2R b KQkq - 2 8 -> Bd6
 rB1qkbnr/p3pppp/2Q5/1p6/2pP4/4P3/PP3PPP/Rb2KBNR b KQkq - 0 7 -> Qd7
 rB1qkbnr/p3pppp/2p5/1p3b2/2pP4/4PQ2/PP3PPP/RN2KBNR b KQkq - 0 6 -> Bxb1
 rB1qkbnr/p3pppp/2p5/1p3b2/2pP4/4PQ2/PP3PPP/RN2KBNR b KQkq - 0 6 -> Rxb8
-# Go for the fork at c6
+
+# Go for the fork at c6.
 rB1qkbnr/p3pppp/2p5/1p6/2pP4/4PQ2/PP3PPP/Rb2KBNR w KQkq - 0 7 -> Qxc6+
 rB2kbnr/p2qpppp/2Q5/1p6/2pP4/4P3/PP3PPP/Rb2KBNR w KQkq - 1 8 -> Qxa8
 rn1qk2r/p1p1bppp/1p2pn2/3P1b2/3P1B2/1QN1P3/PP3PPP/R3KBNR b KQkq - 0 7 -> exd5
@@ -286,59 +319,70 @@ rn1qk2r/p1p1bppp/1p3n2/1N1p1b2/3P1B2/1Q2P3/PP3PPP/R3KBNR b KQkq - 1 8 -> Bd6
 rn1qk2r/p1p1bppp/1p3n2/1N1p1b2/3P1B2/1Q2P3/PP3PPP/R3KBNR b KQkq - 1 8 -> Na6
 rn1qk2r/p1p1bppp/1p3n2/3p1b2/3P1B2/1QN1P3/PP3PPP/R3KBNR w KQkq - 0 8 -> Nb5
 rn1qk2r/p1p2ppp/1p1B1n2/1N1p1b2/3P4/1Q2P3/PP3PPP/R3KBNR b KQkq - 0 9 -> cxd6
-# Remove the bishop blocking us protecting c7
+
+# Remove the Bishop blocking us protecting c7.
 rn1qk2r/p1p2ppp/1p1b1n2/1N1p1b2/3P1B2/1Q2P3/PP3PPP/R3KBNR w KQkq - 2 9 -> Bxd6
 rn1qk2r/p4ppp/1p1p1n2/1N1p1b2/3P4/1Q2P3/PP3PPP/R3KBNR w KQkq - 0 10 -> Rc1
 rn1qk2r/pp1N1ppp/3bpn2/1Bpp4/3P1B2/4P3/PPP2PPP/RN1QK2R b KQkq - 0 7 -> Bxf4
 rn1qk2r/pp1N1ppp/3bpn2/1Bpp4/3P1B2/4P3/PPP2PPP/RN1QK2R b KQkq - 0 7 -> Nbxd7
 rn1qk2r/pp1N1ppp/4pn2/1Bpp4/3P1b2/4P3/PPP2PPP/RN1QK2R w KQkq - 0 8 -> Nxc5+
 rn1qk2r/pp1b1ppp/3bpn2/1BppN3/3P1B2/4P3/PPP2PPP/RN1QK2R w KQkq - 2 7 -> Nxd7
-# Move the knight out of the way of the bishop
+
+# Move the Knight out of the way of the bishop.
 rn1qkb1r/p1p2ppp/1p2pn2/3p1b2/2PP1B2/1Q2P3/PP3PPP/RN2KBNR w KQkq - 0 6 -> Nc3
 rn1qkb1r/p1p2ppp/1p2pn2/3p1b2/2PP1B2/1QN1P3/PP3PPP/R3KBNR b KQkq - 1 6 -> Be7
 rn1qkb1r/ppp1pppp/5n2/3p1b2/2PP1B2/4P3/PP3PPP/RN1QKBNR b KQkq c3 0 4 -> e6
 rn1qkb1r/ppp1pppp/5n2/3p1b2/3P1B2/4P3/PPP2PPP/RN1QKBNR w KQkq - 1 4 -> c4
 rn1qkb1r/ppp2ppp/4pn2/3p1b2/2PP1B2/1Q2P3/PP3PPP/RN2KBNR b KQkq - 1 5 -> b6
 rn1qkb1r/ppp2ppp/4pn2/3p1b2/2PP1B2/4P3/PP3PPP/RN1QKBNR w KQkq - 0 5 -> Qb3
-# Rook on a8 is open
+
+# Rook on a8 is open.
 rn1qkbnr/p1p1pppp/8/1p3b2/2pP1B2/4P3/PP3PPP/RN1QKBNR w KQkq b6 0 5 -> Qf3
 rn1qkbnr/p1p1pppp/8/1p3b2/2pP1B2/4PQ2/PP3PPP/RN2KBNR b KQkq - 1 5 -> c6
 # c6 is a nice fork, remove the knight protecting it
 rn1qkbnr/p3pppp/2p5/1p3b2/2pP1B2/4PQ2/PP3PPP/RN2KBNR w KQkq - 0 6 -> Bxb8
 rn1qkbnr/ppp1pppp/8/3p1b2/2PP1B2/8/PP2PPPP/RN1QKBNR b KQkq c3 0 3 -> dxc4
-# Pawn on g7 is unprotected
+
+# Pawn on g7 is unprotected.
 rn1qkbnr/ppp1pppp/8/3p1b2/3P1B2/8/PPP1PPPP/RN1QKBNR w KQkq - 2 3 -> c4
 rn1qkbnr/ppp1pppp/8/5b2/2pP1B2/4P3/PP3PPP/RN1QKBNR b KQkq - 0 4 -> b5
 rn1qkbnr/ppp1pppp/8/5b2/2pP1B2/8/PP2PPPP/RN1QKBNR w KQkq - 0 4 -> e3
 rnb1k1nr/ppp2p1p/4pQ2/3p4/3P1b2/4P3/PPP2PPP/RN2KBNR b KQkq - 0 6 -> Nxf6
 rnb1k1nr/ppp2pQp/4pq2/3p4/3P1b2/4P3/PPP2PPP/RN2KBNR w KQkq - 1 6 -> Qxf6
-# Now take bishop
+
+# Now take the bishop.
 rnb1k2r/ppp2p1p/4pn2/3p4/3P1b2/4P3/PPP2PPP/RN2KBNR w KQkq - 0 7 -> exf4
 rnbq1rk1/pp3ppp/3bpn2/2ppN3/3P1B2/2P1P3/PP1N1PPP/R2QKB1R b KQ - 0 7 -> Nc6
-# Standard london pyramid, Pawn to c3
+
+# Standard london pyramid.
 rnbq1rk1/pp3ppp/3bpn2/2ppN3/3P1B2/4P3/PPPN1PPP/R2QKB1R w KQ c6 0 7 -> c3
-# Standard london pyramid, Knight to d2
+
+# Standard london pyramid.
 rnbq1rk1/ppp2ppp/3bpn2/3pN3/3P1B2/4P3/PPP2PPP/RN1QKB1R w KQ - 4 6 -> Nd2
 rnbq1rk1/ppp2ppp/3bpn2/3pN3/3P1B2/4P3/PPPN1PPP/R2QKB1R b KQ - 5 6 -> c5
 rnbqk1nr/ppp2pQp/4p3/3p4/3P1b2/4P3/PPP2PPP/RN2KBNR b KQkq - 0 5 -> Qf6
-# Unprotected pawn on g7
+
+# Unprotected pawn on g7.
 rnbqk1nr/ppp2ppp/3bp3/3p4/3P1B2/4P3/PPP2PPP/RN1QKBNR w KQkq - 1 4 -> Qg4
 rnbqk1nr/ppp2ppp/3bp3/3p4/3P1BQ1/4P3/PPP2PPP/RN2KBNR b KQkq - 2 4 -> Bxf4
-# Still take the pawn and threaten the rook
+
+# Still take the pawn and threaten the rook.
 rnbqk1nr/ppp2ppp/4p3/3p4/3P1bQ1/4P3/PPP2PPP/RN2KBNR w KQkq - 0 5 -> Qxg7
 rnbqk2r/pp3ppp/3bpn2/1BppN3/3P1B2/4P3/PPP2PPP/RN1QK2R b KQkq - 1 6 -> Bd7
 rnbqk2r/pp3ppp/3bpn2/2ppN3/3P1B2/4P3/PPP2PPP/RN1QKB1R w KQkq c6 0 6 -> Bb5+
 rnbqk2r/ppp2ppp/3bpn2/3p4/3P1B2/4PN2/PPP2PPP/RN1QKB1R w KQkq - 2 5 -> Ne5
 rnbqk2r/ppp2ppp/3bpn2/3pN3/3P1B2/4P3/PPP2PPP/RN1QKB1R b KQkq - 3 5 -> O-O
 rnbqk2r/ppp2ppp/3bpn2/3pN3/3P1B2/4P3/PPP2PPP/RN1QKB1R b KQkq - 3 5 -> c5
-# Start prepping for a fork on c7 by moving Knight to c3
+
+# Start prepping for a fork on c7.
 rnbqkb1r/pp2pppp/5n2/2pp4/3P1B2/2N1P3/PPP2PPP/R2QKBNR b KQkq - 1 4 -> Nc6
 rnbqkb1r/pp2pppp/5n2/2pp4/3P1B2/4P3/PPP2PPP/RN1QKBNR w KQkq c6 0 4 -> Nc3
 rnbqkb1r/ppp1pppp/5n2/3p4/3P1B2/4P3/PPP2PPP/RN1QKBNR b KQkq - 0 3 -> Bf5
 rnbqkb1r/ppp1pppp/5n2/3p4/3P1B2/4P3/PPP2PPP/RN1QKBNR b KQkq - 0 3 -> Nc6
 rnbqkb1r/ppp1pppp/5n2/3p4/3P1B2/4P3/PPP2PPP/RN1QKBNR b KQkq - 0 3 -> c5
 rnbqkb1r/ppp1pppp/5n2/3p4/3P1B2/4P3/PPP2PPP/RN1QKBNR b KQkq - 0 3 -> e6
-# With few exceptions, the third move is usually King's pawn to e3
+
+# Same (with few exceptions) third move for london.
 rnbqkb1r/ppp1pppp/5n2/3p4/3P1B2/8/PPP1PPPP/RN1QKBNR w KQkq - 2 3 -> e3
 rnbqkb1r/ppp2ppp/4pn2/3p4/3P1B2/4P3/PPP2PPP/RN1QKBNR w KQkq - 0 4 -> Nf3
 rnbqkb1r/ppp2ppp/4pn2/3p4/3P1B2/4PN2/PPP2PPP/RN1QKB1R b KQkq - 1 4 -> Bd6
@@ -354,7 +398,8 @@ rnbqkbnr/ppp1pppp/8/3p4/3P1B2/8/PPP1PPPP/RN1QKBNR b KQkq - 1 2 -> Nf6
 rnbqkbnr/ppp1pppp/8/3p4/3P1B2/8/PPP1PPPP/RN1QKBNR b KQkq - 1 2 -> c5
 rnbqkbnr/ppp1pppp/8/3p4/3P1B2/8/PPP1PPPP/RN1QKBNR b KQkq - 1 2 -> e6
 rnbqkbnr/ppp1pppp/8/3p4/3P1B2/8/PPP1PPPP/RN1QKBNR b KQkq - 1 2 -> f6
-# Same second move always, Bishop to f4
+
+# Same second move for london.
 rnbqkbnr/ppp1pppp/8/3p4/3P4/8/PPP1PPPP/RNBQKBNR w KQkq d6 0 2 -> Bf4
 rnbqkbnr/ppp2ppp/4p3/3p4/3P1B2/4P3/PPP2PPP/RN1QKBNR b KQkq - 0 3 -> Bd6
 rnbqkbnr/ppp2ppp/4p3/3p4/3P1B2/4P3/PPP2PPP/RN1QKBNR b KQkq - 0 3 -> c5
@@ -365,5 +410,6 @@ rnbqkbnr/ppp3pp/8/3pp2Q/5B2/4P3/PPP2PPP/RN2KBNR b KQkq - 1 5 -> g6
 rnbqkbnr/ppp3pp/8/3pp3/5B2/4P3/PPP2PPP/RN1QKBNR w KQkq - 0 5 -> Qh5+
 rnbqkbnr/ppp4p/6p1/3pp2Q/5B2/4P3/PPP2PPP/RN2KBNR w KQkq - 0 6 -> Qxe5+
 rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq d3 0 1 -> d5
-# London always starts with the same basic Queen's pawn to d4
+
+# London always starts the same.
 rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 -> d4

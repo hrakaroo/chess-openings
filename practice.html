@@ -212,7 +212,7 @@
                     </div>
                 </div>
                 <div style="margin-bottom: 10px; width: 600px;">
-                    <input type="text" id="annotationDisplay" readonly style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; background-color: #f9f9f9; color: #333; box-sizing: border-box;">
+                    <textarea id="annotationDisplay" readonly style="width: 100%; height: 60px; padding: 10px; border: 1px solid #ddd; border-radius: 4px; background-color: #f9f9f9; color: #333; box-sizing: border-box; resize: none; font-family: Arial, sans-serif; font-size: 14px;"></textarea>
                 </div>
                 <div id="board" class="board-readonly" style="width: 600px;"></div>
                 <div id="evaluationLabel"></div>
@@ -758,9 +758,22 @@
                     // Find the edge between these states
                     for (var i = 0; i < graphEdges.length; i++) {
                         if (graphEdges[i].from === fromIndex && graphEdges[i].to === toIndex) {
-                            var annotation = graphEdges[i].annotation;
-                            if (annotation) {
-                                document.getElementById('annotationDisplay').value = annotation;
+                            var annotation = graphEdges[i].annotation || '';
+                            var moveSAN = graphEdges[i].move || '';
+                            var moveText = moveToReadableText(moveSAN);
+
+                            // Combine annotation with move text
+                            var displayText = annotation;
+                            if (moveText) {
+                                if (displayText) {
+                                    displayText += ' ' + moveText;
+                                } else {
+                                    displayText = moveText;
+                                }
+                            }
+
+                            if (displayText) {
+                                document.getElementById('annotationDisplay').value = displayText;
                             }
                             break;
                         }

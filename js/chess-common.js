@@ -7,6 +7,59 @@ var game = new Chess();
 // Audio context for sound effects
 var audioContext = null;
 
+// Convert SAN move notation to readable text
+function moveToReadableText(moveSAN) {
+    if (!moveSAN || moveSAN === '???') return '';
+
+    // Handle castling
+    if (moveSAN === 'O-O' || moveSAN.includes('O-O')) {
+        return moveSAN === 'O-O' ? 'Castle kingside' : 'Castle queensside';
+    }
+
+    // Parse the move
+    var piece = '';
+    var action = 'to';
+    var destination = '';
+    var promotion = '';
+
+    // Check for capture
+    if (moveSAN.includes('x')) {
+        action = 'takes';
+    }
+
+    // Identify piece (N=Knight, B=Bishop, R=Rook, Q=Queen, K=King)
+    var pieceMap = {
+        'N': 'Knight',
+        'B': 'Bishop',
+        'R': 'Rook',
+        'Q': 'Queen',
+        'K': 'King'
+    };
+
+    var firstChar = moveSAN.charAt(0);
+    if (pieceMap[firstChar]) {
+        piece = pieceMap[firstChar];
+    } else {
+        piece = 'Pawn';
+    }
+
+    // Extract destination square (last 2 characters before any +, #, or =)
+    var cleanMove = moveSAN.replace(/[+#]/g, '');
+
+    // Check for promotion
+    if (cleanMove.includes('=')) {
+        var parts = cleanMove.split('=');
+        cleanMove = parts[0];
+        var promoChar = parts[1];
+        promotion = ', promotes to ' + (pieceMap[promoChar] || 'Queen');
+    }
+
+    // Get destination (last 2 characters of cleaned move)
+    destination = cleanMove.slice(-2);
+
+    return piece + ' ' + action + ' ' + destination + promotion;
+}
+
 // Play a move sound effect
 function playMoveSound() {
     try {
@@ -267,6 +320,7 @@ function loadState(state, addToHistoryFlag) {
     if (annotationDisplay) {
         // Find the edge that led to this state
         var annotation = '';
+        var moveSAN = '';
         if (historyIndex > 0) {
             var fromState = normalizeFEN(moveHistory[historyIndex - 1]);
             var toState = normalizedState;
@@ -280,11 +334,24 @@ function loadState(state, addToHistoryFlag) {
 
                 if (edgeFromState === fromState && edgeToState === toState) {
                     annotation = edge.annotation || '';
+                    moveSAN = edge.move || '';
                     break;
                 }
             }
         }
-        annotationDisplay.value = annotation;
+
+        // Combine annotation with readable move text
+        var displayText = annotation;
+        var moveText = moveToReadableText(moveSAN);
+        if (moveText) {
+            if (displayText) {
+                displayText += ' ' + moveText;
+            } else {
+                displayText = moveText;
+            }
+        }
+
+        annotationDisplay.value = displayText;
     }
 
     // Update annotation input if present (for build mode)
