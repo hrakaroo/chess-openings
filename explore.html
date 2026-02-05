@@ -250,6 +250,7 @@
                     .then(content => {
                         var filename = filePath.split('/').pop();
                         loadRoutesFromFile(content, filename);
+                        board.orientation(loadedPlayerColor);
                         hideLoading();
                     })
                     .catch(error => {
@@ -274,6 +275,7 @@
                 reader.onload = function(e) {
                     try {
                         loadRoutesFromFile(e.target.result, file.name);
+                        board.orientation(loadedPlayerColor);
                         hideLoading();
                         showSuccess('Loaded: ' + file.name);
                     } catch (error) {

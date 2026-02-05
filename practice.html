@@ -105,20 +105,6 @@
             background-color: #c0392b;
         }
 
-        #playAsSelect {
-            padding: 8px 12px;
-            font-size: 14px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            background-color: white;
-            cursor: pointer;
-        }
-
-        #playAsSelect:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-
         #loadBtn {
             background-color: #3498db;
         }
@@ -194,13 +180,6 @@
         <tbody><tr>
             <td style="vertical-align: top;">
                 <div style="margin-bottom: 10px; width: 600px; display: flex; align-items: center; gap: 20px;">
-                    <div style="display: flex; align-items: center; gap: 5px;">
-                        <label for="playAsSelect" style="font-weight: bold;">Play as:</label>
-                        <select id="playAsSelect">
-                            <option value="white" selected>White</option>
-                            <option value="black">Black</option>
-                        </select>
-                    </div>
                     <button id="resetBtn" disabled>Reset</button>
                     <div style="display: flex; align-items: center; gap: 5px;">
                         <label for="scoreField" style="font-weight: bold;">Mistakes:</label>
@@ -961,7 +940,7 @@
 
         // Start practice mode
         function startPractice() {
-            userColor = document.getElementById('playAsSelect').value;
+            userColor = loadedPlayerColor;
 
             // Check if paths are loaded
             if (allPathsOriginal.length === 0) {

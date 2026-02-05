@@ -115,6 +115,7 @@ var lastEdgeIndex = -1;  // Track the last edge created for annotation
 var precomputedPositions = null;  // Optional pre-computed node positions from JSON
 var nodeEvaluations = {};  // Map state string to evaluation string (e.g., "+0.50", "M5")
 var loadedTitle = '';  // Title of the loaded route file
+var loadedPlayerColor = 'white';  // Player color from file (white or black)
 
 // NOTE: FEN normalization functions (normalizeFEN, getFENKey, validateState, etc.)
 // are now in fen-utils.js module
@@ -406,7 +407,7 @@ function updateEvaluationLabel() {
 // Validate a state string format
 // NOTE: validateState() is now in fen-utils.js module
 
-// Export all graph states to v4.0 format
+// Export all graph states to v5.0 format
 async function exportAllStates() {
     if (graphEdges.length === 0) {
         showError('No Routes to Export', 'You need to add some moves before exporting.');
@@ -424,6 +425,21 @@ async function exportAllStates() {
 
     if (!title) {
         showError('Title Required', 'Please enter a title for the opening.');
+        return;
+    }
+
+    // Prompt for player color
+    var playerColor = await showPrompt(
+        'Player Color',
+        'Enter player color (white or black):',
+        loadedPlayerColor || 'white'
+    );
+
+    if (playerColor === null) return; // User cancelled
+
+    playerColor = playerColor.toLowerCase().trim();
+    if (playerColor !== 'white' && playerColor !== 'black') {
+        showError('Invalid Color', 'Player color must be "white" or "black".');
         return;
     }
 
@@ -476,9 +492,10 @@ async function exportAllStates() {
         transitionLines.push(fromStateForExport + ' -> ' + moveNotation);
     }
 
-    // Add version header, title, and combine positions + transitions
-    var content = 'v4.0\n';
+    // Add version header, title, player color, and combine positions + transitions
+    var content = 'v5.0\n';
     content += '= ' + title + '\n';
+    content += playerColor + '\n';
     if (positionLines.length > 0) {
         content += positionLines.join('\n') + '\n';
     }
@@ -671,16 +688,16 @@ function loadRoutesFromFile(fileContent, filename) {
         return;
     }
 
-    if (version !== 'v4.0') {
+    if (version !== 'v5.0') {
         showError(
             'Unsupported Version',
-            'This file format version is not supported. Expected v4.0, but got ' + version,
-            'The application only supports v4.0 format. You may need to convert this file or use an older version of the application.'
+            'This file format version is not supported. Expected v5.0, but got ' + version,
+            'The application only supports v5.0 format. Please re-export your opening files in the new format.'
         );
         return;
     }
 
-    // Parse title (required in v4.0 format)
+    // Parse title (required in v5.0 format)
     if (lines.length < 2 || !lines[1].trim().startsWith('=')) {
         showError(
             'Invalid File Format',
@@ -690,7 +707,27 @@ function loadRoutesFromFile(fileContent, filename) {
         return;
     }
     loadedTitle = lines[1].trim().substring(1).trim();
-    var startLine = 2;
+
+    // Parse player color (required in v5.0 format)
+    if (lines.length < 3) {
+        showError(
+            'Invalid File Format',
+            'The file is missing a player color line. Expected third line to be "white" or "black".',
+            'Third line: (missing)'
+        );
+        return;
+    }
+    var playerColorLine = lines[2].trim().toLowerCase();
+    if (playerColorLine !== 'white' && playerColorLine !== 'black') {
+        showError(
+            'Invalid File Format',
+            'Invalid player color. Expected "white" or "black" on line 3, but got: ' + lines[2],
+            'Player color must be either "white" or "black"'
+        );
+        return;
+    }
+    loadedPlayerColor = playerColorLine;
+    var startLine = 3;
 
     // Reset graph
     graphNodes = [];
@@ -1212,7 +1249,7 @@ function setupCanvasEventListeners() {
     // Click handler - navigate to node
     canvas.addEventListener('click', function(event) {
         // Disable node clicking in practice mode
-        var isPracticeMode = document.getElementById('playAsSelect') !== null;
+        var isPracticeMode = document.getElementById('scoreField') !== null;
         if (isPracticeMode) {
             return;
         }

@@ -9,9 +9,9 @@ A static web application for building, exploring, and practicing chess opening r
 **Key Features**:
 - Build custom opening repertoires with move annotations
 - Explore existing repertoires in read-only mode
-- Practice openings with score tracking and randomized path ordering
+- Practice openings with mistake tracking and randomized path ordering
 - Visual graph representation with transposition detection
-- Export to v4.0 format and PGN
+- Export to v5.0 format and PGN
 
 ## Current Architecture
 
@@ -48,20 +48,23 @@ A static web application for building, exploring, and practicing chess opening r
 - Create moves and variations
 - Add annotations (type before move, auto-applied)
 - Undo/Redo with history
-- Export to v4.0 format with title
+- Export to v5.0 format with title and player color
 
 **3. Practice Mode** (`practice.html`)
 - Interactive practice with move validation (including en passant)
 - Path-based practice (cycles through all unique paths once)
 - Quick-load dropdown for pre-built openings
-- Score tracking (correct paths / total paths)
-- Remaining counter (counts down to zero)
+- Player color loaded from file (no selector)
+- Mistake counter (increments on each error)
+- Variations counter (paths remaining, counts down to zero)
 - Auto-start on file load, Reset button to restart
 - Randomized path order each session
 - Last move highlighting (from/to squares)
+- Error highlighting (red flash on incorrect moves)
+- Auto-appended move descriptions (e.g., "Knight to f3")
 - Audio feedback (move sound + error sound)
 - Graph visualization (view-only, clicking disabled)
-- Debug console flag: `DEBUG_TRANSITIONS = true`
+- Transition logging in explore mode only
 
 ## Technical Architecture
 
@@ -141,11 +144,12 @@ On load:
 - Normalize result for node matching
 - Store full FEN in edge for future exports
 
-### File Format (v4.0)
+### File Format (v5.0)
 
 ```
-v4.0
+v5.0
 = Opening Title
+white
 # Optional annotation
 FEN_string -> move_in_SAN
 # Another annotation
@@ -160,6 +164,9 @@ FEN : x, y, evaluation
 ```
 
 **Key points**:
+- Line 1: Version number (v5.0)
+- Line 2: Title (= Opening Title)
+- Line 3: Player color (white or black)
 - FEN can be full FEN (with en passant) or normalized
 - Moves are in Standard Algebraic Notation (e.g., "Nf3", "O-O", "exd6")
 - Comments start with `#` and apply to next transition
@@ -287,13 +294,14 @@ python bin/evaluate.py opening.txt
 - Uses pygraphviz for graph layout (dot, neato, fdp, sfdp algorithms)
 - Generates x,y coordinates for each position
 - Optional Stockfish evaluation for terminal positions
-- Embeds coordinates and evaluations in v4.0 file
+- Embeds coordinates and evaluations in v5.0 file
 - Can output to separate file with `--output`
 
 **Output format**:
 ```
-v4.0
+v5.0
 = Title
+white
 FEN : x, y
 FEN : x, y, white +0.25
 FEN -> move
@@ -313,8 +321,9 @@ python bin/merge.py file1.txt file2.txt --output merged.txt
 - Merges transitions (deduplicates by from_state + move)
 - Combines annotations with ` | ` separator
 - Merges titles with ` + ` separator
+- Prompts for player color or uses first file's color
 - Removes position coordinates and evaluations (clean output)
-- Outputs standard v4.0 format
+- Outputs standard v5.0 format
 
 **Use cases**:
 - Combining variations of same opening
@@ -381,6 +390,22 @@ python bin/merge.py file1.txt file2.txt --output merged.txt
 - **Rebuild script**: `bin/rebuild_openings_list.py` to auto-update dropdowns
 **Files changed**: `practice.html`, `explore.html`, `build.html`, `js/chess-common.js`
 
+### 9. v5.0 File Format and Recent Enhancements (February 2026)
+**Major changes**:
+- **v5.0 file format**: Added player color (white/black) on line 3 of opening files
+  - Removed "Play as:" selector from practice mode (now loaded from file)
+  - Export prompts for player color and defaults to loaded value
+  - Files must be v5.0 format (v4.0 no longer supported)
+- **Error highlighting**: Red flash on squares when attempting incorrect moves in practice mode
+- **Score system redesign**: Changed from correct/total tracking to simple mistake counter
+- **Label changes**: "Remaining" renamed to "Variations" for clarity
+- **Move descriptions**: Auto-appended to annotations (e.g., "Knight to f3") for user moves only
+- **Annotation box height**: Increased to 60px (2 lines) in all modes, changed from input to textarea
+- **Debug logging**: Removed from practice mode, added transition logging to explore mode only
+- **Favicon**: Created pawn-shaped SVG favicon with purple background
+- **Code organization**: Moved `moveToReadableText()` to `js/chess-common.js` for shared use
+**Files changed**: `practice.html`, `build.html`, `explore.html`, `index.html`, `js/chess-common.js`, `favicon.svg`, `SKILLS.md`, `README.md`, `CLAUDE.md`
+
 ## Known Limitations
 
 1. **En passant caveat**: Graph nodes don't preserve en passant info (only edges do) for transposition detection purposes. En passant moves work correctly in all modes. There's a very narrow theoretical possibility of incorrect transposition merging in extremely rare cases. See README Caveat section.
@@ -398,15 +423,15 @@ python bin/merge.py file1.txt file2.txt --output merged.txt
 ### When Adding Features
 
 1. **Maintain separation of concerns**: Build mode = editing, Explore mode = viewing, Practice mode = testing
-2. **Preserve backward compatibility**: New code should load old v4.0 files
+2. **File format**: All files must be v5.0 format (v4.0 not supported)
 3. **Update edgeMap**: Always rebuild `edgeMap` after modifying `graphEdges` or node indices
 4. **Test en passant**: Any changes to FEN handling must preserve en passant moves
 5. **Update all three modes**: Changes to `chess-common.js` affect all modes
 
 ### Testing Checklist
 
-- [ ] Load old v4.0 files (pre-move-storage)
-- [ ] Load new v4.0 files (with move storage)
+- [ ] Load v5.0 files with player color
+- [ ] Export creates v5.0 files with player color
 - [ ] En passant moves work (create, export, reload)
 - [ ] Undo/Redo doesn't create orphaned nodes
 - [ ] Transpositions merge correctly
@@ -470,19 +495,21 @@ shuffleArray(paths)         // Randomizes order
 
 ## File Format Details
 
-See `docs/FORMAT.md` for complete v4.0 specification.
+See `docs/FORMAT.md` for complete v5.0 specification.
 
 **Minimal valid file**:
 ```
-v4.0
+v5.0
 = My Opening
+white
 start -> e4
 ```
 
 **With annotations and positions**:
 ```
-v4.0
+v5.0
 = London System
+white
 start : 100, 0
 rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq d3 0 1 : 100, 100, white +0.3
 # Standard London opening
@@ -498,4 +525,4 @@ rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq d3 0 1 -> d5
 
 ---
 
-**Last Updated**: January 2026 (v4.0 format, three-mode system, en passant fix)
+**Last Updated**: February 2026 (v5.0 format with player color, mistake tracking, error highlighting, auto-generated move descriptions)

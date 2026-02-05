@@ -43,9 +43,9 @@ This means en passant moves work correctly in all modes, while transposition det
   - **Keyboard navigation** - use arrow keys to navigate through the opening tree (Down=next move, Up=previous, Right/Left=alternate variations)
 - **Undo/Redo** - navigate backward and forward through your move history with keyboard shortcuts
 - **Export/Import** - save and load your opening repertoire:
-  - Export to v4.0 format (.txt) with FEN notation, positions, evaluations, and titles
+  - Export to v5.0 format (.txt) with FEN notation, positions, evaluations, titles, and player color
   - Export to standard PGN format for use in other chess software
-  - Import from saved v4.0 files with annotation and title support
+  - Import from saved v5.0 files with annotation, title, and player color support
 - **Keyboard shortcuts** - Ctrl+Z/Cmd+Z for undo, Ctrl+Y/Cmd+Shift+Z for redo, arrow keys for navigation (Build Mode only)
 - **Turn indicator** - shows whose move it is at all times
 
@@ -110,16 +110,16 @@ The application now has three separate pages, each optimized for a specific work
 - **Purpose**: Test your knowledge of loaded opening repertoires through interactive practice
 - **Features**:
   - Quick-load dropdown for pre-built openings or custom file upload
-  - Choose to play as White or Black
+  - Player color (White or Black) is loaded from the opening file
   - Computer automatically plays the opposite side through the repertoire
   - Validates your moves against loaded variations (including en passant captures)
-  - Tracks "Correct" count (successful completions without mistakes) and "Remaining" paths
+  - Tracks "Mistakes" count (increments on each incorrect move) and "Variations" (paths remaining to practice)
   - Automatically cycles through all unique paths in random order
-  - View move annotations during practice
+  - View move annotations during practice with auto-appended move descriptions
   - Graph visualization with current position highlighted (view-only, clicking disabled)
   - **Last move highlighting** - squares are highlighted to show the most recent move (from and to squares)
+  - **Error highlighting** - red flash on squares when attempting incorrect moves
   - **Audio feedback** - move sounds for correct moves, gentle error tone for incorrect moves
-  - **Debug console** - enable transition logging from browser console
 - **Available buttons**: Load dropdown, Custom File, Reset, Fit View
 - **URL**: `practice.html`
 
@@ -186,20 +186,21 @@ To disable logging, type: `DEBUG_TRANSITIONS = false`
 
 1. Navigate to `practice.html` or click **Practice** from the welcome page
 2. Click **Load Routes** and select a `.txt` file containing your opening repertoire
-3. Choose whether to play as **White** or **Black** using the dropdown
-4. Click **Start** to begin practice
-5. The computer will play the opposite side, and you must respond with moves from your loaded repertoire
-6. **Correct** count tracks successful completions (reaching the end without mistakes)
-7. **Best** tracks your longest streak of correct completions
-8. Making an incorrect move resets both counters and the position
-9. The practice session cycles through variations in random order (shuffled)
-10. Click **Stop** to end the practice session
-11. Annotations from your repertoire are displayed above the board during practice
+3. Practice automatically starts - player color (White or Black) is loaded from the file
+4. The computer will play the opposite side, and you must respond with moves from your loaded repertoire
+5. **Mistakes** counter increments each time you make an incorrect move
+6. **Variations** counter shows how many paths remain to practice (counts down to zero)
+7. Making an incorrect move causes a red flash on the square and plays an error sound, but doesn't reset the position
+8. The practice session cycles through all paths in random order (shuffled at start)
+9. When all variations are complete, a completion modal shows your total mistakes
+10. Click **Reset** to restart the practice session with a new random order
+11. Annotations from your repertoire are displayed above the board with auto-generated move descriptions (e.g., "Knight to f3")
 
 **Tips**:
 - Practice mode validates your moves against ALL loaded variations, so any valid move from your repertoire is accepted
 - The random order ensures you're truly learning the positions, not just memorizing a fixed sequence
-- Your Best streak persists across multiple practice runs until you make a mistake
+- Red square flashing provides immediate visual feedback when attempting incorrect moves
+- Move descriptions are automatically appended to annotations for user moves only
 
 ### Managing Routes
 
@@ -207,9 +208,8 @@ To disable logging, type: `DEBUG_TRANSITIONS = false`
 - **Reset Board and Graph** - return to the starting position and completely clear all graph data (removes all explored positions and variations)
 - **Undo** - go back to the previous position in your move history (Ctrl+Z, Cmd+Z, or Left Arrow)
 - **Redo** - move forward in your history after undoing (Ctrl+Y, Ctrl+Shift+Z, Cmd+Shift+Z, or Right Arrow)
-- **Export Routes** - prompts for a title and filename, then saves all recorded transitions to a `.txt` file (v4.0 format with FEN notation and title). The title defaults to the loaded opening name if available.
-- **Load Routes** - import a previously saved v4.0 .txt file to restore your opening tree (displays the loaded title, filename and version below the graph)
-- **Load Positions** - optionally load a pre-computed positions JSON file generated by `evaluate.py` for optimal graph layout with minimal edge crossings
+- **Export Routes** - prompts for title, player color (white/black), and filename, then saves all recorded transitions to a `.txt` file (v5.0 format with FEN notation, title, and player color). The title and player color default to loaded values if available.
+- **Load Routes** - import a previously saved v5.0 .txt file to restore your opening tree (displays the loaded title, filename and version below the graph)
 - **Export PGN** - exports your opening tree to standard PGN (Portable Game Notation) format with variations, compatible with chess software like Lichess, Chess.com, and ChessBase
 - **Fit View** - automatically scales and centers the graph to show all nodes within the canvas (useful after exploring large opening trees)
 
@@ -465,18 +465,27 @@ FEN is a standard notation that consists of six fields separated by spaces:
 
 ## File Format
 
-All exported files use version 4.0 format with FEN (Forsyth-Edwards Notation) for board state representation. Each file must include a title on the second line.
+All exported files use version 5.0 format with FEN (Forsyth-Edwards Notation) for board state representation. Each file must include a title on line 2 and player color on line 3.
 
 ### Format Specification
 
 The first line must contain the version number:
 ```
-v4.0
+v5.0
 ```
 
 The second line must contain the title:
 ```
 = Title of Opening Repertoire
+```
+
+The third line must contain the player color (who you practice as):
+```
+white
+```
+or
+```
+black
 ```
 
 Each board state uses FEN notation as described in the "Board State Encoding" section above, or the special `start` keyword for the initial position.
@@ -512,10 +521,11 @@ Annotations are specified using `#` comment lines immediately before the transit
 state -> move
 ```
 
-Example file with title, positions, evaluations, annotations, and transitions:
+Example file with title, player color, positions, evaluations, annotations, and transitions:
 ```
-v4.0
+v5.0
 = Sicilian Defense Repertoire
+white
 start : 283.8, 0.0
 rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1 : 283.8, 129.6
 rnbqkbnr/pp1ppppp/8/2p5/4P3/8/PPPP1PPP/RNBQKBNR w KQkq c6 0 2 : 283.8, 259.2, white +0.25
@@ -550,7 +560,8 @@ Note: In this example, the last two positions are leaf nodes (no further moves),
 - Multiple `#` comment lines before a transition are joined with spaces
 - Empty `#` lines are ignored
 - Returns and quotes are stripped when saving annotations
-- Title line is required in v4.0 format
+- Title line (line 2) and player color line (line 3) are required in v5.0 format
+- Player color must be either "white" or "black" (lowercase)
 
 ## Graph Visualization
 
